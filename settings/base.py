@@ -134,17 +134,12 @@ LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
 
 
-# FIXME: Update email settings
-EMAIL_USE_TLS = True
-EMAIL_HOST = "mail.mypuzzlehunt.com"
-EMAIL_HOST_USER = "noreply@puzzup.mypuzzlehunt.com"
-EMAIL_HOST_PASSWORD = "fixme"
-EMAIL_PORT = 587
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_BACKEND = "django_ses.SESBackend"
+
 EMAIL_SUBJECT_PREFIX = "[Puzzup] "
 
-DEFAULT_FROM_EMAIL = "noreply@puzzup.mypuzzlehunt.com"
-AUTOPOSTPROD_EMAIL = "puzzup@mypuzzlehunt.com"
+DEFAULT_FROM_EMAIL = "hunt2025-tech@googlegroups.com"
+AUTOPOSTPROD_EMAIL = "puzzup@letswriteahunt.com"
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 # 1 year, in seconds

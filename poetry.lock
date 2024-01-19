@@ -114,6 +114,44 @@ six = ">=1.9.0"
 webencodings = "*"
 
 [[package]]
+name = "boto3"
+version = "1.34.22"
+description = "The AWS SDK for Python"
+optional = false
+python-versions = ">= 3.8"
+files = [
+    {file = "boto3-1.34.22-py3-none-any.whl", hash = "sha256:5909cd1393143576265c692e908a9ae495492c04a0ffd4bae8578adc2e44729e"},
+    {file = "boto3-1.34.22.tar.gz", hash = "sha256:a98c0b86f6044ff8314cc2361e1ef574d674318313ab5606ccb4a6651c7a3f8c"},
+]
+
+[package.dependencies]
+botocore = ">=1.34.22,<1.35.0"
+jmespath = ">=0.7.1,<2.0.0"
+s3transfer = ">=0.10.0,<0.11.0"
+
+[package.extras]
+crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
+
+[[package]]
+name = "botocore"
+version = "1.34.22"
+description = "Low-level, data-driven core of boto 3."
+optional = false
+python-versions = ">= 3.8"
+files = [
+    {file = "botocore-1.34.22-py3-none-any.whl", hash = "sha256:e5f7775975b9213507fbcf846a96b7a2aec2a44fc12a44585197b014a4ab0889"},
+    {file = "botocore-1.34.22.tar.gz", hash = "sha256:c47ba4286c576150d1b6ca6df69a87b5deff3d23bd84da8bcf8431ebac3c40ba"},
+]
+
+[package.dependencies]
+jmespath = ">=0.7.1,<2.0.0"
+python-dateutil = ">=2.1,<3.0.0"
+urllib3 = {version = ">=1.25.4,<1.27", markers = "python_version < \"3.10\""}
+
+[package.extras]
+crt = ["awscrt (==0.19.19)"]
+
+[[package]]
 name = "cachetools"
 version = "5.0.0"
 description = "Extensible memoizing collections and decorators"
@@ -388,6 +426,26 @@ files = [
 diff-match-patch = "*"
 Django = ">=2.2"
 tablib = {version = ">=3.0.0", extras = ["html", "ods", "xls", "xlsx", "yaml"]}
+
+[[package]]
+name = "django-ses"
+version = "3.5.2"
+description = "A Django email backend for Amazon's Simple Email Service (SES)"
+optional = false
+python-versions = ">=3.8,<4.0"
+files = [
+    {file = "django_ses-3.5.2-py3-none-any.whl", hash = "sha256:90c68cc6ca3467893faa8499981c81ba8ff2bd3f3acb08c06423a4142d6a0fc6"},
+    {file = "django_ses-3.5.2.tar.gz", hash = "sha256:b6d94689bc15de02a11e84f05a5bf4a7895688e570c6f07c21698094debc6ced"},
+]
+
+[package.dependencies]
+boto3 = ">=1.0.0"
+django = ">=2.2"
+pytz = ">=2016.10"
+
+[package.extras]
+bounce = ["cryptography (>=36.0.2)", "requests (>=2.27.1)"]
+events = ["cryptography (>=36.0.2)", "requests (>=2.27.1)"]
 
 [[package]]
 name = "djangorestframework"
@@ -859,6 +917,17 @@ parso = ">=0.8.0,<0.9.0"
 [package.extras]
 qa = ["flake8 (==3.8.3)", "mypy (==0.782)"]
 testing = ["Django (<3.1)", "colorama", "docopt", "pytest (<7.0.0)"]
+
+[[package]]
+name = "jmespath"
+version = "1.0.1"
+description = "JSON Matching Expressions"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "jmespath-1.0.1-py3-none-any.whl", hash = "sha256:02e2e4cc71b5bcab88332eebf907519190dd9e6e82107fa7f83b1003a6252980"},
+    {file = "jmespath-1.0.1.tar.gz", hash = "sha256:90261b206d6defd58fdd5e85f478bf633a2901798906be2ad389150c5c60edbe"},
+]
 
 [[package]]
 name = "kiwisolver"
@@ -1710,6 +1779,23 @@ files = [
 pyasn1 = ">=0.1.3"
 
 [[package]]
+name = "s3transfer"
+version = "0.10.0"
+description = "An Amazon S3 Transfer Manager"
+optional = false
+python-versions = ">= 3.8"
+files = [
+    {file = "s3transfer-0.10.0-py3-none-any.whl", hash = "sha256:3cdb40f5cfa6966e812209d0994f2a4709b561c88e90cf00c2696d2df4e56b2e"},
+    {file = "s3transfer-0.10.0.tar.gz", hash = "sha256:d0c8bbf672d5eebbe4e57945e23b972d963f07d82f661cabf678a5c88831595b"},
+]
+
+[package.dependencies]
+botocore = ">=1.33.2,<2.0a.0"
+
+[package.extras]
+crt = ["botocore[crt] (>=1.33.2,<2.0a.0)"]
+
+[[package]]
 name = "sentry-sdk"
 version = "1.5.4"
 description = "Python client for Sentry (https://sentry.io)"
@@ -2101,4 +2187,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "==3.9.*"
-content-hash = "92b36994632d6049c390aacaa1c921dbd9984fde24cb08849ca16bbfa2e5c68f"
+content-hash = "1aaae8155001321593afc54d1cc184d9120ff414552b0942273833cc07cac540"
