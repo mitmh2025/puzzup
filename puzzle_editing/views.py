@@ -520,7 +520,7 @@ def oauth2_link(request):
 
             user.discord_user_id = user_data["id"]
 
-            if user_data["discriminator"] != 0:
+            if user_data["discriminator"] != "0":
                 user.discord_username = "{}#{}".format(
                     user_data["username"], user_data["discriminator"]
                 )
