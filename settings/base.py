@@ -206,11 +206,10 @@ HUNT_REPO_BRANCH = os.environ.get("HUNT_REPO_BRANCH", "main")
 HUNT_REPO_CLIENT = os.path.join(HUNT_REPO, "client")
 SSH_KEY = os.environ.get("SSH_KEY_PATH", "~/.ssh/id_rsa")
 
-# FIXME: Set hunt time
 HUNT_TIME = datetime.datetime(
     year=2023,
     month=1,
-    day=15,
+    day=17,
     hour=17,
     minute=0,
     second=0,
