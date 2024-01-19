@@ -687,7 +687,7 @@ def puzzle_new(request):
                 tc.make_private()
                 author_tags = discord.get_tags(puzzle.authors.all(), False)
                 cat = status.get_display(puzzle.status)
-                tc = c.save_channel_to_cat(tc, cat)
+                tc = discord.save_channel(c, tc, cat)
                 puzzle.discord_channel_id = tc.id
                 puzzle.save()
                 c.post_message(
@@ -1328,7 +1328,7 @@ def puzzle(request: HttpRequest, id, slug=None):  # noqa: C901
                     discord.sync_puzzle_channel(puzzle, ch, url)
                     newcat = status.get_display(puzzle.status)
                 if newcat is not None:
-                    c.save_channel_to_cat(ch, newcat)
+                    discord.save_channel(c, ch, newcat)
                 else:
                     c.save_channel(ch)
             else:
@@ -1340,7 +1340,7 @@ def puzzle(request: HttpRequest, id, slug=None):  # noqa: C901
                 url = external_puzzle_url(request, puzzle)
                 tc = discord.build_puzzle_channel(url, puzzle, c.guild_id)
                 cat = status.get_display(puzzle.status)
-                tc = c.save_channel_to_cat(tc, cat)
+                tc = discord.save_channel(c, tc, cat)
                 puzzle.discord_channel_id = tc.id
                 puzzle.save()
                 author_tags = discord.get_tags(puzzle.authors.all(), False)
@@ -1361,7 +1361,7 @@ def puzzle(request: HttpRequest, id, slug=None):  # noqa: C901
                 puzzle.status = new_status
                 puzzle.save()
                 if c and ch:
-                    c.save_channel_to_cat(ch, status_display)
+                    discord.save_channel(c, ch, status_display)
                     message = status.get_message_for_status(
                         new_status, puzzle, status_display
                     )
@@ -1538,7 +1538,7 @@ def puzzle(request: HttpRequest, id, slug=None):  # noqa: C901
                 puzzle.save()
                 if c and ch:
                     catname = status.get_display(puzzle.status)
-                    c.save_channel_to_cat(ch, catname)
+                    discord.save_channel(c, ch, catname)
                     message = status.get_message_for_status(
                         status_change, puzzle, catname
                     )
@@ -2744,7 +2744,7 @@ def testsolve_one(request, id):  # noqa: C901
                     puzzle.status = status.AWAITING_TESTSOLVE_REVIEW
                     puzzle.save()
                     if c and ch:
-                        c.save_channel_to_cat(ch, status_display)
+                        discord.save_channel(c, ch, status_display)
                         c.post_message(
                             ch.id,
                             f"Testsolve completed with correct answer! Moving puzzle to **{status_display}**.",

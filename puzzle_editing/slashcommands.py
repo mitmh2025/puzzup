@@ -80,7 +80,7 @@ def create_puzzle_for_channel(request: HttpRequest, ch_id: str) -> MsgPayload:
     puzzle.save()
     url = external_puzzle_url(request, puzzle)
     discord.sync_puzzle_channel(puzzle, tc, url=url)
-    c.save_channel_to_cat(tc, puzzle.get_status_display())
+    discord.save_channel(c, tc, puzzle.get_status_display())
     members_to_ping = set(c.get_message_authors_in_channel(tc.id))
     member_tags = [discord.tag_id(discid) for discid in members_to_ping]
     msg = (
@@ -134,7 +134,7 @@ def archiveChannelHandler(request, payload):
     else:
         c = discord.get_client()
         ch = c.get_text_channel(payload["channel_id"])
-        c.save_channel_to_cat(ch, "Archive")
+        discord.save_channel(c, ch, "Archive")
         responsetext = "**This channel has been archived**"
     responseJson = {"type": 4, "data": {"content": responsetext}}
     return JsonResponse(responseJson)

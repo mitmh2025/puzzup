@@ -179,6 +179,12 @@ def sync_puzzle_channel(
     return tc
 
 
+def save_channel(client: Client, tc: TextChannel, category: str) -> TextChannel:
+    if settings.DISCORD_CATEGORY_PREFIX:
+        category = settings.DISCORD_CATEGORY_PREFIX + category
+    client.save_channel_to_cat(tc, category)
+
+
 def build_testsolve_thread(session: m.TestsolveSession, guild_id: str):
     return Thread(
         id=None,
