@@ -1093,15 +1093,8 @@ def create_testsolve_thread(instance: TestsolveSession):
             puzzle = instance.puzzle
             c = discord.get_client()
 
-            # Create a temporary message, start the thread from that message, and then delete the message.
-            # This creates a pseudo-private thread.
-            message = c.post_message(
-                settings.DISCORD_TESTSOLVE_CHANNEL_ID,
-                f"Temp message for testsolve session {instance.id}.",
-            )
             thread = discord.build_testsolve_thread(instance, c.guild_id)
-            thread = c.save_thread(thread, message["id"])
-            c.delete_message(settings.DISCORD_TESTSOLVE_CHANNEL_ID, message["id"])
+            thread = c.save_thread(thread)
 
             author_tags = discord.get_tags(puzzle.authors.all(), False)
             editor_tags = discord.get_tags(puzzle.editors.all(), False)

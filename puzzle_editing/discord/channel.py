@@ -80,9 +80,9 @@ class Category(Channel):
 
 
 class Thread(BaseModel):
-    """A Thread in a Text Channel."""
+    """A private Thread in a Text Channel."""
 
-    type: int = 11
+    type: int = 12
     id: str = None
     name: str = None
     guild_id: str = None

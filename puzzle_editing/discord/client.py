@@ -303,12 +303,9 @@ class Client:
         self._cache_tc(newtc)
         return newtc
 
-    def save_thread(self, thread: Thread, message_id: str) -> Thread:
+    def save_thread(self, thread: Thread) -> Thread:
         if thread.id is None:
-            if not message_id:
-                pth = f"/channels/{thread.parent_id}/threads"
-            else:
-                pth = f"/channels/{thread.parent_id}/messages/{message_id}/threads"
+            pth = f"/channels/{thread.parent_id}/threads"
             rawch = self._request("post", pth, thread.dict(exclude={"id"}))
         else:
             # TODO
