@@ -471,9 +471,12 @@ def oauth2_link(request):
         elif "refresh-discord" in request.POST:
             member = discord.get_client().get_member_by_id(user.discord_user_id)
             if member:
-                user.discord_username = "{}#{}".format(
-                    member["user"]["username"], member["user"]["discriminator"]
-                )
+                if member["user"]["discriminator"]:
+                    user.discord_username = "{}#{}".format(
+                        member["user"]["username"], member["user"]["discriminator"]
+                    )
+                else:
+                    user.discord_username = member["user"]["username"]
                 user.discord_nickname = member["nick"] or ""
                 user.save()
                 user.avatar_url = user.get_avatar_url_via_discord(
