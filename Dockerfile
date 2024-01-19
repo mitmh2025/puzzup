@@ -3,7 +3,7 @@ FROM python:3.9.17-slim
 
 RUN apt-get update \
 	&& apt-get install -y --no-install-recommends \
-		postgresql-client curl build-essential git \
+		postgresql-client curl build-essential git awsclu \
 	&& rm -rf /var/lib/apt/lists/*
 
 ENV PYTHONUNBUFFERED=1 \
@@ -33,4 +33,12 @@ RUN --mount=type=cache,target=/root/.cache \
 COPY . .
 
 EXPOSE 8000
-CMD ["sh", "-c" "python manage.py migrate && python manage.py runserver"]
+CMD <<'EOF'
+#!/bin/bash
+set -eux
+set -o pipefail
+
+aws ssm get-parameter --output text --query Parameter.Value --with-decryption --name puzzup-env > .env
+python manage.py migrate
+python manage.py runserver
+EOF
