@@ -471,7 +471,7 @@ def oauth2_link(request):
         elif "refresh-discord" in request.POST:
             member = discord.get_client().get_member_by_id(user.discord_user_id)
             if member:
-                if member["user"]["discriminator"]:
+                if member["user"]["discriminator"] != "0":
                     user.discord_username = "{}#{}".format(
                         member["user"]["username"], member["user"]["discriminator"]
                     )
@@ -520,7 +520,7 @@ def oauth2_link(request):
 
             user.discord_user_id = user_data["id"]
 
-            if user_data["discriminator"]:
+            if user_data["discriminator"] != 0:
                 user.discord_username = "{}#{}".format(
                     user_data["username"], user_data["discriminator"]
                 )
