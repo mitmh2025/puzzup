@@ -315,14 +315,6 @@
 				{% endif %}
 				</div>
 			</div>
-			<div class="columns">
-				<div class="column is-one-quarter">
-					<h4>Emoji</h4>
-				</div>
-				<div class="column">
-					{{ puzzle.discord_emoji }}
-				</div>
-			</div>
 		</div>
 
 		<div class="box">
@@ -572,28 +564,6 @@
 
 		<div class="box">
 			<h3>Postprod</h3>
-			<div class="columns">
-				<div class="column is-one-quarter">
-					<h5>Deep</h5>
-				</div>
-				<div class="column">
-					{{ puzzle.deep }}
-				</div>
-				<div class="column is-one-quarter">
-					<h5>Deep Key</h5>
-				</div>
-				<div class="column">
-					{{ puzzle.deep_key }}
-				</div>
-                {% if puzzle.canonical_puzzle %}
-                    <div class="column is-one-quarter">
-                        <h5>Canonical Puzzle ID</h5>
-                    </div>
-                    <div class="column">
-                        {{ puzzle.canonical_puzzle_id }}
-                    </div>
-                {% endif %}
-			</div>
 			<div class="columns">
 				{% if puzzle.has_postprod %}
 				<div class="column is-half">

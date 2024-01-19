@@ -62,7 +62,6 @@
 					<th width="20%">Mechanics</th>
 					{% endif %}
 					<th width="20%">Status</th>
-					<th width="20%">Deep</th>
 				</tr>
 				{% for answer in round.answers %}
 					{% for puzzle in answer.puzzles %}
@@ -93,9 +92,6 @@
 							{% endif %}
 							<td>
 								<span class="tag is-small">{{ puzzle.get_status_emoji }} {{ puzzle.get_status_display }}</span>
-							</td>
-							<td>
-								<span class="is-small">{{ puzzle.deep }}</span>
 							</td>
 						</tr>
 					{% empty %}

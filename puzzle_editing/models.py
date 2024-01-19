@@ -358,11 +358,6 @@ class Puzzle(models.Model):
         max_length=19,
         blank=True,
     )
-    discord_emoji = models.CharField(
-        max_length=50,
-        default=":question:",
-        help_text="The emoji that'll be used in Discord notifications. Please leave in string form, e.g. :question:.",
-    )
 
     def spoiler_free_name(self):
         if self.codename:
@@ -518,17 +513,6 @@ class Puzzle(models.Model):
     solution = models.TextField(blank=True)
     is_meta = models.BooleanField(
         verbose_name="Is this a meta?", help_text="Check the box if yes.", default=False
-    )
-    deep = models.IntegerField(default=0)
-    deep_key = models.CharField(
-        max_length=500, verbose_name="DEEP key", null=True, blank=True
-    )
-    canonical_puzzle = models.ForeignKey(
-        "self",
-        help_text="If you don't know what this is for, don't worry about it.",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
     )
 
     # From 0-2, what is the expected difficulty of this puzzle across various fields?
@@ -707,8 +691,6 @@ class Puzzle(models.Model):
             "model": "puzzles.puzzle",
             "pk": self.id,
             "fields": {
-                "emoji": self.discord_emoji,
-                "deep": self.deep,
                 # TODO: don't hardcode remaining fields
                 "icon_x": 0,
                 "icon_y": 0,
@@ -721,11 +703,6 @@ class Puzzle(models.Model):
                 "points": 1,
             },
         }
-        # We only try to set this via fixture if it's defined.
-        if self.deep_key:
-            puzzle_data["fields"]["deep_key"] = self.deep_key
-        if self.canonical_puzzle:
-            puzzle_data["fields"]["canonical_puzzle_id"] = self.canonical_puzzle_id
 
         spoilr_puzzle_data = {
             "model": "spoilr_core.puzzle",

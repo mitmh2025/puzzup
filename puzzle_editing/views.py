@@ -639,16 +639,12 @@ class PuzzleInfoForm(forms.ModelForm):
             "lead_author",
             "authors_addl",
             "discord_channel_id",
-            "discord_emoji",
             "summary",
             "description",
             "flavor",
             "editor_notes",
             "notes",
             "is_meta",
-            "deep",
-            "deep_key",
-            "canonical_puzzle",
         ]
         widgets = {
             "authors": forms.CheckboxSelectMultiple(),
