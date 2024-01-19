@@ -39,7 +39,7 @@ set -o pipefail
 
 aws ssm get-parameter --output text --query Parameter.Value --with-decryption --name puzzup-env > .env
 python manage.py migrate
-exec python manage.py runserver
+exec python manage.py runserver 0.0.0.0:8000
 EOF
 
 EXPOSE 8000
