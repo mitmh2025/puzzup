@@ -3,7 +3,7 @@ FROM python:3.9.17-slim
 
 RUN apt-get update \
 	&& apt-get install -y --no-install-recommends \
-		postgresql-client curl build-essential git awsclu \
+		postgresql-client curl build-essential git awscli \
 	&& rm -rf /var/lib/apt/lists/*
 
 ENV PYTHONUNBUFFERED=1 \
