@@ -202,7 +202,7 @@ HUNT_REPO_CLIENT = os.path.join(HUNT_REPO, "client")
 SSH_KEY = os.environ.get("SSH_KEY_PATH", "~/.ssh/id_rsa")
 
 HUNT_TIME = datetime.datetime(
-    year=2023,
+    year=2025,
     month=1,
     day=17,
     hour=17,
