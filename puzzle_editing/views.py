@@ -757,13 +757,6 @@ def all_answers(request):
     )
 
 
-@login_required
-def random_answers(request):
-    answers = list(PuzzleAnswer.objects.filter(puzzles__isnull=True, flexible=False))
-    available = random.sample(answers, min(3, len(answers)))
-    return render(request, "random_answers.html", {"answers": available})
-
-
 # TODO: "authored" is now a misnomer
 @login_required
 def authored(request):
