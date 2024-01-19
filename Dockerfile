@@ -32,8 +32,7 @@ RUN --mount=type=cache,target=/root/.cache \
 
 COPY . .
 
-EXPOSE 8000
-CMD <<'EOF'
+COPY --chmod=755 <<'EOF' /usr/src/app/start.sh
 #!/bin/bash
 set -eux
 set -o pipefail
@@ -42,3 +41,6 @@ aws ssm get-parameter --output text --query Parameter.Value --with-decryption --
 python manage.py migrate
 python manage.py runserver
 EOF
+
+EXPOSE 8000
+CMD ["./start.sh"]
