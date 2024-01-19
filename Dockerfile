@@ -34,7 +34,7 @@ server {
     }
 
     location /static/ {
-        root /usr/src/app/static/;
+        root /usr/src/app/;
     }
 }
 EOF
