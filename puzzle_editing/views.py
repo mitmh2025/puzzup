@@ -520,9 +520,12 @@ def oauth2_link(request):
 
             user.discord_user_id = user_data["id"]
 
-            user.discord_username = "{}#{}".format(
-                user_data["username"], user_data["discriminator"]
-            )
+            if user_data["discriminator"]:
+                user.discord_username = "{}#{}".format(
+                    user_data["username"], user_data["discriminator"]
+                )
+            else:
+                user.discord_username = user_data["username"]
             if discord.enabled():
                 c = discord.get_client()
                 discord.init_perms(c, user)
