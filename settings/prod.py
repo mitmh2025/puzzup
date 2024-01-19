@@ -5,6 +5,8 @@ from settings.base import *  # pylint: disable=unused-wildcard-import,wildcard-i
 
 DEBUG = False
 SECURE_SSL_REDIRECT = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+USE_X_FORWARDED_PORT = True
 
 ALLOWED_HOSTS = ["puzzup.letswriteahunt.com"]
 
