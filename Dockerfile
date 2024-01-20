@@ -59,6 +59,8 @@ set -eux
 set -o pipefail
 
 aws ssm get-parameter --output text --query Parameter.Value --with-decryption --name puzzup-env > .env
+mkdir credentials
+aws ssm get-parameter --output text --query Parameter.Value --with-decryption --name puzzup-drive-credentials > credentials/drive-credentials.json
 python manage.py migrate
 nginx
 gunicorn -w "$(nproc)" puzzup.wsgi:application
