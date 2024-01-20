@@ -36,6 +36,10 @@ server {
     location /static/ {
         root /usr/src/app/;
     }
+
+    location /healthcheck {
+        return 200;
+    }
 }
 EOF
 
