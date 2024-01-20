@@ -1121,8 +1121,8 @@ def create_testsolve_thread(instance: TestsolveSession):
             )
 
             return (thread.id, sheet_id)
-        except Exception:
-            logger.exception("Failed to create Discord thread or Google sheets.")
+        except Exception as e:
+            logger.exception("Failed to create Discord thread or Google sheets.", e)
     return ("", "")
 
 

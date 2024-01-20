@@ -42,3 +42,4 @@ puzzle_postprods/
 
 *.codekit3
 settings_local.py
+/credentials

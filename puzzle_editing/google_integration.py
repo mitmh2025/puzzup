@@ -35,19 +35,20 @@ class GoogleManager:
             settings.DRIVE_SETTINGS["credentials"],
             scopes=SCOPES,
         )
-        self.files = build("drive", "v3", credentials=self.creds).files()
+        self.drive = build("drive", "v3", credentials=self.creds)
         self.spreadsheets = build("sheets", "v4", credentials=self.creds).spreadsheets()
 
     def move_to_folder(self, file_id, folder_id):
         # file_id is allowed to be a folder
         existing_parents = ",".join(
-            self.files.get(fileId=file_id, fields="parents").execute()["parents"]
+            self.drive.files().get(fileId=file_id, fields="parents").execute()["parents"]
         )
-        self.files.update(
+        self.drive.files().update(
             body={},
             fileId=file_id,
             addParents=folder_id,
             removeParents=existing_parents,
+            supportsAllDrives=True,
         ).execute()
 
     def create_brainstorm_sheet(self, puzzle):
@@ -55,11 +56,20 @@ class GoogleManager:
         file_metadata = {
             "name": puzzle.spoiler_free_title(),
             "mimeType": "application/vnd.google-apps.folder",
+            "parents": [settings.PUZZLE_DRAFT_FOLDER_ID],
         }
         folder_id = (
-            self.files.create(body=file_metadata, fields="id").execute().get("id")
+            self.drive.files().create(
+                body=file_metadata,
+                supportsAllDrives=True,
+                fields="id",
+            ).execute().get("id")
         )
-        self.move_to_folder(folder_id, settings.PUZZLE_DRAFT_FOLDER_ID)
+        self.drive.permissions().create(
+            fileId=folder_id,
+            body={"role": "writer", "type": "anyone"},
+            supportsAllDrives=True,
+        ).execute()
         return self._create_sheet(
             title=f"{puzzle.spoiler_free_title()} Brainstorm",
             text="Puzzup Link",
@@ -68,25 +78,39 @@ class GoogleManager:
         )
 
     def create_testsolving_sheet(self, session):
-        return self._create_sheet(
+        sheet_id = self._create_sheet(
             title=f"{session.puzzle.name} (Testsolve #{session.id})",
             text="Puzzup Testsolve Session",
             url=f"{settings.PUZZUP_URL}/testsolve/{session.id}",
             folder_id=settings.TESTSOLVING_FOLDER_ID,
         )
 
+        self.drive.permissions().create(
+            fileId=sheet_id,
+            body={"role": "writer", "type": "anyone"},
+            supportsAllDrives=True,
+        ).execute()
+
+        return sheet_id
+
     def create_factchecking_sheet(self, puzzle):
         # Look up the existing puzzle folder, if any
         file_name = puzzle.spoiler_free_title()
         template_id = (
-            self.files.copy(
+            self.drive.files().copy(
                 fileId=settings.FACTCHECKING_TEMPLATE_ID,
                 fields="id",
+                supportsAllDrives=True,
                 body={"name": f"{puzzle.id} {file_name} Factcheck"},
             )
             .execute()
             .get("id")
         )
+        self.drive.permissions().create(
+            fileId=template_id,
+            body={"role": "writer", "type": "anyone"},
+            supportsAllDrives=True,
+        ).execute()
         self.move_to_folder(template_id, settings.FACTCHECKING_FOLDER_ID)
         return template_id
 
@@ -130,7 +154,7 @@ class GoogleManager:
         return spreadsheet_id
 
     def get_gdoc_html(self, file_id):
-        html = self.files.export(fileId=file_id, mimeType="text/html").execute()
+        html = self.drive.files().export(fileId=file_id, mimeType="text/html").execute()
         return self.clean_html(html)
 
     def clean_html(self, html):
