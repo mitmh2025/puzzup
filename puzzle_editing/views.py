@@ -985,12 +985,6 @@ class PuzzlePostprodForm(forms.ModelForm):
                     "solution_google_doc_id"
                 ].help_text = f"(Automatically extracted from https://docs.google.com/document/d/{doc_id}/)"
 
-        # NB: MH-2023 specific logic.
-        if puzzle.round.act and puzzle.round.act.name == "Act 2":
-            self.fields[
-                "puzzle_directory"
-            ].initial = "client/encrypted/factory/puzzles/"
-
     def get_gdoc_html(self, google_doc_id: str) -> str:
         if not google_doc_id:
             return ""
