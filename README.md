@@ -161,7 +161,7 @@ We used Heroku.
 
 **Install auth fixture**
 
-If you're using Heroku, you can use `inv load-all-prod`. Otherwise, SSH into your PuzzUp server and run `./manage.py loaddata auth`.
+If you're using Heroku, you can use `inv load-all-prod`. Otherwise, SSH into your PuzzUp server and run `./manage.py loaddata groups`.
 
 ## Installing packages
 
