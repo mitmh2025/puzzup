@@ -19,5 +19,6 @@ from django.urls import path
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path('admin/django-ses/', include('django_ses.urls')),
     path("", include("puzzle_editing.urls")),
 ]
