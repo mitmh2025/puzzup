@@ -714,7 +714,7 @@ def puzzle_new(request):
         return render(request, "new.html", {"form": form})
 
 
-@login_required
+@permission_required("puzzle_editing.change_round", raise_exception=True)
 def all_answers(request):
     user = request.user
     if request.method == "POST":
