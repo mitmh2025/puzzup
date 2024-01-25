@@ -671,7 +671,6 @@ def puzzle_new(request):
             puzzle.status_mtime = datetime.datetime.now()
             puzzle.save()
             form.save_m2m()
-            puzzle.spoiled.add(*puzzle.authors.all())
             if discord.enabled():
                 c = discord.get_client()
                 url = external_puzzle_url(request, puzzle)
@@ -1434,7 +1433,6 @@ def puzzle(request: HttpRequest, id, slug=None):  # noqa: C901
             add_system_comment_here("Puzzle flavor unapproved")
         elif "add_author" in request.POST:
             puzzle.authors.add(user)
-            puzzle.spoiled.add(user)
             if c and ch:
                 discord.sync_puzzle_channel(puzzle, ch)
                 c.save_channel(ch)
@@ -1445,7 +1443,6 @@ def puzzle(request: HttpRequest, id, slug=None):  # noqa: C901
             add_system_comment_here("Removed author " + str(user))
         elif "add_editor" in request.POST:
             puzzle.editors.add(user)
-            puzzle.spoiled.add(user)
             if c and ch:
                 discord.sync_puzzle_channel(puzzle, ch)
                 c.save_channel(ch)
@@ -2084,16 +2081,6 @@ class PuzzlePeopleForm(forms.ModelForm):
         )
         self.fields["factcheckers"] = UserMultipleChoiceField(required=False)
         self.fields["postprodders"] = UserMultipleChoiceField(required=False)
-        self.fields["spoiled"] = UserMultipleChoiceField(required=False)
-
-    def clean(self):
-        """On clean, ensure that all authors and editors are spoiled."""
-        cleaned_data = super().clean()
-        spoiled = set(cleaned_data["spoiled"])
-        authors = set(cleaned_data["authors"])
-        editors = set(cleaned_data["editors"])
-        cleaned_data["spoiled"] = list(spoiled | authors | editors)
-        return cleaned_data
 
     class Meta:
         model = Puzzle
@@ -2103,8 +2090,19 @@ class PuzzlePeopleForm(forms.ModelForm):
             "editors",
             "factcheckers",
             "postprodders",
-            "spoiled",
         ]
+
+
+class PuzzlePeopleWithSpoiledForm(PuzzlePeopleForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["spoiled"] = UserMultipleChoiceField(
+            required=False,
+            help_text="Note that lead author, authors, and editors will always be marked as spoiled, even if you de-select them here."
+        )
+
+    class Meta(PuzzlePeopleForm.Meta):
+        fields = PuzzlePeopleForm.Meta.fields + ["spoiled"]
 
 
 @login_required
@@ -2131,8 +2129,6 @@ def puzzle_edit(request, id):
                     send_email=False,
                     content=get_changed_data_message(form),
                 )
-                if new_authors:
-                    puzzle.spoiled.add(*new_authors)
                 c, ch = discord.get_client_and_channel(puzzle)
                 if c and ch:
                     url = external_puzzle_url(request, puzzle)
@@ -2189,8 +2185,10 @@ def puzzle_people(request, id):
     puzzle = get_object_or_404(Puzzle, id=id)
     user = request.user
 
+    PeopleForm = PuzzlePeopleWithSpoiledForm if user.has_perm("puzzle_editing.spoil_puzzle") else PuzzlePeopleForm
+
     if request.method == "POST":
-        form = PuzzlePeopleForm(request.POST, instance=puzzle)
+        form = PeopleForm(request.POST, instance=puzzle)
         if form.is_valid():
             changed = set()
             old = {}
@@ -2234,7 +2232,7 @@ def puzzle_people(request, id):
     else:
         context = {
             "puzzle": puzzle,
-            "form": PuzzlePeopleForm(instance=puzzle),
+            "form": PeopleForm(instance=puzzle),
         }
 
     return render(request, "puzzle_people.html", context)

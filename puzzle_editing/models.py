@@ -18,8 +18,7 @@ from django.db import models
 from django.db.models import Avg
 from django.db.models import Exists
 from django.db.models import OuterRef
-from django.db.models.signals import post_save
-from django.db.models.signals import pre_save
+from django.db.models.signals import post_save, pre_save, m2m_changed
 from django.dispatch import receiver
 from django.utils import timezone
 from django.utils.html import format_html
@@ -549,6 +548,8 @@ class Puzzle(models.Model):
     def save(self, *args, **kwargs):
         is_new = self._state.adding
         super().save(*args, **kwargs)
+        # Make sure lead author is always spoiled (see update_spoiled below for the m2m version)
+        self.spoiled.add(self.lead_author)
         # Create a placeholder brainstorm sheet.
         # We call super().save first in order to ensure the id for this instance
         # exists.
@@ -736,6 +737,20 @@ class Puzzle(models.Model):
             [puzzle_data, spoilr_puzzle_data, *hint_data, *pseudoanswers_data],
             sort_keys=False,
         )
+
+
+@receiver(m2m_changed, sender=Puzzle.authors.through)
+@receiver(m2m_changed, sender=Puzzle.editors.through)
+@receiver(m2m_changed, sender=Puzzle.spoiled.through)
+def update_spoiled(sender, instance, action, **kwargs):
+    should_update = False
+    if sender == Puzzle.spoiled.through:
+        should_update = action in ("post_remove", "post_clear")
+    else:
+        should_update = action == "post_add"
+    if should_update:
+        instance.spoiled.add(*instance.authors.all())
+        instance.spoiled.add(*instance.editors.all())
 
 
 class PseudoAnswer(models.Model):
