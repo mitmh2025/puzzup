@@ -65,11 +65,6 @@ class GoogleManager:
                 fields="id",
             ).execute().get("id")
         )
-        self.drive.permissions().create(
-            fileId=folder_id,
-            body={"role": "writer", "type": "anyone"},
-            supportsAllDrives=True,
-        ).execute()
         return self._create_sheet(
             title=f"{puzzle.spoiler_free_title()} Brainstorm",
             text="Puzzup Link",
@@ -84,12 +79,6 @@ class GoogleManager:
             url=f"{settings.PUZZUP_URL}/testsolve/{session.id}",
             folder_id=settings.TESTSOLVING_FOLDER_ID,
         )
-
-        self.drive.permissions().create(
-            fileId=sheet_id,
-            body={"role": "writer", "type": "anyone"},
-            supportsAllDrives=True,
-        ).execute()
 
         return sheet_id
 
@@ -106,11 +95,6 @@ class GoogleManager:
             .execute()
             .get("id")
         )
-        self.drive.permissions().create(
-            fileId=template_id,
-            body={"role": "writer", "type": "anyone"},
-            supportsAllDrives=True,
-        ).execute()
         self.move_to_folder(template_id, settings.FACTCHECKING_FOLDER_ID)
         return template_id
 
