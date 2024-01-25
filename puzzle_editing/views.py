@@ -47,6 +47,7 @@ from django.utils.safestring import mark_safe
 from django.utils.text import normalize_newlines
 from django.utils.text import slugify
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 from django.views.static import serve
 from googleapiclient.errors import HttpError
 
@@ -1623,6 +1624,7 @@ def puzzle(request: HttpRequest, id, slug=None):  # noqa: C901
         can_manage_discord = (
             is_author or is_editor or user.has_perm("puzzle_editing.change_round")
         )
+        can_unspoil = user.has_perm("puzzle_editing.unspoil_puzzle")
 
         return render(
             request,
@@ -1638,6 +1640,7 @@ def puzzle(request: HttpRequest, id, slug=None):  # noqa: C901
                 "is_author": is_author,
                 "is_editor": is_editor,
                 "can_manage_discord": can_manage_discord,
+                "can_unspoil": can_unspoil,
                 "is_factchecker": is_factchecker_on(user, puzzle),
                 "is_postprodder": is_postprodder_on(user, puzzle),
                 "difficulty_form": LogisticsInfoForm(instance=puzzle),
@@ -2237,7 +2240,7 @@ def puzzle_people(request, id):
     return render(request, "puzzle_people.html", context)
 
 
-@login_required
+@permission_required("puzzle_editing.unspoil_puzzle")
 def puzzle_escape(request, id):
     puzzle: Puzzle = get_object_or_404(Puzzle, id=id)
     user: User = request.user
@@ -2258,26 +2261,6 @@ def puzzle_escape(request, id):
                 send_email=False,
                 content="Unspoiled " + str(user),
             )
-        elif "testsolve" in request.POST:
-            session = TestsolveSession(puzzle=puzzle)
-            session.save()
-
-            participation = TestsolveParticipation(session=session, user=user)
-            participation.save()
-
-            add_comment(
-                request=request,
-                puzzle=puzzle,
-                author=user,
-                is_system=True,
-                send_email=False,
-                content="Created testsolve session #{} from escape hatch".format(
-                    session.id
-                ),
-                testsolve_session=session,
-            )
-
-            return redirect(urls.reverse("testsolve_one", args=[session.id]))
 
     return render(
         request,
@@ -2812,14 +2795,6 @@ def testsolve_one(request, id):  # noqa: C901
             if emoji and comment:
                 CommentReaction.toggle(emoji, comment, user)
 
-        elif "escape_testsolve" in request.POST:
-            participation = get_object_or_404(
-                TestsolveParticipation,
-                session=session,
-                user=user,
-            )
-            participation.delete()
-            return redirect(urls.reverse("testsolve_main"))
         elif "add_testsolvers" in request.POST:
             new_testers = User.objects.filter(
                 pk__in=request.POST.getlist("add_testsolvers")
@@ -2901,6 +2876,18 @@ def testsolve_one(request, id):  # noqa: C901
     }
 
     return render(request, "testsolve_one.html", context)
+
+
+@require_POST
+@permission_required("puzzle_editin.unspoil_puzzle", raise_exception=True)
+def testsolve_escape(request, id):
+    participation = get_object_or_404(
+        TestsolveParticipation,
+        session=id,
+        user=request.user,
+    )
+    participation.delete()
+    return redirect(urls.reverse("testsolve_main"))
 
 
 @login_required

@@ -17,10 +17,6 @@ Some goals and consequences of PuzzUp's design:
 - Generate postprodded files from Google Docs and commit directly to the repo
 - Export metadata, partial answers, and hints directly to the hunt repo
 
-### Permissiveness, which dovetails with simplicity, is OK because we generally trust our writing team
-
-- Anybody can change the status of puzzles and add/remove themselves or other people to/from any puzzle-related role (author, discussion editor, factchecker, postprodder, spoiled).
-
 ### Spoiler safety
 
 - Puzzles can have custom codenames, which PuzzUp will try to show to non-spoiled people.

@@ -155,9 +155,11 @@
 				<button class="button is-small is-link is-light toggle-show" data-target="change-status" data-rehide="Hide next steps">Show next steps</button>
 			</p>
 		</div>
+		{% if can_unspoil %}
 		<div class="block">
 			<a href="{% url 'puzzle_escape' puzzle.id %}">🏃 Escape this puzzle</a>
 		</div>
+		{% endif %}
 	</div>
 
 	<div class="column">
@@ -605,11 +607,11 @@
 			{% endif %}
 		</div>
 
-		<form method="POST" action="{% url "puzzle_escape" puzzle.id %}">
+		<form method="POST" action="{% url "testsolve_main" %}">
 		{% csrf_token %}
 		<h2>
 			Testsolve Sessions
-			<input class="button is-info is-small" type="submit" name="testsolve" value="Start new testsolving session">
+			<button class="button is-info is-small" type="submit" name="start_session" value="{{ puzzle.id }}">Start new testsolving session</button>
 		</h2>
 		</form>
 		{% if testsolve_sessions %}

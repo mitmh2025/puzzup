@@ -42,10 +42,12 @@
 	<p class="block warning">No answers have been assigned to this puzzle in PuzzUp, so the answer checker will not mark any answers as correct.</p>
 	{% endif %}
 
-	<form method="POST" onsubmit="return confirm('This will remove you from this testsolving session without adding any feedback or spoiling you. Are you sure?');">
+	{% if perms.puzzle_editing.unspoil_puzzle %}
+	<form action="{% url "testsolve_escape" id=session.id %}" method="POST" onsubmit="return confirm('This will remove you from this testsolving session without adding any feedback or spoiling you. Are you sure?');">
 	{% csrf_token %}
 		<button class="button is-small" type="submit" name="escape_testsolve" value="1">Alternatively, escape this testsolving session and pretend you were never here.</button>
 	</form>
+	{% endif %}
 </div>
 {% endif %}
 

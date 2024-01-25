@@ -168,6 +168,7 @@ def puzzle_list(
     show_factcheck=False,
 ):
     req = context["request"]
+    perms = context["perms"]
     limit = None
     if req.method == "GET" and "limit" in req.GET:
         try:
@@ -176,6 +177,7 @@ def puzzle_list(
             limit = 50
 
     return {
+        "perms": perms,
         "limit": limit,
         "puzzles": make_puzzle_data(
             puzzles,

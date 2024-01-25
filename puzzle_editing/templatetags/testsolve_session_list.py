@@ -10,8 +10,9 @@ from puzzle_editing.models import User
 register = template.Library()
 
 
-@register.inclusion_tag("tags/testsolve_session_list.html")
+@register.inclusion_tag("tags/testsolve_session_list.html", takes_context=True)
 def testsolve_session_list(
+    context,
     sessions,
     user,
     show_notes=False,
@@ -87,6 +88,7 @@ def testsolve_session_list(
         )
 
     return {
+        "perms": context["perms"],
         "sessions": sessions,
         "show_notes": show_notes,
         "show_leave": show_leave_button,

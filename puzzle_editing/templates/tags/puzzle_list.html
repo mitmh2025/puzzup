@@ -47,7 +47,9 @@
 			<th>Updated</th>
 			<th>Commented</th>
 			<th>Meta</th>
+			{% if perms.puzzle_editing.unspoil_puzzle %}
 			<th>🏃</th>
+			{% endif %}
 		</tr>
 		{% for puzzle in puzzles %}
 		<tr
@@ -95,7 +97,9 @@
 			<td sorttable_customkey="0">—</td>
 			{% endif %}
 			<td>{% if puzzle.is_meta %}✔{% endif %}</td>
+			{% if perms.puzzle_editing.unspoil_puzzle %}
 			<td><a href="{% url 'puzzle_escape' puzzle.id %}">🏃</a></td>
+			{% endif %}
 		{% endif %}
 		</tr>
 		{% endfor %}

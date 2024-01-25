@@ -14,10 +14,12 @@
 <h1>
 	Finish Testsolving ({{ session.puzzle }}, Session #{{ session.id }})
 </h1>
-<form action="{% url 'testsolve_one' session.id %}" method="POST" onsubmit="return confirm('This will remove you from this testsolving session without adding any feedback or spoiling you. Are you sure?');">
+{% if perms.puzzle_editing.unspoil_puzzle %}
+<form action="{% url 'testsolve_escape' session.id %}" method="POST" onsubmit="return confirm('This will remove you from this testsolving session without adding any feedback or spoiling you. Are you sure?');">
 	{% csrf_token %}
 		Joined by accident? <button class="button is-small" type="submit" name="escape_testsolve" value="1">Escape this testsolving session</button>
 	</form>
+{% endif %}
 <p>*<em> required field</em></p>
 
 {% if participation %}

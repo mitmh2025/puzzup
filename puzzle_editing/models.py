@@ -325,6 +325,12 @@ class PuzzleTag(models.Model):
 class Puzzle(models.Model):
     """A puzzle, that which Puzzup keeps track of the writing process of."""
 
+    class Meta:
+        permissions = [
+            ("list_puzzle", "Can see all puzzles"),
+            ("unspoil_puzzle", "Can unspoil people")
+        ]
+
     def generate_codename():
         with open(
             os.path.join(settings.BASE_DIR, "puzzle_editing/data/nouns-eng.txt")

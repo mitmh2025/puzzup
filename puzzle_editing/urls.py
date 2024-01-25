@@ -78,6 +78,7 @@ urlpatterns = [
         name="testsolve_feedback",
     ),
     path("testsolve/<int:id>/finish", views.testsolve_finish, name="testsolve_finish"),
+    path("testsolve/<int:id>/escape", views.testsolve_escape, name="testsolve_escape"),
     path(
         "testsolve_csv/testsolve_<int:id>.csv",
         views.testsolve_csv,

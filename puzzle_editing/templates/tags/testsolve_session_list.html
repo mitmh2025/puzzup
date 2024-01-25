@@ -54,7 +54,7 @@
 				<td>{{ session.difficulty_rating|default:"n/a" }}</td>
 			{% endif %}
 			{% if show_leave %}
-				<td><a href="{% url 'testsolve_finish' session.id %}">Finish or Leave</a></td>
+				<td><a href="{% url 'testsolve_finish' session.id %}">Finish{% if perms.puzzle_editing.unspoil_puzzle %} or Leave{% endif %}</a></td>
 			{% endif %}
 		</tr>
 		{% endwith %}
