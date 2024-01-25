@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     "django.contrib.humanize",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "django_ses",
     "rest_framework",
     "django_filters",
     "import_export",
