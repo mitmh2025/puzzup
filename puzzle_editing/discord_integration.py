@@ -152,7 +152,7 @@ def sync_puzzle_channel(
     editor is in the channel, and B) anyone who isn't spoiled is removed from
     the channel.
     """
-    tc.name = f"{puzzle.name:.96}-{puzzle.id:03d}"
+    tc.name = f"{puzzle.codename:.96}-{puzzle.id:03d}"
     if url:
         tc.topic = url
     if not sync_users:
@@ -210,7 +210,7 @@ def build_puzzle_channel(
     themselves. It also ONLY adds the authors and editors - if there are other
     users you want to have permission, you should add them yourself.
     """
-    tc = TextChannel(id=None, name=puzzle.name, guild_id=guild_id)
+    tc = TextChannel(id=None, name=puzzle.codename, guild_id=guild_id)
     sync_puzzle_channel(puzzle, tc, url=url)
     if private:
         tc.make_private()
