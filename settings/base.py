@@ -139,7 +139,7 @@ AWS_SES_CONFIGURATION_SET = os.environ.get("AWS_SES_CONFIGURATION_SET")
 
 EMAIL_SUBJECT_PREFIX = "[Puzzup] "
 
-DEFAULT_FROM_EMAIL = "hunt2025-tech@googlegroups.com"
+DEFAULT_FROM_EMAIL = "noreply@puzzup.letswriteahunt.com"
 AUTOPOSTPROD_EMAIL = "puzzup@letswriteahunt.com"
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
