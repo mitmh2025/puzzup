@@ -3,7 +3,7 @@
 	{% if spoiled %}{{ puzzle.spoilery_title }}{% else %}{{puzzle.spoiler_free_title}}{%endif%} / Postprodding
 {% endblock %}
 {% block main %}
-<h1>Postprodding {{ puzzle.spoilery_title }}</h1>
+<h1>Postprodding {% if spoiled %}{{ puzzle.spoilery_title }}{% else %}{{puzzle.spoiler_free_title}}{%endif%}</h1>
 <a href="{% url 'puzzle' puzzle.id %}">🔙 to {{ puzzle }}</a>
 {% if spoiled %}
 <h2>How to postprod a puzzle</h2>
