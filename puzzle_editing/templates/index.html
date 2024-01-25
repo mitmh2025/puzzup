@@ -15,10 +15,12 @@
 </div>
 {% endif %}
 
+{% if TESTSOLVING_ENABLED %}
 <div class="box">
     <p class="title is-4">Testsolving sessions you are in</p>
     {% testsolve_session_list current_user_sessions request.user show_notes=True show_leave_button=True %}
 </div>
+{% endif %}
 
 <div class="box">
     <p class="title is-4">Puzzles you are factchecking</p>

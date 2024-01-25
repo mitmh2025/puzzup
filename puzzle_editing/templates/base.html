@@ -65,7 +65,9 @@
           </div>
          </div>
         {% endif %}
+        {% if TESTSOLVING_ENABLED %}
           {% nav_link current_path 'testsolve_main' '✏️ Testsolve' %}
+        {% endif %}
         {% nav_link current_path 'puzzle_new' '➕ Add' %}
         {% nav_link current_path 'process' "❓ How To" %}
         <div class="navbar-item has-dropdown is-hoverable">

@@ -605,6 +605,7 @@
 			{% endif %}
 		</div>
 
+		{% if TESTSOLVING_ENABLED %}
 		<form method="POST" action="{% url "puzzle_escape" puzzle.id %}">
 		{% csrf_token %}
 		<h2>
@@ -652,6 +653,7 @@
 
 		{% else %}
 		<div class="empty">(no testsolve sessions yet)</div>
+		{% endif %}
 		{% endif %}
 
 		<div class="block">
