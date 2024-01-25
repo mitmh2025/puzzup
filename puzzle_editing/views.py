@@ -767,13 +767,13 @@ def authored(request):
     )
 
 
-@login_required
+@permission_required("puzzle_editing.list_puzzle", raise_exception=True)
 def all_puzzles(request):
     puzzles = Puzzle.objects.all().prefetch_related("authors").order_by("name")
     return render(request, "all.html", {"puzzles": puzzles})
 
 
-@login_required
+@permission_required("puzzle_editing.list_puzzle", raise_exception=True)
 def bystatus(request):
     all_puzzles = Puzzle.objects.exclude(
         status__in=[
@@ -1169,7 +1169,7 @@ class DiscordData(pydantic.BaseModel):
         )
 
 
-@login_required
+@permission_required("puzzle_editing.list_puzzle", raise_exception=True)
 def all_hints(request: HttpRequest):
     return render(request, "all_hints.html", {"puzzles": Puzzle.objects.all()})
 
@@ -3459,7 +3459,7 @@ def byround_eic(request, id=None):
     return byround(request, id, eic_view=True)
 
 
-@login_required
+@permission_required("puzzle_editing.list_puzzle", raise_exception=True)
 def byround(request, id=None, eic_view=False):
     round_objs = Round.objects.all()
     if id:

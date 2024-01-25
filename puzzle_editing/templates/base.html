@@ -34,6 +34,7 @@
       <div id="navbarBasicExample" class="navbar-menu">
       <div class="navbar-start">
         {% nav_link current_path 'authored' '✋ My Puzzles' %}
+        {% if perms.puzzle_editing.list_puzzle %}
         <div class="navbar-item has-dropdown is-hoverable">
           <a class="navbar-link">
             🤔 Puzzles
@@ -44,6 +45,7 @@
             {% nav_link current_path 'all' '🌎 All in one list' %}
           </div>
          </div>
+        {% endif %}
         {% if perms.puzzle_editing.change_round %}
         <div class="navbar-item has-dropdown is-hoverable">
           <a class="navbar-link">
@@ -88,7 +90,9 @@
 
         <div class="navbar-dropdown">
             {% nav_link current_path 'my_spoiled' '🔦 My spoiled puzzles' %}
-            {% nav_link current_path 'all_hints' '🪙 Hint report' %}
+            {% if perms.puzzle_editing.list_puzzle %}
+              {% nav_link current_path 'all_hints' '🪙 Hint report' %}
+            {% endif %}
             <hr class="navbar-divider">
             {% nav_link current_path 'all_support' '⛑ Support' %}
             <hr class="navbar-divider">
