@@ -3963,7 +3963,7 @@ def new_tag(request):
     return render(request, "new_tag.html", {"form": PuzzleTagForm()})
 
 
-@login_required
+@permission_required("puzzle_editing.change_round", raise_exception=True)
 def single_tag(request, id):
     tag = get_object_or_404(PuzzleTag, id=id)
 
