@@ -116,7 +116,6 @@ urlpatterns = [
     path("process", views.process, name="process"),
     path("process/<str:doc>", views.process, name="process"),
     path("preview_markdown", views.preview_markdown, name="preview_markdown"),
-    path("api/", include("puzzle_editing.api.urls")),
     path("slashcommandsEcG53Ge7Sf", slashcommands.slashCommandHandler),
 ]
 
