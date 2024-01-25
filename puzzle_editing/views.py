@@ -16,11 +16,10 @@ import pydantic
 import requests
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.decorators import permission_required
+from django.contrib.auth.decorators import login_required, permission_required, user_passes_test
 from django.contrib.auth.models import Permission
 from django.core import validators
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, PermissionDenied
 from django.db.models import Avg
 from django.db.models import BooleanField
 from django.db.models import Count
@@ -3472,7 +3471,13 @@ class RoundForm(forms.ModelForm):
         }
 
 
-@permission_required("puzzle_editing.change_round", raise_exception=True)
+def is_eic(user):
+    if not user.is_eic:
+        raise PermissionDenied
+    return True
+
+
+@user_passes_test(is_eic)
 def byround_eic(request, id=None):
     return byround(request, id, eic_view=True)
 
