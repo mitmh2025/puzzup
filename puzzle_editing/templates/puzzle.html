@@ -78,6 +78,7 @@
 						<input type="submit" name="add_author" class="button is-small is-light" value="Add me as author">
 						{% endif %}
 					</div>
+					{% if perms.puzzle_editing.change_round %}
 					<div>
 						{% if is_editor %}
 						<input type="submit" name="remove_editor" value="Remove me as editor" class="button is-small is-white">
@@ -100,6 +101,7 @@
 						{% endif %}
 
 					</div>
+					{% endif %}
 				</form>
 			</div>
 

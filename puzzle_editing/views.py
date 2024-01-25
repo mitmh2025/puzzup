@@ -8,7 +8,7 @@ import re
 import traceback
 import typing as t
 from collections import defaultdict
-from functools import reduce
+from functools import partial, reduce
 
 import django.forms as forms
 import django.urls as urls
@@ -19,7 +19,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.models import Permission
 from django.core import validators
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, PermissionDenied
 from django.db.models import Avg
 from django.db.models import BooleanField
 from django.db.models import Count
@@ -1282,6 +1282,10 @@ def puzzle(request: HttpRequest, id, slug=None):  # noqa: C901
             status_change=status_change,
         )
 
+    def check_permission(perm):
+        if not user.has_perm(perm, puzzle):
+            raise PermissionDenied
+
     if request.method == "POST":
         form: t.Union[forms.Form, forms.ModelForm] = None
         c: t.Optional[discord.Client] = None
@@ -1442,6 +1446,7 @@ def puzzle(request: HttpRequest, id, slug=None):  # noqa: C901
             puzzle.authors.remove(user)
             add_system_comment_here("Removed author " + str(user))
         elif "add_editor" in request.POST:
+            check_permission("puzzle_editing.change_round")
             puzzle.editors.add(user)
             if c and ch:
                 discord.sync_puzzle_channel(puzzle, ch)
@@ -1449,9 +1454,11 @@ def puzzle(request: HttpRequest, id, slug=None):  # noqa: C901
                 discord.announce_ppl(c, ch, editors=[user])
             add_system_comment_here("Added editor " + str(user))
         elif "remove_editor" in request.POST:
+            check_permission("puzzle_editing.change_round")
             puzzle.editors.remove(user)
             add_system_comment_here("Removed editor " + str(user))
         elif "add_factchecker" in request.POST:
+            check_permission("puzzle_editing.change_round")
             puzzle.factcheckers.add(user)
             if c and ch:
                 discord.sync_puzzle_channel(puzzle, ch)
@@ -1459,12 +1466,15 @@ def puzzle(request: HttpRequest, id, slug=None):  # noqa: C901
                 discord.announce_ppl(c, ch, factcheckers=[user])
             add_system_comment_here("Added factchecker " + str(user))
         elif "remove_factchecker" in request.POST:
+            check_permission("puzzle_editing.change_round")
             puzzle.factcheckers.remove(user)
             add_system_comment_here("Removed factchecker " + str(user))
         elif "add_postprodder" in request.POST:
+            check_permission("puzzle_editing.change_round")
             puzzle.postprodders.add(user)
             add_system_comment_here("Added postprodder " + str(user))
         elif "remove_postprodder" in request.POST:
+            check_permission("puzzle_editing.change_round")
             puzzle.postprodders.remove(user)
             add_system_comment_here("Removed postprodder " + str(user))
         elif "edit_logistics" in request.POST:
@@ -2071,40 +2081,6 @@ class PuzzleOtherCreditsForm(forms.ModelForm):
         }
 
 
-class PuzzlePeopleForm(forms.ModelForm):
-    def __init__(self, *args, **kwargs):
-        super(PuzzlePeopleForm, self).__init__(*args, **kwargs)
-        self.fields["authors"] = UserMultipleChoiceField(required=False)
-        self.fields["lead_author"] = UserChoiceField(required=False)
-        self.fields["editors"] = UserMultipleChoiceField(
-            required=False, editors_only=True
-        )
-        self.fields["factcheckers"] = UserMultipleChoiceField(required=False)
-        self.fields["postprodders"] = UserMultipleChoiceField(required=False)
-
-    class Meta:
-        model = Puzzle
-        fields = [
-            "lead_author",
-            "authors",
-            "editors",
-            "factcheckers",
-            "postprodders",
-        ]
-
-
-class PuzzlePeopleWithSpoiledForm(PuzzlePeopleForm):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["spoiled"] = UserMultipleChoiceField(
-            required=False,
-            help_text="Note that lead author, authors, and editors will always be marked as spoiled, even if you de-select them here."
-        )
-
-    class Meta(PuzzlePeopleForm.Meta):
-        fields = PuzzlePeopleForm.Meta.fields + ["spoiled"]
-
-
 @login_required
 def puzzle_edit(request, id):
     puzzle = get_object_or_404(Puzzle, id=id)
@@ -2180,12 +2156,45 @@ def get_changed_data_message(form):
     return "<br/>".join(lines)
 
 
+class PuzzlePeopleForm(forms.ModelForm):
+    class Meta:
+        model = Puzzle
+        fields = [
+            "lead_author",
+            "authors",
+            "editors",
+            "factcheckers",
+            "postprodders",
+            "spoiled",
+        ]
+        field_classes = {
+            "lead_author": UserChoiceField,
+            "authors": UserMultipleChoiceField,
+            "editors": partial(UserMultipleChoiceField, editors_only=True),
+            "factcheckers": UserMultipleChoiceField,
+            "postprodders": UserMultipleChoiceField,
+            "spoiled": UserMultipleChoiceField,
+        }
+        help_texts = {
+            "spoiled": "Note that lead author, authors, and editors will always be marked as spoiled, even if you de-select them here."
+        }
+
+
 @login_required
 def puzzle_people(request, id):
     puzzle = get_object_or_404(Puzzle, id=id)
     user = request.user
 
-    PeopleForm = PuzzlePeopleWithSpoiledForm if user.has_perm("puzzle_editing.spoil_puzzle") else PuzzlePeopleForm
+    exclude = []
+    if not user.has_perm("puzzle_editing.unspoil_puzzle"):
+        exclude.append("spoiled")
+    if not user.has_perm("puzzle_editing.change_round"):
+        exclude.extend(["editors", "factcheckers", "postprodders"])
+    PeopleForm = forms.modelform_factory(
+        Puzzle,
+        form=PuzzlePeopleForm,
+        exclude=exclude,
+    )
 
     if request.method == "POST":
         form = PeopleForm(request.POST, instance=puzzle)
