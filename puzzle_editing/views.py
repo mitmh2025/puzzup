@@ -56,7 +56,8 @@ import puzzle_editing.status as status
 import puzzle_editing.utils as utils
 from .discord import Permission as DiscordPermission
 from .discord import TextChannel
-from .view_helpers import external_puzzle_url, group_required, require_testsolving_enabled
+from .view_helpers import external_puzzle_url
+from .view_helpers import group_required
 from puzzle_editing import models as m
 from puzzle_editing.google_integration import GoogleManager
 from puzzle_editing.graph import curr_puzzle_graph_b64
@@ -2412,7 +2413,6 @@ def warn_about_testsolving(is_spoiled, in_session, has_session):
     return ", ".join(reasons[:-1]) + " and " + reasons[-1]
 
 
-@require_testsolving_enabled
 @login_required
 def testsolve_history(request):
 
@@ -2428,7 +2428,6 @@ def testsolve_history(request):
     return render(request, "testsolve_history.html", context)
 
 
-@require_testsolving_enabled
 @login_required
 def testsolve_main(request):
     user = request.user
@@ -2538,7 +2537,6 @@ def my_spoiled(request):
     return render(request, "my_spoiled.html", context)
 
 
-@require_testsolving_enabled
 @login_required
 def testsolve_finder(request):
     solvers = request.GET.getlist("solvers")
@@ -2610,7 +2608,6 @@ def testsolve_queryset_to_csv(qs):
     return csvResponse
 
 
-@require_testsolving_enabled
 @login_required
 def testsolve_csv(request, id):
     session = get_object_or_404(TestsolveSession, id=id)
@@ -2661,7 +2658,6 @@ class TestsolveParticipantPicker(forms.Form):
     add_testsolvers = forms.CheckboxSelectMultiple()
 
 
-@require_testsolving_enabled
 @login_required
 def testsolve_one(request, id):  # noqa: C901
     session = get_object_or_404(
@@ -2907,7 +2903,6 @@ def testsolve_one(request, id):  # noqa: C901
     return render(request, "testsolve_one.html", context)
 
 
-@require_testsolving_enabled
 @login_required
 def testsolve_feedback(request, id):
     session = get_object_or_404(TestsolveSession, id=id)
@@ -3095,7 +3090,6 @@ class TestsolveParticipationForm(forms.ModelForm):
         }
 
 
-@require_testsolving_enabled
 @login_required
 def testsolve_finish(request, id):
     session = get_object_or_404(TestsolveSession, id=id)

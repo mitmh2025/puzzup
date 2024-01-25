@@ -1,5 +1,3 @@
-from functools import wraps
-
 from django import urls
 from django.contrib.auth.decorators import user_passes_test
 from django.core.exceptions import PermissionDenied
@@ -24,13 +22,3 @@ def group_required(*group_names):
             raise PermissionDenied
 
     return user_passes_test(in_groups)
-
-
-def require_testsolving_enabled(f):
-    """Requires that TESTSOLVING_DISABLED *not* be set to a true value."""
-    @wraps(f)
-    def testsolving_enabled(*args, **kwargs):
-        if m.SiteSetting.get_bool_setting("TESTSOLVING_DISABLED"):
-            raise PermissionDenied
-        return f(*args, **kwargs)
-    return testsolving_enabled
