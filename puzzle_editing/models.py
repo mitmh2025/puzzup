@@ -672,7 +672,7 @@ class Puzzle(models.Model):
 
     @property
     def slug(self):
-        return slugify(self.name.lower())
+        return slugify(self.codename.lower())
 
     @property
     def author_list(self):
