@@ -2194,7 +2194,7 @@ def puzzle_people(request, id):
             old = {}
             added = {}
             if form.changed_data:
-                for key in ["authors", "spoiled", "editors"]:
+                for key in ["authors", "editors"]:
                     old[key] = set(getattr(puzzle, key).all())
                     new = set(form.cleaned_data[key])
                     added[key] = new - old[key]
@@ -2210,7 +2210,6 @@ def puzzle_people(request, id):
                         c,
                         ch,
                         editors=added.get("editors", set()),
-                        # spoiled=added.get('spoiled', set())
                     )
 
             if form.changed_data:
