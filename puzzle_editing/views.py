@@ -2237,7 +2237,7 @@ def puzzle_people(request, id):
     return render(request, "puzzle_people.html", context)
 
 
-@permission_required("puzzle_editing.unspoil_puzzle")
+@permission_required("puzzle_editing.unspoil_puzzle", raise_exception=True)
 def puzzle_escape(request, id):
     puzzle: Puzzle = get_object_or_404(Puzzle, id=id)
     user: User = request.user
