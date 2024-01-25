@@ -566,6 +566,7 @@
 			</details>
 		</div>
 
+		{% if AUTO_POSTPRODDING_ENABLED %}
 		<div class="box">
 			<h3>Postprod</h3>
 			<div class="columns">
@@ -590,6 +591,7 @@
 			<a href="{% url 'puzzle_postprod' puzzle.id %}">start one now</a>)</div>
 			{% endif %}
 		</div>
+		{% endif %}
 
 		<div class="box">
 			<h3>Factcheck</h3>

@@ -77,7 +77,9 @@
           <div class="navbar-dropdown">
             {% nav_link current_path 'postprod' '🪵 Dashboard' %}
             {% nav_link current_path 'postprod_all' '🏠 Pipeline' %}
+            {% if AUTO_POSTPRODDING_ENABLED %}
             {% nav_link current_path 'export' '📥 Export all metadata' %}
+            {% endif %}
           </div>
         </div>
 

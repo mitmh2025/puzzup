@@ -59,6 +59,7 @@ from .discord import Permission as DiscordPermission
 from .discord import TextChannel
 from .view_helpers import external_puzzle_url
 from .view_helpers import group_required
+from .view_helpers import auto_postprodding_required
 from puzzle_editing import models as m
 from puzzle_editing.google_integration import GoogleManager
 from puzzle_editing.graph import curr_puzzle_graph_b64
@@ -1895,6 +1896,7 @@ def puzzle_tags(request, id):
     )
 
 
+@auto_postprodding_required
 @login_required
 def puzzle_postprod(request, id):
     puzzle = get_object_or_404(Puzzle, id=id)
@@ -1979,6 +1981,7 @@ def puzzle_postprod(request, id):
     )
 
 
+@auto_postprodding_required
 @login_required
 def puzzle_postprod_metadata(request, id):
     puzzle = get_object_or_404(Puzzle, id=id)
@@ -1992,12 +1995,14 @@ def puzzle_postprod_metadata(request, id):
     return metadata
 
 
+@auto_postprodding_required
 @login_required
 def puzzle_yaml(request, id):
     puzzle = get_object_or_404(Puzzle, id=id)
     return HttpResponse(puzzle.get_yaml_fixture(), content_type="text/plain")
 
 
+@auto_postprodding_required
 @permission_required("puzzle_editing.change_round", raise_exception=True)
 def export(request):
     output = ""
@@ -2013,6 +2018,7 @@ def export(request):
     return render(request, "export.html", {"output": output})
 
 
+@auto_postprodding_required
 @login_required
 def check_metadata(request):
     puzzleFolder = os.path.join(settings.HUNT_REPO, "hunt/data/puzzle")

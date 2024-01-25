@@ -1,4 +1,6 @@
+from functools import wraps
 from django import urls
+from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
 from django.core.exceptions import PermissionDenied
 from django.http import HttpRequest
@@ -22,3 +24,14 @@ def group_required(*group_names):
             raise PermissionDenied
 
     return user_passes_test(in_groups)
+
+
+def auto_postprodding_required(f):
+    """Requires that auto-postprodding be enabled."""
+
+    @wraps(f)
+    def check(*args, **kwargs):
+        if settings.HUNT_REPO_URL == "":
+            raise PermissionDenied
+        return f(*args, **kwargs)
+    return check
