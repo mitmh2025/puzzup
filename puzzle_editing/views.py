@@ -2982,30 +2982,6 @@ class TestsolveParticipationForm(forms.ModelForm):
         super(TestsolveParticipationForm, self).__init__(*args, **kwargs)
 
         self.fields["general_feedback"].required = True
-        self.fields["finish_method"] = forms.ChoiceField(
-            choices=[
-                (
-                    "SPOIL",
-                    mark_safe(
-                        "<strong>Finish, spoil me</strong>: You will be redirected to the puzzle discussion page. Select this if you finished the testsolve normally, or if you gave up and want to know how the puzzle works. (However, we encourage you to find others to join your session or ask the author/editors for hints before giving up!)"
-                    ),
-                ),
-                (
-                    "NO_SPOIL",
-                    mark_safe(
-                        "<strong>Finish, don't spoil me</strong>: You will be redirected back to the puzzle testsolve session. Select this if you gave up but want to testsolve future revisions of this puzzle."
-                    ),
-                ),
-                (
-                    "LEAVE",
-                    mark_safe(
-                        "<strong>Leave and forget I was even here</strong>: You will be be removed from the list of participants of this testsolve session. Select this if you didn't really contribute to the test solve, or if you joined this session by mistake, or if this is a duplicate or merged session."
-                    ),
-                ),
-            ],
-            widget=RadioSelect(),
-            initial="SPOIL",
-        )
 
     class Meta:
         model = TestsolveParticipation
@@ -3096,18 +3072,11 @@ def testsolve_finish(request, id):
             fun = form.cleaned_data["fun_rating"] or None
             difficulty = form.cleaned_data["difficulty_rating"] or None
             hours_spent = form.cleaned_data["hours_spent"] or None
-            finish_method = form.cleaned_data["finish_method"]
 
             if already_spoiled:
                 spoil_message = "(solver was already spoiled)"
-            elif finish_method == "SPOIL":
-                spoil_message = "👀 solver is now spoiled"
-            elif finish_method == "LEAVE":
-                spoil_message = "🚪 solver left session"
-            elif finish_method == "NO_SPOIL":
-                spoil_message = "❌ solver was not spoiled"
             else:
-                raise ValidationError("Invalid finish method")
+                spoil_message = "❌ solver was not spoiled"
 
             ratings_text = "Fun: {} / Difficulty: {} / Hours spent: {} / {}".format(
                 fun or "n/a", difficulty or "n/a", hours_spent or "n/a", spoil_message
@@ -3141,15 +3110,7 @@ def testsolve_finish(request, id):
             participation.ended = datetime.datetime.now()
             participation.save()
 
-            if finish_method == "LEAVE":
-                participation.delete()
-                return redirect(urls.reverse("testsolve_main"))
-            elif finish_method == "SPOIL":
-                if not already_spoiled:
-                    puzzle.spoiled.add(user)
-                return redirect(urls.reverse("puzzle", args=[puzzle.id]))
-            else:
-                return redirect(urls.reverse("testsolve_one", args=[id]))
+            return redirect(urls.reverse("testsolve_one", args=[id]))
         else:
             context = {
                 "session": session,
