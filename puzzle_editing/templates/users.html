@@ -57,7 +57,15 @@
 	{% for user in users %}
   {% if user.username != "admin" and user.username != "puzzup" %}
 	<tr>
-		<td><a href="{% url 'user' user.username %}">{{ user|display_name }}</a></td>
+		<td>
+			{% if perms.puzzle_editing.list_puzzle %}
+			<a href="{% url 'user' user.username %}">
+			{% endif %}
+				{{ user|display_name }}
+			{% if perms.puzzle_editing.list_puzzle %}
+			</a>
+			{% endif %}
+		</td>
 		<td>{{ user.hat }}</td>
 		<td class="left-border">{{ user.authored_lead }}</td>
 		<td class="deemph">{{ user.authored_active }}</td>
@@ -81,7 +89,14 @@
 				{{ user.last_comment.date|naturaltime|default:"N/A" }}
 			</td>
 			<td class="is-size-7 system">
-				{{ user.last_action }} <a href="{{ puzzle.puzzle_url }}#comment-{{ user.last_comment.id }}" class="puzzle-link">{{ puzzle.spoiler_free_name }}</a>
+				{{ user.last_action }}
+				{% if perms.puzzle_editing.list_puzzle %}
+				<a href="{{ puzzle.puzzle_url }}#comment-{{ user.last_comment.id }}" class="puzzle-link">
+				{% endif %}
+					{{ puzzle.spoiler_free_name }}
+				{% if perms.puzzle_editing.list_puzzle %}
+				</a>
+				{% endif %}
 			</td>
 		{% endwith %}
 	</tr>
