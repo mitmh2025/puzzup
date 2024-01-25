@@ -840,7 +840,7 @@ table.puzzle-table td p, table.puzzle-table td pre {
 }
 
 .markdown-textarea {
-  display: inline-block;
+  display: block;
   border: 1px solid var(--border-color);
   background-color: var(--input-bg);
   border-radius: 3px;
@@ -918,6 +918,15 @@ body.singleround h2 .round-link {
 
 .is-required .label p::before {
   content: "*";
+}
+
+.column:has(> .markdown-textarea), .control:has(> .markdown-textarea) {
+	display: flex;
+  flex-direction: column;
+}
+
+.column .markdown-textarea, .control .markdown-textarea {
+  flex-grow: 1;
 }
 
 .timestamp {

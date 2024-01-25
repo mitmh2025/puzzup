@@ -11,11 +11,11 @@ status set by {{ user }}
 </p>
 
 <p>
-<b>Requests:</b><br>{{ puzzle.notes }}
+<b>Requests:</b><br>{{ puzzle.notes|markdown }}
 </p>
 <p>
 <b>Mechanics:</b><br>{{ puzzle.editor_notes }}
 </p>
 <p>
-<b>Description:</b><br>{{ puzzle.description }}
+<b>Description:</b><br>{{ puzzle.description|markdown }}
 </p>

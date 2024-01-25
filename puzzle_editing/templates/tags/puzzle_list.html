@@ -79,10 +79,10 @@
 			<td>{{ puzzle.factcheck_html }}</td>
 			{% endif %}
 			{% if show_summary %}
-			<td class="small-md">{{ puzzle.summary }}</td>
+			<td class="small-md">{{ puzzle.summary|markdown }}</td>
 			{% endif %}
 			{% if show_flavor %}
-			<td class="small-md">{{ puzzle.flavor }}</td>
+			<td class="small-md">{{ puzzle.flavor|markdown }}</td>
 			<td class="small-md" sorttable_customkey="{{ puzzle.flavor_approved_time.timestamp }}">{{ puzzle.flavor_approved_time | naturaltime }}</td>
 			{% endif %}
 			{% if show_editors %}

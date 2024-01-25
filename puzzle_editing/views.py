@@ -651,11 +651,11 @@ class PuzzleInfoForm(forms.ModelForm):
             "name": forms.TextInput(attrs={"class": "input"}),
             "authors_addl": forms.TextInput(attrs={"class": "input"}),
             "codename": forms.TextInput(attrs={"class": "input"}),
-            "summary": forms.Textarea(attrs={"class": "textarea", "rows": 6}),
-            "description": forms.Textarea(attrs={"class": "textarea", "rows": 6}),
-            "flavor": forms.Textarea(attrs={"class": "textarea", "rows": 3}),
+            "summary": MarkdownTextarea(attrs={"rows": 6}),
+            "description": MarkdownTextarea(attrs={"rows": 6}),
+            "flavor": MarkdownTextarea(attrs={"rows": 3}),
             "editor_notes": forms.TextInput(attrs={"class": "input"}),
-            "notes": forms.Textarea(attrs={"class": "textarea", "rows": 6}),
+            "notes": MarkdownTextarea(attrs={"rows": 6}),
             "is_meta": forms.CheckboxInput(),
         }
 
@@ -868,7 +868,7 @@ class PuzzleContentForm(forms.ModelForm):
         model = Puzzle
         fields = ["content"]
         widgets = {
-            "content": forms.Textarea(attrs={"class": "textarea"}),
+            "content": MarkdownTextarea(attrs={"class": "textarea"}),
         }
 
 
@@ -894,7 +894,7 @@ class PuzzleSolutionForm(forms.ModelForm):
         model = Puzzle
         fields = ["solution"]
         widgets = {
-            "solution": forms.Textarea(attrs={"class": "textarea"}),
+            "solution": MarkdownTextarea(attrs={"class": "textarea"}),
         }
 
 
@@ -3445,7 +3445,7 @@ class AnswerForm(forms.ModelForm):
         widgets = {
             "answer": forms.Textarea(
                 # Default to 1 row, but allow users to drag if they need more space.
-                attrs={"rows": 1, "cols": 40, "class": "answer notes-field"}
+                attrs={"rows": 1, "cols": 30, "class": "answer notes-field"}
             ),
             "notes": forms.Textarea(
                 attrs={"rows": 4, "cols": 20, "class": "notes-field"}
@@ -3467,6 +3467,9 @@ class RoundForm(forms.ModelForm):
     class Meta:
         model = Round
         fields = ["name", "description", "editors", "act"]
+        widgets = {
+            "description": MarkdownTextarea(),
+        }
 
 
 @permission_required("puzzle_editing.change_round", raise_exception=True)

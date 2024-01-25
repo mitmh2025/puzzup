@@ -56,7 +56,20 @@
 
 	<form method="post">
 		{% csrf_token %}
-		{{ comment_form }}
+		{% for field in comment_form %}
+		<div class="columns">
+			<div class="column is-one-third">
+				<label class="label">{{ field.label }}</label>
+				<div class="help">{{ field.help_text|safe|markdown }}</div>
+			</div>
+			<div class="column">
+				<div class="control">
+					{{ field }}
+					{{ field.errors }}
+				</div>
+			</div>
+		</div>
+		{% endfor %}
 		{% if allow_status_changes %}
 		<p><input type="submit" name="add_comment" value="Add Comment">
 		or

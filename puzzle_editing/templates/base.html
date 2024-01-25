@@ -260,10 +260,13 @@
               } else {
                 preview.textContent = "Error: " + json.error;
               }
+
+              node.textContent = "Edit";
             }).catch((error) => {
               preview.textContent = "Error: " + error;
             });
           } else {
+            node.textContent = "Preview";
             textarea.classList.remove('hidden');
             preview.classList.add('hidden');
           }

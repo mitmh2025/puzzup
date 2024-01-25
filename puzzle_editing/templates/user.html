@@ -17,7 +17,7 @@
 	{% endif %}
     {% if them.bio %}
         <h2>Bio</h2>
-        <em>{{them.bio}}</em>
+        <em>{{them.bio|markdown}}</em>
     {% endif %}
 
 <p class="block">

@@ -15,7 +15,7 @@
 				<input type="checkbox" id="tag-{{ value }}" value="{{ value }}" name="tags" {% if value in form.tags.field.initial %}checked{% endif %}>
 				<label for="tag-{{ value }}"><b>{{ label }}</b></label>
 			</div>
-			<div style="margin-left:3em">{{ tag.description }}</div>
+			<div style="margin-left:3em">{{ tag.description|markdown }}</div>
 		</li>
 	</div>
 	{% endfor %}
