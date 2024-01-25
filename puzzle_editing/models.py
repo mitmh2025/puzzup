@@ -339,7 +339,7 @@ class Puzzle(models.Model):
         random.shuffle(adjs)
 
         try:
-            name = adjs.pop() + " " + nouns.pop()
+            name = adjs.pop() + "-" + nouns.pop()
             while Puzzle.objects.filter(codename=name).exists():
                 name = adjs.pop() + " " + nouns.pop()
         except IndexError:
