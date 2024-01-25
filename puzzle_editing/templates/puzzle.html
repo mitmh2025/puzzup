@@ -611,6 +611,7 @@
 			{% endif %}
 		</div>
 
+		{% if TESTSOLVING_ALLOWED %}
 		<form method="POST" action="{% url "testsolve_main" %}">
 		{% csrf_token %}
 		<h2>
@@ -658,6 +659,7 @@
 
 		{% else %}
 		<div class="empty">(no testsolve sessions yet)</div>
+		{% endif %}
 		{% endif %}
 
 		<div class="block">

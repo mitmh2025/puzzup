@@ -72,6 +72,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "puzzle_editing.context_processors.auto_postprodding_enabled",
+                "puzzle_editing.context_processors.testsolving_allowed",
             ],
         },
     },

@@ -1510,3 +1510,12 @@ class SiteSetting(models.Model):
             return None
         except ValueError:
             return None
+
+    @classmethod
+    def get_bool_setting(cls, key):
+        try:
+            return cls.objects.get(key=key).value.lower() == "true"
+        except cls.DoesNotExist:
+            return False
+        except ValueError:
+            return False

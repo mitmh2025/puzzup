@@ -35,3 +35,14 @@ def auto_postprodding_required(f):
             raise PermissionDenied
         return f(*args, **kwargs)
     return check
+
+
+def _user_can_testsolve(u):
+    if u.is_authenticated and u.has_perm('puzzle_editing.change_testsolvesession'):
+        return True
+    if not m.SiteSetting.get_bool_setting('TESTSOLVING_DISABLED'):
+        return True
+    raise PermissionDenied
+
+
+require_testsolving_enabled = user_passes_test(_user_can_testsolve)

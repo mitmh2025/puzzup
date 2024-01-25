@@ -21,7 +21,9 @@ Spoiled People
 		<th>Authors</th>
 		<th>Editors</th>
 		<th>Spoiled</th>
+		{% if TESTSOLVING_ALLOWED %}
 		<th>Currently Testing</th>
+		{% endif %}
         <th>Priority</th>
 	</tr>
 	{% for puzzle in puzzles %}
@@ -32,12 +34,14 @@ Spoiled People
 		<td>{% user_list puzzle.authors %}</td>
 		<td>{% user_list puzzle.editors %}</td>
 		<td>{% user_list puzzle.spoiled %}</td>
+		{% if TESTSOLVING_ALLOWED %}
 		<td class="testsessions">{% for session in puzzle.testsolve_sessions.all %}
             {% if session.active_participants %}
         <span><a href="{% url 'testsolve_one' session.id %}">{{session.id}}</a>: {% user_list session.active_participants %}</span>
         {% endif %}
         {% endfor %}
         </td>
+		{% endif %}
 		<td sorttable_customkey="{{ puzzle.priority }}">{{ puzzle.get_priority_display }}</td>
 	</tr>
 	{% endfor %}

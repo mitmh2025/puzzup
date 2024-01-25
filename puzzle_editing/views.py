@@ -57,7 +57,7 @@ import puzzle_editing.status as status
 import puzzle_editing.utils as utils
 from .discord import Permission as DiscordPermission
 from .discord import TextChannel
-from .view_helpers import external_puzzle_url
+from .view_helpers import external_puzzle_url, require_testsolving_enabled
 from .view_helpers import group_required
 from .view_helpers import auto_postprodding_required
 from puzzle_editing import models as m
@@ -2409,6 +2409,7 @@ def warn_about_testsolving(is_spoiled, in_session, has_session):
 
 
 @login_required
+@require_testsolving_enabled
 def testsolve_history(request):
 
     past_sessions = TestsolveSession.objects.filter(
@@ -2423,6 +2424,7 @@ def testsolve_history(request):
     return render(request, "testsolve_history.html", context)
 
 
+@require_testsolving_enabled
 @login_required
 def testsolve_main(request):
     user = request.user
@@ -2533,6 +2535,7 @@ def my_spoiled(request):
 
 
 @login_required
+@require_testsolving_enabled
 def testsolve_finder(request):
     solvers = request.GET.getlist("solvers")
     users = User.objects.filter(pk__in=solvers) if solvers else None
@@ -2654,6 +2657,7 @@ class TestsolveParticipantPicker(forms.Form):
 
 
 @login_required
+@require_testsolving_enabled
 def testsolve_one(request, id):  # noqa: C901
     session = get_object_or_404(
         (
@@ -2892,6 +2896,7 @@ def testsolve_one(request, id):  # noqa: C901
 
 @require_POST
 @permission_required("puzzle_editin.unspoil_puzzle", raise_exception=True)
+@require_testsolving_enabled
 def testsolve_escape(request, id):
     participation = get_object_or_404(
         TestsolveParticipation,
@@ -2903,6 +2908,7 @@ def testsolve_escape(request, id):
 
 
 @login_required
+@require_testsolving_enabled
 def testsolve_feedback(request, id):
     session = get_object_or_404(TestsolveSession, id=id)
 
@@ -3066,6 +3072,7 @@ class TestsolveParticipationForm(forms.ModelForm):
 
 
 @login_required
+@require_testsolving_enabled
 def testsolve_finish(request, id):
     session = get_object_or_404(TestsolveSession, id=id)
     puzzle = session.puzzle
