@@ -1655,7 +1655,6 @@ def puzzle(request: HttpRequest, id, slug=None):  # noqa: C901
                 "priority_form": PuzzlePriorityForm(instance=puzzle),
                 "hint_form": PuzzleHintForm(initial={"puzzle": puzzle}),
                 "unspoiled": unspoiled,
-                "support_requests": requests,
                 "logistics_info": get_logistics_info(puzzle),
             },
         )
