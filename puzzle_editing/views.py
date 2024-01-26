@@ -3249,6 +3249,7 @@ def factcheck(request):
 
 
 @login_required
+@group_required("EIC", "Editor", "Art")
 def flavor(request):
     needs_flavor = Puzzle.objects.filter(
         flavor="", flavor_approved_time__isnull=True

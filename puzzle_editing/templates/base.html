@@ -52,7 +52,7 @@
             👒 Editors
           </a>
           <div class="navbar-dropdown">
-            {% if request.user|has_group:"EIC" %}
+            {% if request.user.is_superuser or request.user|has_group:"EIC" %}
               {% nav_link current_path 'eic' '🎩 Editors-In-Chief inbox' %}
               {% nav_link current_path 'triage' '🩺 EIC triage' %}
               {% nav_link current_path 'editor_overview' '👁 Editor overview' %}
@@ -103,7 +103,9 @@
           {% nav_link current_path 'docs' 'How to use PuzzUp' %}
             <hr class="navbar-divider">
           {% nav_link current_path 'users' 'Users' %}
+          {% if request.user.is_superuser or request.user|has_group:"Art" or request.user|has_group:"Editor" or request.user|has_group:"EIC" %}
           {% nav_link current_path 'flavor' 'Flavor' %}
+          {% endif %}
           {% nav_link current_path 'statistics' 'Statistics' %}
         </div>
         </div>
