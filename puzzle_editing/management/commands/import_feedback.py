@@ -1,10 +1,9 @@
 import json
+from pathlib import Path
 
 from django.core.management.base import BaseCommand
 
-from puzzle_editing.models import Puzzle
-from puzzle_editing.models import PuzzleComment
-from puzzle_editing.models import User
+from puzzle_editing.models import Puzzle, PuzzleComment, User
 
 
 class Command(BaseCommand):
@@ -17,7 +16,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         print(options)
         user = User.objects.get(username=options["user"])
-        with open(options["filename"]) as f:
+        with Path(options["filename"]).open() as f:
             data = json.load(f)
 
         for line in data:

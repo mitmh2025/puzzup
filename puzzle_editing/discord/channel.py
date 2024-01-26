@@ -1,12 +1,8 @@
 import typing as t
 
-from pydantic import BaseModel
-from pydantic import Field
-from pydantic import validator
+from pydantic import BaseModel, Field, validator
 
-from .perm import Overwrite
-from .perm import Overwrites
-from .perm import Permission
+from .perm import Overwrite, Overwrites, Permission
 
 
 class Channel(BaseModel):
@@ -19,7 +15,7 @@ class Channel(BaseModel):
     permission_overwrites: Overwrites = Field(default_factory=Overwrites)
 
     @validator("permission_overwrites", pre=True)
-    def unpack_overwrites(cls, v):  # pylint: disable=no-self-argument
+    def unpack_overwrites(cls, v):
         """Unpack list of overwrites to an Overwrites object."""
         if isinstance(v, list):
             v = Overwrites.from_discord(v)

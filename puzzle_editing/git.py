@@ -1,11 +1,10 @@
 import logging
-import os
+from pathlib import Path
 
 import git
 from django.conf import settings
 from django.core import management
 from git.exc import CommandError
-from git.exc import GitCommandError
 
 logger = logging.getLogger(__name__)
 
@@ -18,29 +17,29 @@ FIXTURE_DIR = "server/tph/fixtures/puzzles/"
 
 class GitRepo:
     @classmethod
-    def make_dir(cls, path):
-        os.makedirs(path, exist_ok=True)
+    def make_dir(cls, path: Path):
+        path.mkdir(parents=True, exist_ok=True)
         return path
 
     @classmethod
     def hunt_dir(cls, directory: str):
-        return cls.make_dir(os.path.join(settings.HUNT_REPO, directory))
+        return cls.make_dir(settings.HUNT_REPO / directory)
 
     @classmethod
     def puzzle_path(cls, slug: str, puzzle_dir: str = PUZZLE_DIR):
-        return cls.make_dir(os.path.join(cls.hunt_dir(puzzle_dir), slug))
+        return cls.make_dir(cls.hunt_dir(puzzle_dir) / slug)
 
     @classmethod
     def solution_path(cls, slug: str):
-        return cls.make_dir(os.path.join(cls.hunt_dir(SOLUTION_DIR), slug))
+        return cls.make_dir(cls.hunt_dir(SOLUTION_DIR) / slug)
 
     @classmethod
     def assets_puzzle_path(cls, slug: str):
-        return cls.make_dir(os.path.join(cls.hunt_dir(ASSETS_PUZZLE_DIR), slug))
+        return cls.make_dir(cls.hunt_dir(ASSETS_PUZZLE_DIR) / slug)
 
     @classmethod
     def assets_solution_path(cls, slug: str):
-        return cls.make_dir(os.path.join(cls.hunt_dir(ASSETS_SOLUTION_DIR), slug))
+        return cls.make_dir(cls.hunt_dir(ASSETS_SOLUTION_DIR) / slug)
 
     @classmethod
     def fixture_path(cls):
@@ -52,7 +51,7 @@ class GitRepo:
 
         if not settings.DEBUG:
             # Initialize repo if it does not exist.
-            if not os.path.exists(settings.HUNT_REPO) and settings.HUNT_REPO:
+            if not settings.HUNT_REPO.exist() and settings.HUNT_REPO:
                 management.call_command("setup_git")
 
         self.repo = git.Repo.init(settings.HUNT_REPO)
@@ -73,13 +72,12 @@ class GitRepo:
             or len(self.repo.untracked_files) > 0
             or self.repo.head.reference.name != self.branch
         ):
-            raise CommandError(
-                "Repository is in a broken state. [{} / {} / {}]".format(
-                    self.repo.is_dirty(),
-                    self.repo.untracked_files,
-                    self.repo.head.reference.name,
-                )
+            msg = "Repository is in a broken state. [{} / {} / {}]".format(
+                self.repo.is_dirty(),
+                self.repo.untracked_files,
+                self.repo.head.reference.name,
             )
+            raise CommandError(msg)
 
     @classmethod
     def has_remote_branch(cls, *branch_names):
@@ -96,9 +94,7 @@ class GitRepo:
 
     def pre_commit(self) -> bool:
         """Runs pre-commit and returns true if it fails."""
-        if not os.path.isfile(
-            os.path.join(settings.HUNT_REPO, ".git/hooks/pre-commit")
-        ):
+        if not (settings.HUNT_REPO / ".git/hooks/pre-commit").is_file():
             logger.warning("Pre-commit skipped because hooks not installed.")
         try:
             git.index.fun.run_commit_hook("pre-commit", self.repo.index)

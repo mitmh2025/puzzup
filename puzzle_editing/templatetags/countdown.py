@@ -11,10 +11,7 @@ def display_timedelta(delta):
 
     days = ""
     if delta.days:
-        if delta.days == 1:
-            days = "1 day, "
-        else:
-            days = "{} days, ".format(delta.days)
+        days = "1 day, " if delta.days == 1 else f"{delta.days} days, "
     return days + "{}:{:02}:{:02}".format(
         delta.seconds // 3600, delta.seconds % 3600 // 60, delta.seconds % 60
     )

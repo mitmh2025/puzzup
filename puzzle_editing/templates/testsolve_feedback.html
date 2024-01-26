@@ -5,52 +5,52 @@
 
 {% block main %}
 
-{% if bulk == False %}
-{% if no_feedback == participants %}
-<p>No feedback has been left for this session yet.</p>
-{% elif no_feedback == 0 %}
-<p>There are {{participants}} tester{{ participants|pluralize }} in this session and everyone has given feedback.</p>
-{% else %}
-<p>There are {{participants}} tester{{ participants|pluralize }} in this session and {{ no_feedback }} tester{{ no_feedback|pluralize }} {{ no_feedback|pluralize:"is,are" }} yet to give feedback.</p>
-{% endif %}
-{% endif %}
+    {% if bulk == False %}
+        {% if no_feedback == participants %}
+            <p>No feedback has been left for this session yet.</p>
+        {% elif no_feedback == 0 %}
+            <p>There are {{participants}} tester{{ participants|pluralize }} in this session and everyone has given feedback.</p>
+        {% else %}
+            <p>There are {{participants}} tester{{ participants|pluralize }} in this session and {{ no_feedback }} tester{{ no_feedback|pluralize }} {{ no_feedback|pluralize:"is,are" }} yet to give feedback.</p>
+        {% endif %}
+    {% endif %}
 
-{% regroup feedback by session.puzzle as puzzle_list %}
+    {% regroup feedback by session.puzzle as puzzle_list %}
 
-{% for puzzle in puzzle_list %}
-{% if bulk == False %}
-<h2>Testsolve feedback for <a href="{% url 'puzzle' puzzle.grouper.id %}">{{ puzzle.grouper.spoilery_title }}</a></h2>
-{% endif %}
-{% regroup puzzle.list by session as session_list %}
+    {% for puzzle in puzzle_list %}
+        {% if bulk == False %}
+            <h2>Testsolve feedback for <a href="{% url 'puzzle' puzzle.grouper.id %}">{{ puzzle.grouper.spoilery_title }}</a></h2>
+        {% endif %}
+        {% regroup puzzle.list by session as session_list %}
 
-{% for session in session_list %}
-<h3>Testsolve session <a href="{% url 'testsolve_one' session.grouper.id %}">#{{ session.grouper.id }}</a> on {{ session.grouper.puzzle.name }}</h3>
-{% for part in session.list %}
-<h4>{{ part.user|display_name }}</h4>
-<div class="columns">
-	<div class="column is-one-fifth">
-		<div class="tags has-addons are-small">
-			<span class="tag is-info">{{ part.fun_rating | floatformat }}</span>
-			<span class="tag is-dark">Fun</span>
-		</div>
-		<div class="tags has-addons are-small">
-			<span class="tag is-info">{{ part.difficulty_rating | floatformat }}</span>
-			<span class="tag is-dark">Difficulty</span>
-		</div>
-		<div class="tags has-addons are-small">
-			<span class="tag is-info">{{ part.hours_spent | floatformat }}</span>
-			<span class="tag is-dark">Hours</span>
-		</div>
-	</div>
-	<div class="column">
-		<h5>What did you like & dislike about this puzzle? Is there anything you think should be changed (e.g. amount of flavor/cluing, errata, tech issues, mechanics, theming, etc.)</h5>
-		<p>{{ part.general_feedback|default:"No feedback provided"|markdown }}</p>
-		<h5>Anything else you want to add? If you were spoiled, mention it here. (This can include: things you tried, any shortcuts you found, break-ins, stuck points, accessibility)</h5>
-		<p>{{ part.misc_feedback|default:"No feedback provided"|markdown }}</p>
-	</div>
-</div>
-<br/>
-{% endfor %}
-{% endfor %}
-{% endfor %}
+        {% for session in session_list %}
+            <h3>Testsolve session <a href="{% url 'testsolve_one' session.grouper.id %}">#{{ session.grouper.id }}</a> on {{ session.grouper.puzzle.name }}</h3>
+            {% for part in session.list %}
+                <h4>{{ part.user|display_name }}</h4>
+                <div class="columns">
+                    <div class="column is-one-fifth">
+                        <div class="tags has-addons are-small">
+                            <span class="tag is-info">{{ part.fun_rating | floatformat }}</span>
+                            <span class="tag is-dark">Fun</span>
+                        </div>
+                        <div class="tags has-addons are-small">
+                            <span class="tag is-info">{{ part.difficulty_rating | floatformat }}</span>
+                            <span class="tag is-dark">Difficulty</span>
+                        </div>
+                        <div class="tags has-addons are-small">
+                            <span class="tag is-info">{{ part.hours_spent | floatformat }}</span>
+                            <span class="tag is-dark">Hours</span>
+                        </div>
+                    </div>
+                    <div class="column">
+                        <h5>What did you like & dislike about this puzzle? Is there anything you think should be changed (e.g. amount of flavor/cluing, errata, tech issues, mechanics, theming, etc.)</h5>
+                        <p>{{ part.general_feedback|default:"No feedback provided"|markdown }}</p>
+                        <h5>Anything else you want to add? If you were spoiled, mention it here. (This can include: things you tried, any shortcuts you found, break-ins, stuck points, accessibility)</h5>
+                        <p>{{ part.misc_feedback|default:"No feedback provided"|markdown }}</p>
+                    </div>
+                </div>
+                <br/>
+            {% endfor %}
+        {% endfor %}
+    {% endfor %}
 {% endblock %}

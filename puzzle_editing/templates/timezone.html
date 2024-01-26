@@ -3,16 +3,16 @@
 {% block title %}Set Timezone{% endblock %}
 {% block main %}
 
-<p>Current time zone: {{ current }}</p>
-<form action="{% url 'set_timezone' %}" method="POST">
-    {% csrf_token %}
-    <label for="timezone">Time zone:</label>
-    <select name="timezone">
-        {% for city, tz in timezones %}
-        <option value="{{ tz }}"{% if tz == current %} selected{% endif %}>{{ city }}</option>
-        {% endfor %}
-    </select>
-    <input type="submit" value="Set">
-</form>
+    <p>Current time zone: {{ current }}</p>
+    <form action="{% url 'set_timezone' %}" method="POST">
+        {% csrf_token %}
+        <label for="timezone">Time zone:</label>
+        <select name="timezone">
+            {% for city, tz in timezones %}
+                <option value="{{ tz }}"{% if tz == current %} selected{% endif %}>{{ city }}</option>
+            {% endfor %}
+        </select>
+        <input type="submit" value="Set">
+    </form>
 
 {% endblock %}

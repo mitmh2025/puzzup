@@ -1,7 +1,6 @@
 import re
 import urllib.parse
 
-from asgiref.sync import async_to_sync
 from bs4 import BeautifulSoup
 from django.conf import settings
 from google.oauth2 import service_account
@@ -41,7 +40,9 @@ class GoogleManager:
     def move_to_folder(self, file_id, folder_id):
         # file_id is allowed to be a folder
         existing_parents = ",".join(
-            self.drive.files().get(fileId=file_id, fields="parents").execute()["parents"]
+            self.drive.files()
+            .get(fileId=file_id, fields="parents")
+            .execute()["parents"]
         )
         self.drive.files().update(
             body={},
@@ -59,11 +60,14 @@ class GoogleManager:
             "parents": [settings.PUZZLE_DRAFT_FOLDER_ID],
         }
         folder_id = (
-            self.drive.files().create(
+            self.drive.files()
+            .create(
                 body=file_metadata,
                 supportsAllDrives=True,
                 fields="id",
-            ).execute().get("id")
+            )
+            .execute()
+            .get("id")
         )
         return self._create_sheet(
             title=f"{puzzle.spoiler_free_title()} Brainstorm",
@@ -86,7 +90,8 @@ class GoogleManager:
         # Look up the existing puzzle folder, if any
         file_name = puzzle.spoiler_free_title()
         template_id = (
-            self.drive.files().copy(
+            self.drive.files()
+            .copy(
                 fileId=settings.FACTCHECKING_TEMPLATE_ID,
                 fields="id",
                 supportsAllDrives=True,
@@ -159,7 +164,7 @@ class HtmlCleaner:
         # Tag names mapped from html to React
         MAPPED_TAGS = {"table": "Table", "img": "SheetableImage"}
 
-        for attr in MAPPED_ATTRS.keys():
+        for attr in MAPPED_ATTRS:
             for tag in self.soup.find_all(attrs={attr: True}):
                 tag[MAPPED_ATTRS[attr]] = tag[attr]
                 del tag[attr]

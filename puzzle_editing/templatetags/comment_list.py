@@ -1,6 +1,6 @@
 from django import template
 
-import puzzle_editing.status as status
+from puzzle_editing import status
 from puzzle_editing.models import CommentReaction
 
 register = template.Library()
@@ -17,7 +17,7 @@ def comment_list(
 ):
     comments = comments.order_by("date").select_related("author")
 
-    authors = set(a.id for a in puzzle.authors.all())
+    authors = {a.id for a in puzzle.authors.all()}
 
     for comment in comments:
         comment.author.is_author = comment.author.id in authors
@@ -25,7 +25,7 @@ def comment_list(
         # as much as I wish we could use a collections.defaultdict(list),
         # it's more annoying...
         # https://stackoverflow.com/questions/4764110/django-template-cant-loop-defaultdict
-        comment.merged_reactions = dict()
+        comment.merged_reactions = {}
 
     # we'll mutate through this!!
     ref_comment_by_id = {comment.id: comment for comment in comments}

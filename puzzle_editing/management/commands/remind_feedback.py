@@ -1,10 +1,7 @@
 from django.core.management.base import BaseCommand
 
-import puzzle_editing.messaging as messaging
-from puzzle_editing.models import Puzzle
-from puzzle_editing.models import TestsolveParticipation
-from puzzle_editing.models import TestsolveSession
-from puzzle_editing.models import User
+from puzzle_editing import messaging
+from puzzle_editing.models import TestsolveParticipation, User
 
 
 class Command(BaseCommand):
@@ -23,14 +20,12 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         testsolve_sessions_ended = list(
-            set(
-                [
-                    o.session_id
-                    for o in TestsolveParticipation.objects.filter(ended__isnull=False)
-                    .only("session")
-                    .all()
-                ]
-            )
+            {
+                o.session_id
+                for o in TestsolveParticipation.objects.filter(ended__isnull=False)
+                .only("session")
+                .all()
+            }
         )
         testsolve_participations_in_ended = TestsolveParticipation.objects.filter(
             ended__isnull=True
@@ -64,7 +59,7 @@ class Command(BaseCommand):
                 if missing_feedback:
                     sent_count += 1
                     reminded_count += len(missing_feedback)
-                    print(f"\nUser #{t_user.id}: {str(t_user)}")
+                    print(f"\nUser #{t_user.id}: {t_user!s}")
                     for sess in missing_feedback:
                         print(
                             f"Session #{sess.session.id} for puzzle (#{sess.session.puzzle.id}): {sess.session.puzzle.name}"
@@ -89,5 +84,3 @@ class Command(BaseCommand):
             print(
                 f"Reminded {sent_count} user(s) about {reminded_count} outstanding testsolves"
             )
-
-        return

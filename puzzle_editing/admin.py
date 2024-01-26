@@ -1,26 +1,27 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 
-from .models import Act
-from .models import CommentReaction
-from .models import Hint
-from .models import PseudoAnswer
-from .models import Puzzle
-from .models import PuzzleAnswer
-from .models import PuzzleComment
-from .models import PuzzleFactcheck
-from .models import PuzzlePostprod
-from .models import PuzzleTag
-from .models import PuzzleVisited
-from .models import Round
-from .models import SiteSetting
-from .models import StatusSubscription
-from .models import TestsolveGuess
-from .models import TestsolveParticipation
-from .models import TestsolveSession
-from .models import User
+from .models import (
+    Act,
+    CommentReaction,
+    Hint,
+    PseudoAnswer,
+    Puzzle,
+    PuzzleAnswer,
+    PuzzleComment,
+    PuzzleFactcheck,
+    PuzzlePostprod,
+    PuzzleTag,
+    PuzzleVisited,
+    Round,
+    SiteSetting,
+    StatusSubscription,
+    TestsolveGuess,
+    TestsolveParticipation,
+    TestsolveSession,
+    User,
+)
 
 
 class UserAdmin(BaseUserAdmin):
@@ -28,7 +29,8 @@ class UserAdmin(BaseUserAdmin):
 
     list_display = ("username", "email", "display_name", "discord_username", "hat")
 
-    fieldsets = BaseUserAdmin.fieldsets + (
+    fieldsets = (
+        *BaseUserAdmin.fieldsets,
         (
             None,
             {

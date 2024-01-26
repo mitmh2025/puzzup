@@ -1,29 +1,29 @@
 {% extends "base.html" %}
 {% load markdown %}
 {% block title %}
-	{{ puzzle.spoiler_free_title }} / Answers
+    {{ puzzle.spoiler_free_title }} / Answers
 {% endblock %}
 {% block main %}
-<h1>Tag {{ puzzle }}</h1>
-<a href="{% url 'puzzle' puzzle.id %}">🔙 to {{ puzzle }}</a>
-{% if spoiled %}
-<form method="post">
-	{% csrf_token %}
-	{% for value, label, tag in form.tags.field.choices %}
-	<div>
-		<li class="flex-row">
-			<div>
-				<input type="checkbox" id="tag-{{ value }}" value="{{ value }}" name="tags" {% if value in form.tags.field.initial %}checked{% endif %}>
-				<label for="tag-{{ value }}"><b>{{ label }}</b></label>
-			</div>
-			<div style="margin-left:3em">{{ tag.description|markdown }}</div>
-		</li>
-	</div>
-	{% endfor %}
-	<input type="submit" value="Submit">
-</form>
-{% else %}
-<p>You are not spoiled on this puzzle. I'm not sure you want to be assigning tags to it.</p>
-<p>If you really want to, you can click back to it and spoil yourself.</p>
-{% endif %}
+    <h1>Tag {{ puzzle }}</h1>
+    <a href="{% url 'puzzle' puzzle.id %}">🔙 to {{ puzzle }}</a>
+    {% if spoiled %}
+        <form method="post">
+            {% csrf_token %}
+            {% for value, label, tag in form.tags.field.choices %}
+                <div>
+                    <li class="flex-row">
+                        <div>
+                            <input type="checkbox" id="tag-{{ value }}" value="{{ value }}" name="tags" {% if value in form.tags.field.initial %}checked{% endif %}>
+                            <label for="tag-{{ value }}"><b>{{ label }}</b></label>
+                        </div>
+                        <div style="margin-left:3em">{{ tag.description|markdown }}</div>
+                    </li>
+                </div>
+            {% endfor %}
+            <input type="submit" value="Submit">
+        </form>
+    {% else %}
+        <p>You are not spoiled on this puzzle. I'm not sure you want to be assigning tags to it.</p>
+        <p>If you really want to, you can click back to it and spoil yourself.</p>
+    {% endif %}
 {% endblock %}

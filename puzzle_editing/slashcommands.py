@@ -3,15 +3,14 @@ import json
 
 from discord_interactions import verify_key
 from django.conf import settings
-from django.http import HttpRequest
-from django.http import HttpResponse
-from django.http import JsonResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
 import puzzle_editing.discord_integration as discord
+from puzzle_editing.models import Puzzle
+
 from .discord import MsgPayload
 from .view_helpers import external_puzzle_url
-from puzzle_editing.models import Puzzle
 
 
 @csrf_exempt
@@ -54,8 +53,8 @@ def createPuzzleHandler(request: HttpRequest, payload: dict) -> HttpResponse:
     ch_id = payload["channel_id"]
     msg = create_puzzle_for_channel(request, ch_id)
     if isinstance(msg, str):
-        msg = dict(content=msg)
-    return JsonResponse(dict(type=4, data=msg))
+        msg = {"content": msg}
+    return JsonResponse({"type": 4, "data": msg})
 
 
 def create_puzzle_for_channel(request: HttpRequest, ch_id: str) -> MsgPayload:

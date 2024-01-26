@@ -2,7 +2,6 @@ from django.core.management.base import BaseCommand
 
 from puzzle_editing import status
 
-
 BLOCKER_COLORS = {
     status.EIC: "lemonchiffon",
     status.EDITORS: "lightsalmon",
@@ -32,8 +31,8 @@ class Command(BaseCommand):
 
         edges = []
         for s, (_, transitions) in status.BLOCKERS_AND_TRANSITIONS.items():
-            for (t, label) in transitions:
-                edges.append('  {} -> {} [label="{}"];'.format(s, t, label))
+            for t, label in transitions:
+                edges.append(f'  {s} -> {t} [label="{label}"];')
 
         print("digraph {")
         print("\n".join(nodes))

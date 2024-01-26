@@ -1,15 +1,10 @@
 import random
 
 from django import template
-from django.db.models import Exists
-from django.db.models import Max
-from django.db.models import OuterRef
-from django.db.models import Subquery
+from django.db.models import Exists, Max, OuterRef, Subquery
 
-import puzzle_editing.status as status
-from puzzle_editing.models import PuzzleTag
-from puzzle_editing.models import PuzzleVisited
-from puzzle_editing.models import User
+from puzzle_editing import status
+from puzzle_editing.models import PuzzleTag, PuzzleVisited, User
 
 register = template.Library()
 

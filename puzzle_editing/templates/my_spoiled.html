@@ -2,33 +2,33 @@
 {% block title %}My spoiled{% endblock %}
 
 {% block main %}
-<h1>My Spoiled Puzzles</h1>
+    <h1>My Spoiled Puzzles</h1>
 
-<div class="card block">
-	<div class="card-content">
-		<div class="content">
-            <table class='table classic is-fullwidth sortable'>
-                <thead>
-                    <tr>
-                        <td>Status</td>
-                        <td>Puzzle</td>
-                        <td>Answer</td>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for puzzle in spoiled %}
-                    <tr>
-                        <td>{{ puzzle.get_status_emoji }}</td>
-                        <td><a href="{% url 'puzzle' puzzle.id %}">{{ puzzle.id }}: {{ puzzle.spoilery_title }}</a></td>
-                        <td>{% for ans in puzzle.answers.all %}
-                            <code>{{ans}}</code>
-                            {% endfor %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-		</div>
-	</div>
-</div>
+    <div class="card block">
+        <div class="card-content">
+            <div class="content">
+                <table class='table classic is-fullwidth sortable'>
+                    <thead>
+                        <tr>
+                            <td>Status</td>
+                            <td>Puzzle</td>
+                            <td>Answer</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for puzzle in spoiled %}
+                            <tr>
+                                <td>{{ puzzle.get_status_emoji }}</td>
+                                <td><a href="{% url 'puzzle' puzzle.id %}">{{ puzzle.id }}: {{ puzzle.spoilery_title }}</a></td>
+                                <td>{% for ans in puzzle.answers.all %}
+                                    <code>{{ans}}</code>
+                                {% endfor %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 {% endblock %}

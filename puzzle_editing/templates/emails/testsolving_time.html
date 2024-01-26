@@ -1,71 +1,71 @@
 <h3><a href="{{ request.scheme }}://{{ request.get_host }}{% url 'puzzle' puzzle.id %}">{{ puzzle.spoiler_free_title }} ({{ puzzle.id }})</a> is Ready to be Testsolved!</h3>
 
 <h3>
-Logistics Info
+  Logistics Info
 </h3>
 
 <div>
-    Act: {{ puzzle.act_name | default:"(No act assigned)" }}
+  Act: {{ puzzle.act_name | default:"(No act assigned)" }}
 </div>
 <div>
-    Testsolving:
-    {% if logistics_info.logistics_difficulty_testsolve %}
-      <span>{{ logistics_info.logistics_difficulty_testsolve }}</span>
-    {% else %}
-      <span class="empty">(not rated)</span>
-    {% endif %}
+  Testsolving:
+  {% if logistics_info.logistics_difficulty_testsolve %}
+    <span>{{ logistics_info.logistics_difficulty_testsolve }}</span>
+  {% else %}
+    <span class="empty">(not rated)</span>
+  {% endif %}
 </div>
 <div>
-    Number of Testsolvers:
-    {% if logistics_info.logistics_number_testsolvers %}
-      <span>{{ logistics_info.logistics_number_testsolvers }}</span>
-    {% else %}
-      <span class="empty">(not rated)</span>
-    {% endif %}
+  Number of Testsolvers:
+  {% if logistics_info.logistics_number_testsolvers %}
+    <span>{{ logistics_info.logistics_number_testsolvers }}</span>
+  {% else %}
+    <span class="empty">(not rated)</span>
+  {% endif %}
 </div>
 <div>
-    Expected Testsolve Length:
-    {% if logistics_info.logistics_testsolve_length %}
-      <span>{{ logistics_info.logistics_testsolve_length }}</span>
-    {% else %}
-      <span class="empty">(not rated)</span>
-    {% endif %}
+  Expected Testsolve Length:
+  {% if logistics_info.logistics_testsolve_length %}
+    <span>{{ logistics_info.logistics_testsolve_length }}</span>
+  {% else %}
+    <span class="empty">(not rated)</span>
+  {% endif %}
 </div>
 <div>
-    Testsolver Specialized Skills:
-    {% if logistics_info.logistics_testsolve_skills %}
-      <span>{{ logistics_info.logistics_testsolve_skills }}</span>
-    {% else %}
-      <span class="empty">(not rated)</span>
-    {% endif %}
+  Testsolver Specialized Skills:
+  {% if logistics_info.logistics_testsolve_skills %}
+    <span>{{ logistics_info.logistics_testsolve_skills }}</span>
+  {% else %}
+    <span class="empty">(not rated)</span>
+  {% endif %}
 </div>
 <div>
-    Postprod:
-    {% if logistics_info.logistics_difficulty_postprod %}
-      <span>{{ logistics_info.logistics_difficulty_postprod }}</span>
-    {% else %}
-      <span class="empty">(not rated)</span>
-    {% endif %}
+  Postprod:
+  {% if logistics_info.logistics_difficulty_postprod %}
+    <span>{{ logistics_info.logistics_difficulty_postprod }}</span>
+  {% else %}
+    <span class="empty">(not rated)</span>
+  {% endif %}
 </div>
 <div>
-    Factcheck:
-    {% if logistics_info.logistics_difficulty_factcheck %}
-      <span>{{ logistics_info.logistics_difficulty_factcheck }}</span>
-    {% else %}
-      <span class="empty">(not rated)</span>
-    {% endif %}
+  Factcheck:
+  {% if logistics_info.logistics_difficulty_factcheck %}
+    <span>{{ logistics_info.logistics_difficulty_factcheck }}</span>
+  {% else %}
+    <span class="empty">(not rated)</span>
+  {% endif %}
 </div>
 <div>
-    Specialized Puzzle Type:
-    {% if logistics_info.logistics_specialized_type %}
-      <span>{{ logistics_info.logistics_specialized_type }}</span>
-    {% else %}
-      <span class="empty">No</span>
-    {% endif %}
+  Specialized Puzzle Type:
+  {% if logistics_info.logistics_specialized_type %}
+    <span>{{ logistics_info.logistics_specialized_type }}</span>
+  {% else %}
+    <span class="empty">No</span>
+  {% endif %}
 </div>
 
 <p>
-Please help the authors schedule a testsolve session.
+  Please help the authors schedule a testsolve session.
 </p>
 
 <p>(This email was sent to the list of Testsolve Coordinators, because {{ user.full_display_name }} set the status to <b>Ready to be Testsolved</b>.)</p>

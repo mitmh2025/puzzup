@@ -2,19 +2,14 @@ import logging
 from datetime import datetime
 from typing import NamedTuple
 
-import django.urls as urls
+from django import urls
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
-from django.test import Client
-from django.test import TestCase
+from django.test import Client, TestCase
 from django.test.utils import override_settings
 
 from . import status
-from .models import Puzzle
-from .models import Round
-from .models import TestsolveParticipation
-from .models import TestsolveSession
-from .models import User
+from .models import Puzzle, Round, TestsolveParticipation, TestsolveSession, User
 
 logging.disable(logging.DEBUG)  # there's a particular template lookup failure
 # in a view that really doesn't seem relevant
@@ -47,7 +42,7 @@ class Misc(TestCase):
             content_type=ContentType.objects.get_for_model(Round),
             codename="change_round",
         )
-        self.eic_group = Group.objects.create(name='EIC')
+        self.eic_group = Group.objects.create(name="EIC")
         self.eic_group.permissions.add(permission)
 
         self.a.user_permissions.add(permission)
@@ -220,7 +215,7 @@ class Misc(TestCase):
         eicc = Client()
         eicc.login(username="eic", password="super-secret")
 
-        clients = dict(a=ac, b=bc, eic=eicc)
+        clients = {"a": ac, "b": bc, "eic": eicc}
 
         class TestData(NamedTuple):
             endpoint: str

@@ -1,11 +1,7 @@
 from django import template
-from django.db.models import Exists
-from django.db.models import OuterRef
-from django.db.models import Subquery
+from django.db.models import Exists, OuterRef, Subquery
 
-from puzzle_editing.models import get_user_role
-from puzzle_editing.models import TestsolveParticipation
-from puzzle_editing.models import User
+from puzzle_editing.models import TestsolveParticipation, User, get_user_role
 
 register = template.Library()
 
@@ -20,7 +16,6 @@ def testsolve_session_list(
     show_ratings=False,
     coordinator=False,
 ):
-
     sessions = (
         sessions.annotate(
             is_author=Exists(
@@ -65,7 +60,10 @@ def testsolve_session_list(
 
     id_to_index = {session.id: i for i, session in enumerate(sessions)}
 
-    for testsolve in sorted(set().union(*(session.participations.all() for session in sessions)), key=lambda p:p.pk):
+    for testsolve in sorted(
+        set().union(*(session.participations.all() for session in sessions)),
+        key=lambda p: p.pk,
+    ):
         session = sessions[id_to_index[testsolve.session_id]]
         if get_user_role(testsolve.user, session.puzzle) in [
             None,

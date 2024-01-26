@@ -1,7 +1,6 @@
 import base64
 from collections import Counter
-from datetime import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta
 from io import BytesIO
 
 import matplotlib
@@ -68,7 +67,8 @@ exclude = [
 
 def curr_puzzle_graph_b64(time: str, target_count, width: int = 20, height: int = 10):
     comments = (
-        PuzzleComment.objects.filter(is_system=True).order_by("date")
+        PuzzleComment.objects.filter(is_system=True)
+        .order_by("date")
         .select_related("puzzle")
     )
     counts = Counter()
@@ -97,7 +97,7 @@ def curr_puzzle_graph_b64(time: str, target_count, width: int = 20, height: int 
     if time in timetypes:
         now = datetime.now()
         plt.xlim(x[-1] - timetypes[time], now)
-    colormap = [i for i in matplotlib.cm.get_cmap("tab20").colors]
+    colormap = list(matplotlib.cm.get_cmap("tab20").colors)
     col = (colormap[::2] + colormap[1::2])[: len(status.STATUSES) - len(exclude)]
     ax.stackplot(x, np.transpose(y), labels=labels, colors=col[-1::-1])
     if target_count is not None:

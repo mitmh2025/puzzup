@@ -1,11 +1,9 @@
 from django.conf import settings
-from django.urls import include
-from django.urls import path
-from django.urls import re_path
+from django.urls import include, path, re_path
 from django.views.generic.base import RedirectView
+from django.views.static import serve
 
-from . import slashcommands
-from . import views
+from . import slashcommands, views
 
 urlpatterns = [
     path("", views.index, name="index"),
@@ -125,5 +123,5 @@ if settings.DEBUG:
 
     urlpatterns.append(path("__debug__/", include(debug_toolbar.urls)))
     urlpatterns += [
-        re_path(r"^static/(?P<path>.*)$", views.serve),
+        re_path(r"^static/(?P<path>.*)$", serve),
     ]

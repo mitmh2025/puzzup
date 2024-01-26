@@ -1,4 +1,5 @@
 from functools import wraps
+
 from django import urls
 from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
@@ -10,7 +11,7 @@ from . import models as m
 
 def external_puzzle_url(request: HttpRequest, puzzle: m.Puzzle) -> str:
     """Get an external URL for a puzzle."""
-    pth = urls.reverse("puzzle", kwargs=dict(id=puzzle.id))
+    pth = urls.reverse("puzzle", kwargs={"id": puzzle.id})
     return request.build_absolute_uri(pth)
 
 
@@ -34,13 +35,14 @@ def auto_postprodding_required(f):
         if settings.HUNT_REPO_URL == "":
             raise PermissionDenied
         return f(*args, **kwargs)
+
     return check
 
 
 def _user_can_testsolve(u):
-    if u.is_authenticated and u.has_perm('puzzle_editing.change_testsolvesession'):
+    if u.is_authenticated and u.has_perm("puzzle_editing.change_testsolvesession"):
         return True
-    if not m.SiteSetting.get_bool_setting('TESTSOLVING_DISABLED'):
+    if not m.SiteSetting.get_bool_setting("TESTSOLVING_DISABLED"):
         return True
     raise PermissionDenied
 

@@ -7,193 +7,193 @@
 {% block title %}Testsolving {{ session.puzzle }}{% endblock %}
 
 {% block main %}
-<h1 class="title">
-	<div class="pretitle">Testsolving session #{{ session.id }}</div>
-	{{ session.puzzle.id }}: {% if spoiled %}
-		<a href="{% url 'puzzle' session.puzzle.id %}">{{ session.puzzle.name }}</a>
-		{% elif participation %}
-			{{ session.puzzle.name }}
-		{% else %}
-			{{ session.puzzle }}
- 		{% endif %}</p>
-</h1>
-<h6>{{ session.puzzle.act_name | default:"(No act assigned)" }}</h6>
+    <h1 class="title">
+        <div class="pretitle">Testsolving session #{{ session.id }}</div>
+        {{ session.puzzle.id }}: {% if spoiled %}
+            <a href="{% url 'puzzle' session.puzzle.id %}">{{ session.puzzle.name }}</a>
+        {% elif participation %}
+            {{ session.puzzle.name }}
+        {% else %}
+            {{ session.puzzle }}
+        {% endif %}</p>
+    </h1>
+    <h6>{{ session.puzzle.act_name | default:"(No act assigned)" }}</h6>
 
 
-{% if user_is_hidden_from_list %}
-<p class="block warning">You are in this testsolve session, but you do not appear in the list above because you are an editor or author.</p>
-{% endif %}
+    {% if user_is_hidden_from_list %}
+        <p class="block warning">You are in this testsolve session, but you do not appear in the list above because you are an editor or author.</p>
+    {% endif %}
 
 
-{% if participation %}
-<div class="box">
-	<p class="block">You are in this testsolving session.</p>
+    {% if participation %}
+        <div class="box">
+            <p class="block">You are in this testsolving session.</p>
 
-	{% if spoiled %}
-	<p class="block warning">You are testsolving a puzzle you are spoiled on.</p>
-	{% endif %}
-
-
-	{% if participation.ended %}
-	<p class="block warning">You finished this testsolve at {{ participation.ended }}</p>
-	{% endif %}
-
-	{% if not answers_exist %}
-	<p class="block warning">No answers have been assigned to this puzzle in PuzzUp, so the answer checker will not mark any answers as correct.</p>
-	{% endif %}
-
-	{% if perms.puzzle_editing.unspoil_puzzle %}
-	<form action="{% url "testsolve_escape" id=session.id %}" method="POST" onsubmit="return confirm('This will remove you from this testsolving session without adding any feedback or spoiling you. Are you sure?');">
-	{% csrf_token %}
-		<button class="button is-small" type="submit" name="escape_testsolve" value="1">Alternatively, escape this testsolving session and pretend you were never here.</button>
-	</form>
-	{% endif %}
-</div>
-{% endif %}
-
-{% if participation or spoiled %}
-<div class="columns">
-	<div class="column is-half">
-
-		<div class="box">
-			<h2>Puzzle</h2>
-			{% if session.puzzle.has_postprod %}<b>👉 <a href="{{ session.puzzle.postprod_url }}">the postprodded puzzle</a> on staging.</b>{% endif %}
-			{% if session.puzzle.content %}
-			{{ session.puzzle.content|markdown }}
-			{% else %}
-			<div class="empty">(no puzzle yet)</div>
-			{% endif %}
-
-            <hr/>
-            {% if session.google_sheets_id %}
-                <a href="https://docs.google.com/spreadsheets/d/{{ session.google_sheets_id }}">
-                    Link to Spreadsheet
-                </a>
+            {% if spoiled %}
+                <p class="block warning">You are testsolving a puzzle you are spoiled on.</p>
             {% endif %}
-		</div>
 
-		{% if participation %}
-		<div class="box">
-			<p><a href="{% url 'testsolve_finish' session.id %}" class="testsolve-finish{% if session.has_correct_guess and not participation.ended %} testsolve-finish-correct{% endif %}">Done with the puzzle?</a> You can confirm and leave feedback after clicking the link.</p>
-		</div>
-		{% endif %}
-	</div>
 
-	<div class="column">
-		{% if participation or is_solved %}
-		<div class="box">
-			{% if is_solved %}
-			<h4>🎉 This puzzle has been solved! 🎉</h4>
-			{% elif participation %}
-			<form method="POST">
-				{% csrf_token %}
-				{{ guess_form.guess }}
-				<input class="button" type="submit" name="do_guess" value="Submit guess">
-			</form>
-			{% endif %}
-		</div>
-		{% endif %}
+            {% if participation.ended %}
+                <p class="block warning">You finished this testsolve at {{ participation.ended }}</p>
+            {% endif %}
 
-		{% if guesses %}
-		<div class="box">
-			<h2>Past guesses:</h2>
-			<ul>
-				{% for guess in session.guesses.all %}
-				<li>
-					<span class="
-					{% if guess.correct %}
-						guess correct
-					{% elif guess.partially_correct %}
-						guess partially_correct
-					{% else %}
-						guess incorrect
-					{% endif %}">
-						{{ guess.guess }}
-					</span>
+            {% if not answers_exist %}
+                <p class="block warning">No answers have been assigned to this puzzle in PuzzUp, so the answer checker will not mark any answers as correct.</p>
+            {% endif %}
 
-					<span class="date">guessed by {{ guess.user }} @ <span class="timestamp" data-timestamp="{{ guess.date.timestamp }}">{{ guess.date }}</span></span>
+            {% if perms.puzzle_editing.unspoil_puzzle %}
+                <form action="{% url "testsolve_escape" id=session.id %}" method="POST" onsubmit="return confirm('This will remove you from this testsolving session without adding any feedback or spoiling you. Are you sure?');">
+                    {% csrf_token %}
+                    <button class="button is-small" type="submit" name="escape_testsolve" value="1">Alternatively, escape this testsolving session and pretend you were never here.</button>
+                </form>
+            {% endif %}
+        </div>
+    {% endif %}
 
-					{% if guess.partial_response %}
-					<p>Partial answer response: {{ guess.partial_response }}</p>
-					{% endif %}
-				</li>
-				{% endfor %}
-			</ul>
-		</div>
-		{% endif %}
+    {% if participation or spoiled %}
+        <div class="columns">
+            <div class="column is-half">
 
-		{% if not is_solved %}
-		<div class="box">
-			<form method="POST">
-				{% csrf_token %}
-				<input class="button errorlist" id="get-help" type="submit" name="get_help" value="GET HELP">
-			</form>
-			<p>Hit this button if you're stuck and the Testsolving Coordinators will be alerted. (Please update the logistics box with how many more testsolvers and any other details.)</p>
-		</div>
-		{% endif %}
+                <div class="box">
+                    <h2>Puzzle</h2>
+                    {% if session.puzzle.has_postprod %}<b>👉 <a href="{{ session.puzzle.postprod_url }}">the postprodded puzzle</a> on staging.</b>{% endif %}
+                    {% if session.puzzle.content %}
+                        {{ session.puzzle.content|markdown }}
+                    {% else %}
+                        <div class="empty">(no puzzle yet)</div>
+                    {% endif %}
 
-	</div>
-</div>
-{% endif %}
-{% if not participation %}
-	<div class="box">
-		<p class="alert">You are not participating in this testsolving session. Would you like to join this session?</p>
-		<form method="POST">
-			{% csrf_token %}
-			<input type="submit" class="button is-info" name="join" value="Join this testsolving session">
-		</form>
-	</div>
-{% endif %}
+                    <hr/>
+                    {% if session.google_sheets_id %}
+                        <a href="https://docs.google.com/spreadsheets/d/{{ session.google_sheets_id }}">
+                            Link to Spreadsheet
+                        </a>
+                    {% endif %}
+                </div>
 
-{% if participation or spoiled %}
-<div class="box">
-	{% if session.joinable %}
-	<form class="block" method="POST">
-		{% csrf_token %}
-		<p>This session is listed as joinable by other solvers.
-		<button class="button is-small" type="submit" name="change_joinable" value="0">Set as non-joinable</button>
-		</p>
-	</form>
-	{% else %}
-	<form class="block" method="POST">
-		{% csrf_token %}
-		<p>This session is not listed as joinable by other solvers.
-		<button class="button is-small" type="submit" name="change_joinable" value="1">Set as joinable</button>
-		</p>
-	</form>
-	{% endif %}
+                {% if participation %}
+                    <div class="box">
+                        <p><a href="{% url 'testsolve_finish' session.id %}" class="testsolve-finish{% if session.has_correct_guess and not participation.ended %} testsolve-finish-correct{% endif %}">Done with the puzzle?</a> You can confirm and leave feedback after clicking the link.</p>
+                    </div>
+                {% endif %}
+            </div>
 
-	<form method="POST" onsubmit="return confirm('This will add the selected user(s) to this testsolving session. Continue?');">
-		<details>
-			<summary>Add testsolvers</summary>
-			{% csrf_token %}
-		{% for field in testsolve_adder_form %}
-		{{ field }}
-		{% endfor %}
-		<input type="submit" class="button is-info" value="Add these people">
-		</details>
-	</form>
-</div>
+            <div class="column">
+                {% if participation or is_solved %}
+                    <div class="box">
+                        {% if is_solved %}
+                            <h4>🎉 This puzzle has been solved! 🎉</h4>
+                        {% elif participation %}
+                            <form method="POST">
+                                {% csrf_token %}
+                                {{ guess_form.guess }}
+                                <input class="button" type="submit" name="do_guess" value="Submit guess">
+                            </form>
+                        {% endif %}
+                    </div>
+                {% endif %}
 
-{% if spoiled %}
-	<table class="table is-fullwidth classic sortable">
-		<tr><th>Participant</th><th>Fun rating</th><th>Difficulty rating</th><th>Hours spent</th><th>Done?</th>
-		</tr>
-		{% for part in true_participants %}
-		<tr>
-			<td>{{ part.user|display_name }}</td>
-			<td>{{ part.fun_rating|default:"n/a" }}</td>
-			<td>{{ part.difficulty_rating|default:"n/a" }}</td>
-			<td>{{ part.hours_spent|default_if_none:"n/a" }}</td>
-			<td>{% if part.ended %}✔{% endif %}</td>
-		</tr>
-		{% endfor %}
-	</table>
-{% endif %}
+                {% if guesses %}
+                    <div class="box">
+                        <h2>Past guesses:</h2>
+                        <ul>
+                            {% for guess in session.guesses.all %}
+                                <li>
+                                    <span class="
+                                                 {% if guess.correct %}
+                                                     guess correct
+                                                 {% elif guess.partially_correct %}
+                                                     guess partially_correct
+                                                 {% else %}
+                                                     guess incorrect
+                                                 {% endif %}">
+                                        {{ guess.guess }}
+                                    </span>
 
-<div class="box">
-	{% comment_list request.user session.puzzle comments comment_form False False %}
-</div>
-{% endif %}
+                                    <span class="date">guessed by {{ guess.user }} @ <span class="timestamp" data-timestamp="{{ guess.date.timestamp }}">{{ guess.date }}</span></span>
+
+                                    {% if guess.partial_response %}
+                                        <p>Partial answer response: {{ guess.partial_response }}</p>
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+                {% if not is_solved %}
+                    <div class="box">
+                        <form method="POST">
+                            {% csrf_token %}
+                            <input class="button errorlist" id="get-help" type="submit" name="get_help" value="GET HELP">
+                        </form>
+                        <p>Hit this button if you're stuck and the Testsolving Coordinators will be alerted. (Please update the logistics box with how many more testsolvers and any other details.)</p>
+                    </div>
+                {% endif %}
+
+            </div>
+        </div>
+    {% endif %}
+    {% if not participation %}
+        <div class="box">
+            <p class="alert">You are not participating in this testsolving session. Would you like to join this session?</p>
+            <form method="POST">
+                {% csrf_token %}
+                <input type="submit" class="button is-info" name="join" value="Join this testsolving session">
+            </form>
+        </div>
+    {% endif %}
+
+    {% if participation or spoiled %}
+        <div class="box">
+            {% if session.joinable %}
+                <form class="block" method="POST">
+                    {% csrf_token %}
+                    <p>This session is listed as joinable by other solvers.
+                        <button class="button is-small" type="submit" name="change_joinable" value="0">Set as non-joinable</button>
+                    </p>
+                </form>
+            {% else %}
+                <form class="block" method="POST">
+                    {% csrf_token %}
+                    <p>This session is not listed as joinable by other solvers.
+                        <button class="button is-small" type="submit" name="change_joinable" value="1">Set as joinable</button>
+                    </p>
+                </form>
+            {% endif %}
+
+            <form method="POST" onsubmit="return confirm('This will add the selected user(s) to this testsolving session. Continue?');">
+                <details>
+                    <summary>Add testsolvers</summary>
+                    {% csrf_token %}
+                    {% for field in testsolve_adder_form %}
+                        {{ field }}
+                    {% endfor %}
+                    <input type="submit" class="button is-info" value="Add these people">
+                </details>
+            </form>
+        </div>
+
+        {% if spoiled %}
+            <table class="table is-fullwidth classic sortable">
+                <tr><th>Participant</th><th>Fun rating</th><th>Difficulty rating</th><th>Hours spent</th><th>Done?</th>
+                </tr>
+                {% for part in true_participants %}
+                    <tr>
+                        <td>{{ part.user|display_name }}</td>
+                        <td>{{ part.fun_rating|default:"n/a" }}</td>
+                        <td>{{ part.difficulty_rating|default:"n/a" }}</td>
+                        <td>{{ part.hours_spent|default_if_none:"n/a" }}</td>
+                        <td>{% if part.ended %}✔{% endif %}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% endif %}
+
+        <div class="box">
+            {% comment_list request.user session.puzzle comments comment_form False False %}
+        </div>
+    {% endif %}
 
 {% endblock %}

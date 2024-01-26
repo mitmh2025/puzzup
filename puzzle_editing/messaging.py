@@ -15,13 +15,12 @@ def send_mail_wrapper(subject, template, context, recipients):
     mail = EmailMultiAlternatives(
         subject=settings.EMAIL_SUBJECT_PREFIX + subject,
         body=render_to_string(template + ".txt", context),
-        from_email="Puzzup no-reply <{}>".format(settings.DEFAULT_FROM_EMAIL),
+        from_email=f"Puzzup no-reply <{settings.DEFAULT_FROM_EMAIL}>",
         to=recipients,
         alternatives=[(render_to_string(template + ".html", context), "text/html")],
-        reply_to=["Puzzup no-reply <{}>".format(settings.DEFAULT_FROM_EMAIL)],
+        reply_to=[f"Puzzup no-reply <{settings.DEFAULT_FROM_EMAIL}>"],
     )
     send_res = mail.send()
     if send_res != 1:
-        raise RuntimeError(
-            "Unknown failure sending mail??? {} {}".format(recipients, send_res)
-        )
+        msg = f"Unknown failure sending mail??? {recipients} {send_res}"
+        raise RuntimeError(msg)

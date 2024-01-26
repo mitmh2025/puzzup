@@ -1,7 +1,7 @@
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
 
-from settings.base import *  # pylint: disable=unused-wildcard-import,wildcard-import
+from settings.base import *  # noqa: F403
 
 DEBUG = False
 SECURE_SSL_REDIRECT = True
