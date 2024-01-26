@@ -15,20 +15,26 @@
 </div>
 {% endif %}
 
+{% if current_user_sessions %}
 <div class="box">
     <p class="title is-4">Testsolving sessions you are in</p>
     {% testsolve_session_list current_user_sessions request.user show_notes=True show_leave_button=True %}
 </div>
+{% endif %}
 
+{% if factchecking %}
 <div class="box">
     <p class="title is-4">Puzzles you are factchecking</p>
     {% puzzle_list factchecking request.user %}
 </div>
+{% endif %}
 
+{% if postprodding %}
 <div class="box">
     <p class="title is-4">Puzzles you are postprodding</p>
     {% puzzle_list postprodding request.user %}
 </div>
+{% endif %}
 
     {% if inbox_puzzles %}
     <div class="card block">
