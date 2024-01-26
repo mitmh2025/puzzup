@@ -3,7 +3,7 @@
 name = "puzzup-2025"
 version = "0.0.0"
 description = "Puzzle development webapp"
-authors = ["betaveros", "mitchgu", "jakob223", "dvorak42", "fortenforge", "Sandy Weisz", "James Sugrono", "teammate"]
+authors = ["betaveros", "mitchgu", "jakob223", "dvorak42", "fortenforge", "Sandy Weisz", "James Sugrono", "teammate", "deathandmayhem"]
 
 [tool.poetry.dependencies]
 python = "==3.9.*"
