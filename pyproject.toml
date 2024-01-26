@@ -1,6 +1,6 @@
 [tool]
 [tool.poetry]
-name = "puzzup-2023"
+name = "puzzup-2025"
 version = "0.0.0"
 description = "Puzzle development webapp"
 authors = ["betaveros", "mitchgu", "jakob223", "dvorak42", "fortenforge", "Sandy Weisz", "James Sugrono", "teammate"]
