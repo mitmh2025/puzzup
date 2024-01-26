@@ -7,35 +7,35 @@
 
 {% block outer_main %}
 
-<h1 class='title'>Support requests for <a href="{% url 'puzzle' puzzle.id %}">{{ puzzle.name }}</a></h1>
-<div class="columns">
-    {% for sup in support %}
-	<div class="column is-one-third">
-        <div class="box">
-            <h2>{{ sup.display }}</h2>
-            {% if sup.obj %}
-                <p>
-                    <span class="tag">{{ sup.obj.get_status_display }}</span>
-                </p>
-                <p>
-                    <b>Assignees</b>: {% user_list sup.obj.assignees linkify=True %}
-                </p>
-                <p>
-                    <b>Author notes</b><br>
-                    {{ .obj.author_notes|default_if_none:"(none)"|markdown }}
-                </p>
-                <p>
-                    <a class="button is-link" href="{% url 'support_by_puzzle_id' puzzle.id sup.short %}">View</a>
-                </p>
-            {% else %}
-            <form method="POST" action="{% url 'support_by_puzzle_id' puzzle.id sup.short %}">
-                {% csrf_token %}
-                <input type="submit" name="create" class="button is-primary" value="Create">
-            </form>
-            {% endif %}
-        </div>
+    <h1 class='title'>Support requests for <a href="{% url 'puzzle' puzzle.id %}">{{ puzzle.name }}</a></h1>
+    <div class="columns">
+        {% for sup in support %}
+            <div class="column is-one-third">
+                <div class="box">
+                    <h2>{{ sup.display }}</h2>
+                    {% if sup.obj %}
+                        <p>
+                            <span class="tag">{{ sup.obj.get_status_display }}</span>
+                        </p>
+                        <p>
+                            <b>Assignees</b>: {% user_list sup.obj.assignees linkify=True %}
+                        </p>
+                        <p>
+                            <b>Author notes</b><br>
+                            {{ .obj.author_notes|default_if_none:"(none)"|markdown }}
+                        </p>
+                        <p>
+                            <a class="button is-link" href="{% url 'support_by_puzzle_id' puzzle.id sup.short %}">View</a>
+                        </p>
+                    {% else %}
+                        <form method="POST" action="{% url 'support_by_puzzle_id' puzzle.id sup.short %}">
+                            {% csrf_token %}
+                            <input type="submit" name="create" class="button is-primary" value="Create">
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
     </div>
-    {% endfor %}
-</div>
 
 {% endblock %}

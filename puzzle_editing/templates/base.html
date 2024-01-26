@@ -18,120 +18,120 @@
   </head>
   <body class="{% block bodyclass %}{% endblock %}">
     <nav class="navbar is-fixed-top" role="navigation" aria-label="main navigation">
-    {% with request.path as current_path %}
-      <div class="navbar-brand">
-      <a class="navbar-item" href="/">
-        ⏫
-      </a>
+      {% with request.path as current_path %}
+        <div class="navbar-brand">
+          <a class="navbar-item" href="/">
+            ⏫
+          </a>
 
-      <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
-        <span aria-hidden="true"></span>
-        <span aria-hidden="true"></span>
-        <span aria-hidden="true"></span>
-      </a>
-      </div>
-
-      <div id="navbarBasicExample" class="navbar-menu">
-      <div class="navbar-start">
-        {% nav_link current_path 'authored' '✋ My Puzzles' %}
-        {% if perms.puzzle_editing.list_puzzle %}
-        <div class="navbar-item has-dropdown is-hoverable">
-          <a class="navbar-link">
-            🤔 Puzzles
+          <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
           </a>
-          <div class="navbar-dropdown">
-            {% nav_link current_path 'byround' '📚 Grouped by round' %}
-            {% nav_link current_path 'bystatus' '📍 Grouped by status' %}
-            {% nav_link current_path 'all' '🌎 All in one list' %}
-          </div>
-         </div>
-        {% endif %}
-        {% if perms.puzzle_editing.change_round %}
-        <div class="navbar-item has-dropdown is-hoverable">
-          <a class="navbar-link">
-            👒 Editors
-          </a>
-          <div class="navbar-dropdown">
-            {% if request.user.is_superuser or request.user|has_group:"EIC" %}
-              {% nav_link current_path 'eic' '🎩 Editors-In-Chief inbox' %}
-              {% nav_link current_path 'triage' '🩺 EIC triage' %}
-              {% nav_link current_path 'editor_overview' '👁 Editor overview' %}
-              <hr class="navbar-divider">
-              {% nav_link current_path 'byround_eic' '🌍 All answers & puzzles, by round' %}
-            {% else %}
-              {% nav_link current_path 'all_answers' '🌍 All answers & puzzles, by round' %}
-            {% endif %}
-            {% nav_link current_path 'rounds' '➕ Add rounds or answers' %}
-            <hr class="navbar-divider">
-            {% nav_link current_path 'tags' '🏷 Tags' %}
-          </div>
-         </div>
-        {% endif %}
-        {% if TESTSOLVING_ALLOWED %}
-        {% nav_link current_path 'testsolve_main' '✏️ Testsolve' %}
-        {% endif %}
-        {% nav_link current_path 'puzzle_new' '➕ Add' %}
-        {% nav_link current_path 'process' "❓ How To" %}
-        <div class="navbar-item has-dropdown is-hoverable">
-          <a class="navbar-link">
-            🪵 Postprod
-          </a>
-          <div class="navbar-dropdown">
-            {% nav_link current_path 'postprod' '🪵 Dashboard' %}
-            {% nav_link current_path 'postprod_all' '🏠 Pipeline' %}
-            {% if AUTO_POSTPRODDING_ENABLED %}
-            {% nav_link current_path 'export' '📥 Export all metadata' %}
-            {% endif %}
-          </div>
         </div>
 
-        {% nav_link current_path 'factcheck' '📋 Factcheck' %}
-
-        <div class="navbar-item has-dropdown is-hoverable">
-        <a class="navbar-link">
-          More
-        </a>
-
-        <div class="navbar-dropdown">
-            {% nav_link current_path 'my_spoiled' '🔦 My spoiled puzzles' %}
+        <div id="navbarBasicExample" class="navbar-menu">
+          <div class="navbar-start">
+            {% nav_link current_path 'authored' '✋ My Puzzles' %}
             {% if perms.puzzle_editing.list_puzzle %}
-              {% nav_link current_path 'all_hints' '🪙 Hint report' %}
+              <div class="navbar-item has-dropdown is-hoverable">
+                <a class="navbar-link">
+                  🤔 Puzzles
+                </a>
+                <div class="navbar-dropdown">
+                  {% nav_link current_path 'byround' '📚 Grouped by round' %}
+                  {% nav_link current_path 'bystatus' '📍 Grouped by status' %}
+                  {% nav_link current_path 'all' '🌎 All in one list' %}
+                </div>
+              </div>
             {% endif %}
-            <hr class="navbar-divider">
-            {% nav_link current_path 'all_support' '⛑ Support' %}
-            <hr class="navbar-divider">
-          {% nav_link current_path 'docs' 'How to use PuzzUp' %}
-            <hr class="navbar-divider">
-          {% nav_link current_path 'users' 'Users' %}
-          {% if request.user.is_superuser or request.user|has_group:"Art" or request.user|has_group:"Editor" or request.user|has_group:"EIC" %}
-          {% nav_link current_path 'flavor' 'Flavor' %}
-          {% endif %}
-          {% nav_link current_path 'statistics' 'Statistics' %}
-        </div>
-        </div>
-      </div>
+            {% if perms.puzzle_editing.change_round %}
+              <div class="navbar-item has-dropdown is-hoverable">
+                <a class="navbar-link">
+                  👒 Editors
+                </a>
+                <div class="navbar-dropdown">
+                  {% if request.user.is_superuser or request.user|has_group:"EIC" %}
+                    {% nav_link current_path 'eic' '🎩 Editors-In-Chief inbox' %}
+                    {% nav_link current_path 'triage' '🩺 EIC triage' %}
+                    {% nav_link current_path 'editor_overview' '👁 Editor overview' %}
+                    <hr class="navbar-divider">
+                    {% nav_link current_path 'byround_eic' '🌍 All answers & puzzles, by round' %}
+                  {% else %}
+                    {% nav_link current_path 'all_answers' '🌍 All answers & puzzles, by round' %}
+                  {% endif %}
+                  {% nav_link current_path 'rounds' '➕ Add rounds or answers' %}
+                  <hr class="navbar-divider">
+                  {% nav_link current_path 'tags' '🏷 Tags' %}
+                </div>
+              </div>
+            {% endif %}
+            {% if TESTSOLVING_ALLOWED %}
+              {% nav_link current_path 'testsolve_main' '✏️ Testsolve' %}
+            {% endif %}
+            {% nav_link current_path 'puzzle_new' '➕ Add' %}
+            {% nav_link current_path 'process' "❓ How To" %}
+            <div class="navbar-item has-dropdown is-hoverable">
+              <a class="navbar-link">
+                🪵 Postprod
+              </a>
+              <div class="navbar-dropdown">
+                {% nav_link current_path 'postprod' '🪵 Dashboard' %}
+                {% nav_link current_path 'postprod_all' '🏠 Pipeline' %}
+                {% if AUTO_POSTPRODDING_ENABLED %}
+                  {% nav_link current_path 'export' '📥 Export all metadata' %}
+                {% endif %}
+              </div>
+            </div>
 
-      <div class="navbar-end">
-        <div class="navbar-item">
-        {% if request.user.is_authenticated %}
-          <div class="navbar-item">
-            {% countdown %}
+            {% nav_link current_path 'factcheck' '📋 Factcheck' %}
+
+            <div class="navbar-item has-dropdown is-hoverable">
+              <a class="navbar-link">
+                More
+              </a>
+
+              <div class="navbar-dropdown">
+                {% nav_link current_path 'my_spoiled' '🔦 My spoiled puzzles' %}
+                {% if perms.puzzle_editing.list_puzzle %}
+                  {% nav_link current_path 'all_hints' '🪙 Hint report' %}
+                {% endif %}
+                <hr class="navbar-divider">
+                {% nav_link current_path 'all_support' '⛑ Support' %}
+                <hr class="navbar-divider">
+                {% nav_link current_path 'docs' 'How to use PuzzUp' %}
+                <hr class="navbar-divider">
+                {% nav_link current_path 'users' 'Users' %}
+                {% if request.user.is_superuser or request.user|has_group:"Art" or request.user|has_group:"Editor" or request.user|has_group:"EIC" %}
+                  {% nav_link current_path 'flavor' 'Flavor' %}
+                {% endif %}
+                {% nav_link current_path 'statistics' 'Statistics' %}
+              </div>
+            </div>
           </div>
-          {{ request.user.discord_user_id|yesno:",⚠️ " }}
-          <a href="{% url 'account' %}">{{ user.hat }} {{ request.user|display_name }}</a>
-        {% else %}
-          <div class="buttons">
-            <a class="button is-info" href="{% url 'login' %}">
-              <strong>Login</strong>
-            </a>
-            <a class="button is-info" href="{% url 'register' %}">
-              <strong>Sign up</strong>
-            </a>
+
+          <div class="navbar-end">
+            <div class="navbar-item">
+              {% if request.user.is_authenticated %}
+                <div class="navbar-item">
+                  {% countdown %}
+                </div>
+                {{ request.user.discord_user_id|yesno:",⚠️ " }}
+                <a href="{% url 'account' %}">{{ user.hat }} {{ request.user|display_name }}</a>
+              {% else %}
+                <div class="buttons">
+                  <a class="button is-info" href="{% url 'login' %}">
+                    <strong>Login</strong>
+                  </a>
+                  <a class="button is-info" href="{% url 'register' %}">
+                    <strong>Sign up</strong>
+                  </a>
+                </div>
+              {% endif %}
+            </div>
           </div>
-        {% endif %}
         </div>
-      </div>
-      </div>
 
       {% endwith %}
     </nav>
@@ -146,41 +146,41 @@
         </select>
       </div> {% endcomment %}
 
-      {% if messages %}
+    {% if messages %}
       <ul class="messages">
         {% for message in messages %}
-        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+          <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
         {% endfor %}
       </ul>
-      {% endif %}
+    {% endif %}
 
     <div class="container content">
-    {% block outer_main %}
-    <main>
-      {% block main %}{% endblock %}
-    </main>
-    {% endblock %}
+      {% block outer_main %}
+        <main>
+          {% block main %}{% endblock %}
+        </main>
+      {% endblock %}
     </div>
 
     <script type="text/javascript">
 
     // Prevent multiple POST requests while the first form submission is loading.
     // This solution assumes that Django will refresh the HTML on response.
-    $(function() {
-      $('form').submit(function() {
-        var $this = $(this);
-        $this.submit(function() {
-          return false;
-        });
+      $(function() {
+        $('form').submit(function() {
+          var $this = $(this);
+          $this.submit(function() {
+            return false;
+          });
         // Disable the button next frame to allow form data to go through
-        setTimeout(function() {
-          $this.find('input[type="submit"]').prop('disabled', true).prop('value', 'Submitting...');
-        }, 0);
-        return true;
+          setTimeout(function() {
+            $this.find('input[type="submit"]').prop('disabled', true).prop('value', 'Submitting...');
+          }, 0);
+          return true;
+        });
       });
-    });
 
-    document.addEventListener('DOMContentLoaded', () => {
+      document.addEventListener('DOMContentLoaded', () => {
 
         // Get all "navbar-burger" elements
         const $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0);
@@ -189,19 +189,19 @@
         if ($navbarBurgers.length > 0) {
 
         // Add a click event on each of them
-        $navbarBurgers.forEach( el => {
-          el.addEventListener('click', () => {
+          $navbarBurgers.forEach( el => {
+            el.addEventListener('click', () => {
 
           // Get the target from the "data-target" attribute
-          const target = el.dataset.target;
-          const $target = document.getElementById(target);
+              const target = el.dataset.target;
+              const $target = document.getElementById(target);
 
           // Toggle the "is-active" class on both the "navbar-burger" and the "navbar-menu"
-          el.classList.toggle('is-active');
-          $target.classList.toggle('is-active');
+              el.classList.toggle('is-active');
+              $target.classList.toggle('is-active');
 
+            });
           });
-        });
         }
 
       });
@@ -318,9 +318,9 @@
       var links = document.links;
 
       for (var i = 0, linksLength = links.length; i < linksLength; i++) {
-      if (links[i].hostname != window.location.hostname) {
-        links[i].target = '_blank';
-      }
+        if (links[i].hostname != window.location.hostname) {
+          links[i].target = '_blank';
+        }
       }
     </script>
     <script src="{% static 'sorttable.js' %}"></script>

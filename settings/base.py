@@ -127,7 +127,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = "/static/"
-STATIC_ROOT = os.path.normpath(os.path.join(BASE_DIR, "static"))
+STATIC_ROOT = os.path.normpath(BASE_DIR / "static")
 SITE_PASSWORD = os.environ.get("SITE_PASSWORD")
 
 
@@ -150,7 +150,7 @@ SESSION_COOKIE_AGE = 365 * 24 * 60 * 60
 
 # Ensure logs directory exists.
 LOGS_DIR = BASE_DIR / "logs"
-os.makedirs(LOGS_DIR, exist_ok=True)
+LOGS_DIR.mkdir(exist_ok=True)
 
 LOGGING = {
     "version": 1,
@@ -163,19 +163,19 @@ LOGGING = {
         "django": {
             "level": "DEBUG",
             "class": "logging.FileHandler",
-            "filename": os.path.join(LOGS_DIR, "django.log"),
+            "filename": LOGS_DIR / "django.log",
             "formatter": "django",
         },
         "puzzle": {
             "level": "DEBUG",
             "class": "logging.FileHandler",
-            "filename": os.path.join(LOGS_DIR, "puzzle.log"),
+            "filename": LOGS_DIR / "puzzle.log",
             "formatter": "puzzles",
         },
         "request": {
             "level": "DEBUG",
             "class": "logging.FileHandler",
-            "filename": os.path.join(LOGS_DIR, "request.log"),
+            "filename": LOGS_DIR / "request.log",
             "formatter": "puzzles",
         },
         "console": {
@@ -199,9 +199,11 @@ LOGGING = {
 
 # only if you want to do postprodding
 HUNT_REPO_URL = os.environ.get("HUNT_REPO_URL", "")
-HUNT_REPO = os.environ.get("HUNT_REPO", "")
+HUNT_REPO = (
+    Path(os.environ.get("HUNT_REPO", "")) if os.environ.get("HUNT_REPO") else None
+)
 HUNT_REPO_BRANCH = os.environ.get("HUNT_REPO_BRANCH", "main")
-HUNT_REPO_CLIENT = os.path.join(HUNT_REPO, "client")
+HUNT_REPO_CLIENT = HUNT_REPO / "client" if HUNT_REPO else None
 SSH_KEY = os.environ.get("SSH_KEY_PATH", "~/.ssh/id_rsa")
 
 HUNT_TIME = datetime.datetime(
@@ -230,7 +232,7 @@ REST_FRAMEWORK = {
 DRIVE_SETTINGS = {}
 credentials_file = BASE_DIR / "credentials/drive-credentials.json"
 if credentials_file.is_file():
-    with open(credentials_file, "rt") as f:
+    with credentials_file.open() as f:
         DRIVE_SETTINGS["credentials"] = json.load(f)
 
 # Discord integration

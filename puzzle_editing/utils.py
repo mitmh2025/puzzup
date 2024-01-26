@@ -1,25 +1,16 @@
-import json
 import logging
-import math
-import os
 import re
-import shutil
 import time
 import urllib.error
 import urllib.request
+from pathlib import Path
 
-import git
 from django.conf import settings
-from django.core import management
 from django.core.management.base import CommandError
-from PIL import Image
-from PIL import UnidentifiedImageError
+from PIL import Image, UnidentifiedImageError
 
-import puzzle_editing.status as status
 from puzzle_editing.git import GitRepo
-from puzzle_editing.models import Puzzle
-from puzzle_editing.models import PuzzlePostprod
-from puzzle_editing.models import Round
+from puzzle_editing.models import Puzzle, PuzzlePostprod, Round
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +44,7 @@ def export_all(act=None):
             pp = PuzzlePostprod(puzzle=puzzle, slug=puzzle.slug)
             pp.save()
 
-        with open(os.path.join(fixture_path, f"{pp.slug}.yaml"), "w") as f:
+        with (Path(fixture_path) / f"{pp.slug}.yaml").open("w") as f:
             f.write(puzzle.get_yaml_fixture())
 
     if repo.commit("Export puzzle fixtures"):
@@ -76,11 +67,11 @@ def export_puzzle(
     branch_name = pp.slug
     repo.checkout_branch(branch_name)
 
-    puzzle_path = os.path.join(repo.puzzle_path(pp.slug, puzzle_directory), "index.tsx")
-    if not os.path.exists(puzzle_path) or puzzle_html:
+    puzzle_path = repo.puzzle_path(pp.slug, puzzle_directory) / "index.tsx"
+    if not puzzle_path.exists() or puzzle_html:
         assets_path = repo.assets_puzzle_path(pp.slug)
         puzzle_html, images = download_images(puzzle_html, assets_path, max_image_width)
-        with open(puzzle_path, "w") as f:
+        with puzzle_path.open("w") as f:
             f.write(
                 get_puzzle_html(
                     pp.puzzle.round.puzzle_template or DEFAULT_PUZZLE_TEMPLATE,
@@ -90,13 +81,13 @@ def export_puzzle(
                 )
             )
 
-    solution_path = os.path.join(repo.solution_path(pp.slug), "index.tsx")
-    if not os.path.exists(solution_path) or solution_html:
+    solution_path = repo.solution_path(pp.slug) / "index.tsx"
+    if not solution_path.exists() or solution_html:
         assets_path = repo.assets_solution_path(pp.slug)
         solution_html, images = download_images(
             solution_html, assets_path, max_image_width
         )
-        with open(solution_path, "w") as f:
+        with solution_path.open("w") as f:
             f.write(
                 get_puzzle_html(
                     pp.puzzle.round.solution_template or DEFAULT_SOLUTION_TEMPLATE,
@@ -110,7 +101,7 @@ def export_puzzle(
             )
 
     fixture_path = repo.fixture_path()
-    with open(os.path.join(fixture_path, f"{pp.slug}.yaml"), "w") as f:
+    with (fixture_path / f"{pp.slug}.yaml").open("w") as f:
         f.write(pp.puzzle.get_yaml_fixture())
 
     if repo.commit(f"Postprodding '{pp.slug}'"):
@@ -127,7 +118,7 @@ def download_images(html: str, assets_path: str, max_image_width: int):
     image_map = {}
 
     for i, src in enumerate(images):
-        full_assets_path = os.path.join(assets_path, f"{i}.png")
+        full_assets_path = assets_path / f"{i}.png"
         relative_path = full_assets_path.split(settings.HUNT_REPO_CLIENT + "/")[-1]
 
         # Download the image and save it to the hunt repo
@@ -164,10 +155,10 @@ def download_images(html: str, assets_path: str, max_image_width: int):
 
 
 def get_puzzle_html(template, html, slug, images=None, title="", answer="", authors=""):
-    template_file = os.path.join(settings.HUNT_REPO, template)
+    template_file = settings.HUNT_REPO / template
 
     try:
-        with open(template_file, "r") as f:
+        with template_file.open() as f:
             puzzle_tsx = f.read()
 
             # Add imports to top of file
@@ -193,5 +184,6 @@ def get_puzzle_html(template, html, slug, images=None, title="", answer="", auth
             )
 
             return puzzle_tsx
-    except Exception:
-        raise CommandError(f"Failed to open {template_file}")
+    except Exception as e:
+        msg = f"Failed to open {template_file}"
+        raise CommandError(msg) from e

@@ -298,6 +298,6 @@ Forked from [PuzzLord](https://github.com/galacticpuzzlehunt/puzzlord), which is
 
 UI reskin by [Sandy Weisz](https://github.com/santheo). Lots of work by Discord improvements by [James Sugrono](https://github.com/jimsug).
 
-Additional contributions by members of [teammate](https://github.com/teammatehunt).
+Additional contributions by members of [teammate](https://github.com/teammatehunt) and [deathandmayhem](https://github.com/deathandmayhem).
 
 Contains a lightly modified copy of [sorttable.js](https://kryogenix.org/code/browser/sorttable/), licensed under the X11 license.

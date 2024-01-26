@@ -1,22 +1,22 @@
 {% load markdown %}
 <p>
-<b><a href="{{ request.scheme }}://{{ request.get_host }}{% url 'puzzle' puzzle.id %}">{{ puzzle.spoiler_free_title }}</a></b>
-<br>
-is now <b>{{ status }}</b>
-<br>
-status set by {{ user }}
+    <b><a href="{{ request.scheme }}://{{ request.get_host }}{% url 'puzzle' puzzle.id %}">{{ puzzle.spoiler_free_title }}</a></b>
+    <br>
+    is now <b>{{ status }}</b>
+    <br>
+    status set by {{ user }}
 </p>
 
 <p>
-<b>- - -🚨 SPOILERS AHEAD - - -</b>
+    <b>- - -🚨 SPOILERS AHEAD - - -</b>
 </p>
 
 <p>
-<b>Requests:</b><br>{{ puzzle.notes|markdown }}
+    <b>Requests:</b><br>{{ puzzle.notes|markdown }}
 </p>
 <p>
-<b>Mechanics:</b><br>{{ puzzle.editor_notes }}
+    <b>Mechanics:</b><br>{{ puzzle.editor_notes }}
 </p>
 <p>
-<b>Description:</b><br>{{ puzzle.description|markdown }}
+    <b>Description:</b><br>{{ puzzle.description|markdown }}
 </p>

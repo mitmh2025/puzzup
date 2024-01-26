@@ -1,45 +1,45 @@
 {% extends "base.html" %}
 {% block title %}
-	{% if spoiled %}{{ puzzle.spoilery_title }}{% else %}{{puzzle.spoiler_free_title}}{%endif%} / Postprodding
+    {% if spoiled %}{{ puzzle.spoilery_title }}{% else %}{{puzzle.spoiler_free_title}}{%endif%} / Postprodding
 {% endblock %}
 {% block main %}
-<h1>Postprodding {% if spoiled %}{{ puzzle.spoilery_title }}{% else %}{{puzzle.spoiler_free_title}}{%endif%}</h1>
-<a href="{% url 'puzzle' puzzle.id %}">🔙 to {{ puzzle }}</a>
-{% if spoiled %}
-<h2>How to postprod a puzzle</h2>
-<ol>
-    <li><b>Choose a slug (unique identifier).</b> This is typically the puzzle name normalized to lower-case-with-hyphens.</li>
+    <h1>Postprodding {% if spoiled %}{{ puzzle.spoilery_title }}{% else %}{{puzzle.spoiler_free_title}}{%endif%}</h1>
+    <a href="{% url 'puzzle' puzzle.id %}">🔙 to {{ puzzle }}</a>
+    {% if spoiled %}
+        <h2>How to postprod a puzzle</h2>
+        <ol>
+            <li><b>Choose a slug (unique identifier).</b> This is typically the puzzle name normalized to lower-case-with-hyphens.</li>
 
-    <li>
-        <b>Prepare a Google Doc with your puzzle content.</b> PuzzUp will automatically extract the HTML of this doc and create a commit on a new branch in the hunt repo.<br/>
-        Note: if there are interactive components or if you'd like to postprod manually, you can leave this field blank.
-    <li>
-        <b>Prepare a Google Doc with your solution content.</b> Similarly, PuzzUp will automatically extract the HTML of this doc.</li>
-</ol>
+            <li>
+                <b>Prepare a Google Doc with your puzzle content.</b> PuzzUp will automatically extract the HTML of this doc and create a commit on a new branch in the hunt repo.<br/>
+                Note: if there are interactive components or if you'd like to postprod manually, you can leave this field blank.
+                <li>
+                    <b>Prepare a Google Doc with your solution content.</b> Similarly, PuzzUp will automatically extract the HTML of this doc.</li>
+            </ol>
 
-<p><small>This puzzle's <a href="{% url 'puzzle_yaml' puzzle.id %}">puzzle.yaml</a> metadata will automatically be saved to HUNT_REPO/server/tph/fixtures/puzzles/SLUG.yaml</small></p>
+            <p><small>This puzzle's <a href="{% url 'puzzle_yaml' puzzle.id %}">puzzle.yaml</a> metadata will automatically be saved to HUNT_REPO/server/tph/fixtures/puzzles/SLUG.yaml</small></p>
 
-<h2>Postprod your puzzle</h2>
-    <p>This may take some time. When it's done, the exported metadata and puzzle content will be available in a new branch in the Git hunt repo.</p>
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.non_field_errors }}
+            <h2>Postprod your puzzle</h2>
+            <p>This may take some time. When it's done, the exported metadata and puzzle content will be available in a new branch in the Git hunt repo.</p>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form.non_field_errors }}
 
-        <table class="classic">
-<tr><th>Title:</th><td>{{puzzle.name}}</td></tr>
-<tr><th>Answer:</th><td>{% if puzzle.answer %}{{ puzzle.answer }}{% else %}<span class="empty">(none)</span>{% endif %}</td></tr>
-            {{ form.as_table }}
-        </table>
+                <table class="classic">
+                    <tr><th>Title:</th><td>{{puzzle.name}}</td></tr>
+                    <tr><th>Answer:</th><td>{% if puzzle.answer %}{{ puzzle.answer }}{% else %}<span class="empty">(none)</span>{% endif %}</td></tr>
+                    {{ form.as_table }}
+                </table>
 
-        <input class="button is-info" type="submit" value="Submit">
-    </form>
-    {% if puzzle.has_postprod %}
-        <h2>Current postprod</h2>
-       Puzzle postprodded at <span class="timestamp" data-timestamp="{{puzzle.postprod.mtime.timestamp}}">{{puzzle.postprod.mtime}}</span>.<br/>
-       Puzzle viewable at <a href="{{ puzzle.postprod_url }}">{{puzzle.postprod_url}}</a>.
+                <input class="button is-info" type="submit" value="Submit">
+            </form>
+            {% if puzzle.has_postprod %}
+                <h2>Current postprod</h2>
+                Puzzle postprodded at <span class="timestamp" data-timestamp="{{puzzle.postprod.mtime.timestamp}}">{{puzzle.postprod.mtime}}</span>.<br/>
+                Puzzle viewable at <a href="{{ puzzle.postprod_url }}">{{puzzle.postprod_url}}</a>.
+            {% endif %}
+    {% else %}
+        <p>You are not spoiled on this puzzle. I'm not sure you want to be postprodding it.</p>
+        <p>If you really want to, you can click back to it and spoil yourself.</p>
     {% endif %}
-{% else %}
-    <p>You are not spoiled on this puzzle. I'm not sure you want to be postprodding it.</p>
-    <p>If you really want to, you can click back to it and spoil yourself.</p>
-{% endif %}
 {% endblock %}

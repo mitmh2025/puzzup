@@ -1,6 +1,5 @@
 # Based off the documentation at https://docs.djangoproject.com/en/4.0/topics/i18n/timezones/#selecting-the-current-time-zone
 import zoneinfo
-
 from django.utils import timezone
 
 

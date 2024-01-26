@@ -10,23 +10,23 @@
 
 {% block main %}
 
-<h1 class="title">Testsolve History</h1>
+    <h1 class="title">Testsolve History</h1>
 
 
-<div class="box">
-	<h2>Your past testsolving sessions</h2>
-	{% testsolve_session_list past_sessions request.user show_ratings=True %}
-</div>
+    <div class="box">
+        <h2>Your past testsolving sessions</h2>
+        {% testsolve_session_list past_sessions request.user show_ratings=True %}
+    </div>
 {% endblock %}
 
 {% block extrajs %}
-<script type="text/javascript">
-	document.querySelectorAll("button[data-warning]").forEach((button) => {
-		button.addEventListener('click', (event) => {
-			if (!confirm(`We don't recommend starting a new session to testsolve this puzzle because ${button.dataset.warning}. Would you like to continue anyway?`)) {
-				event.preventDefault();
-			}
-		});
-	});
-</script>
+    <script type="text/javascript">
+        document.querySelectorAll("button[data-warning]").forEach((button) => {
+            button.addEventListener('click', (event) => {
+                if (!confirm(`We don't recommend starting a new session to testsolve this puzzle because ${button.dataset.warning}. Would you like to continue anyway?`)) {
+                    event.preventDefault();
+                }
+            });
+        });
+    </script>
 {% endblock %}

@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 
-import puzzle_editing.utils as utils
+from puzzle_editing import utils
 
 
 class Command(BaseCommand):

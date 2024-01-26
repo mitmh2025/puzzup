@@ -1,36 +1,29 @@
 import datetime
-import itertools
 import logging
-import os
 import random
 import re
 import statistics
+from types import MappingProxyType
 
-import django.urls as urls
 import yaml
+from django import urls
 from django.conf import settings
-from django.contrib.auth.models import AbstractUser
-from django.contrib.auth.models import UserManager
-from django.core.validators import FileExtensionValidator
-from django.core.validators import MaxValueValidator
-from django.core.validators import RegexValidator
+from django.contrib.auth.models import AbstractUser, UserManager
+from django.core.validators import (
+    MaxValueValidator,
+    RegexValidator,
+)
 from django.db import models
-from django.db.models import Avg
-from django.db.models import Exists
-from django.db.models import OuterRef
-from django.db.models.signals import post_save, pre_save, m2m_changed
+from django.db.models.signals import m2m_changed, post_save, pre_save
 from django.dispatch import receiver
 from django.utils import timezone
-from django.utils.html import format_html
-from django.utils.html import format_html_join
+from django.utils.html import format_html, format_html_join
 from django.utils.safestring import mark_safe
 from django.utils.text import slugify
-from git.exc import CommandError
 
 import puzzle_editing.discord_integration as discord
 import puzzle_editing.google_integration as google
-import puzzle_editing.status as status
-from puzzle_editing.git import GitRepo
+from puzzle_editing import status
 
 logger = logging.getLogger(__name__)
 
@@ -239,13 +232,11 @@ class Round(models.Model):
         max_length=500,
         help_text="Path to puzzle template in the hunt repo for autopostprod",
         blank=True,
-        null=True,
     )
     solution_template = models.CharField(
         max_length=500,
         help_text="Path to sol template in the hunt repo for autopostprod",
         blank=True,
-        null=True,
     )
 
     def __str__(self):  # pylint: disable=invalid-str-returned
@@ -271,6 +262,9 @@ class PuzzleAnswer(models.Model):
         help_text="Whether or not this answer shouldn't ignore whitespaces.",
     )
 
+    def __str__(self):  # pylint: disable=invalid-str-returned
+        return self.answer
+
     def to_json(self):
         return {
             "answer": self.answer,
@@ -280,9 +274,6 @@ class PuzzleAnswer(models.Model):
             "puzzles": self.puzzles.all(),
             "whitespace_sensitive": self.whitespace_sensitive,
         }
-
-    def __str__(self):  # pylint: disable=invalid-str-returned
-        return self.answer
 
     def normalize_answer(self, answer, ignore_case=True, ignore_whitespace=True):
         normalized = answer
@@ -318,39 +309,30 @@ class PuzzleTag(models.Model):
     )
 
     def __str__(self):
-        return "Tag: {}".format(self.name)
+        return f"Tag: {self.name}"
+
+
+def generate_codename():
+    with (settings.BASE_DIR / "puzzle_editing/data/nouns-eng.txt").open() as f:
+        nouns = [line.strip() for line in f.readlines()]
+    random.shuffle(nouns)
+
+    with (settings.BASE_DIR / "puzzle_editing/data/adj-eng.txt").open() as g:
+        adjs = [line.strip() for line in g.readlines()]
+    random.shuffle(adjs)
+
+    try:
+        name = adjs.pop() + "-" + nouns.pop()
+        while Puzzle.objects.filter(codename=name).exists():
+            name = adjs.pop() + " " + nouns.pop()
+    except IndexError:
+        return "Make up your own name!"
+
+    return name
 
 
 class Puzzle(models.Model):
     """A puzzle, that which Puzzup keeps track of the writing process of."""
-
-    class Meta:
-        permissions = [
-            ("list_puzzle", "Can see all puzzles"),
-            ("unspoil_puzzle", "Can unspoil people")
-        ]
-
-    def generate_codename():
-        with open(
-            os.path.join(settings.BASE_DIR, "puzzle_editing/data/nouns-eng.txt")
-        ) as f:
-            nouns = [line.strip() for line in f.readlines()]
-        random.shuffle(nouns)
-
-        with open(
-            os.path.join(settings.BASE_DIR, "puzzle_editing/data/adj-eng.txt")
-        ) as g:
-            adjs = [line.strip() for line in g.readlines()]
-        random.shuffle(adjs)
-
-        try:
-            name = adjs.pop() + "-" + nouns.pop()
-            while Puzzle.objects.filter(codename=name).exists():
-                name = adjs.pop() + " " + nouns.pop()
-        except IndexError:
-            return "Make up your own name!"
-
-        return name
 
     name = models.CharField(max_length=500)
     codename = models.CharField(
@@ -363,61 +345,6 @@ class Puzzle(models.Model):
         max_length=19,
         blank=True,
     )
-
-    def spoiler_free_name(self):
-        if self.codename:
-            return "({})".format(self.codename)
-        return self.name
-
-    def spoiler_free_title(self):
-        return self.spoiler_free_name()
-
-    @property
-    def spoilery_title(self):
-        name = self.name
-        if self.codename:
-            name += " ({})".format(self.codename)
-        return name
-
-    def important_tag_names(self):
-        if hasattr(self, "prefetched_important_tag_names"):
-            return self.prefetched_important_tag_names
-        return [t.name for t in self.tags.all() if t.important]
-
-    # This is done in an inner loop, so doing it with inclusion tags turns
-    # out to be a big performance hit. They're also small enough to be pretty
-    # easy to write in Python.
-    def html_display(self):
-        return format_html(
-            "{}: {} {}",
-            self.id,
-            format_html_join(
-                " ",
-                "<sup>[{}]</sup>",
-                ((name,) for name in self.important_tag_names()),
-            ),
-            self.spoiler_free_name(),
-        )
-
-    def puzzle_url(self):
-        return urls.reverse("puzzle", args=[self.id])
-
-    def html_link(self):
-        return format_html(
-            """<a href="{}" class="puzzle-link">{}</a>""",
-            self.puzzle_url(),
-            self.html_display(),
-        )
-
-    def html_link_no_tags(self):
-        return format_html(
-            """<a href="{}" class="puzzle-link">{}</a>""",
-            self.puzzle_url(),
-            self.spoiler_free_name(),
-        )
-
-    def __str__(self):
-        return self.spoiler_free_title()
 
     authors = models.ManyToManyField(User, related_name="authored_puzzles", blank=True)
     lead_author = models.ForeignKey(
@@ -455,27 +382,6 @@ class Puzzle(models.Model):
         default=status.INITIAL_IDEA,
     )
     status_mtime = models.DateTimeField(editable=False)
-
-    def get_status_rank(self):
-        return status.get_status_rank(self.status)
-
-    def get_status_emoji(self):
-        return status.get_emoji(self.status)
-
-    def get_blocker(self):
-        # just text describing what the category of blocker is, not a list of
-        # Users or anything like that
-        return status.get_blocker(self.status)
-
-    def get_transitions(self):
-        return [
-            {
-                "status": s,
-                "status_display": status.get_display(s),
-                "description": description,
-            }
-            for s, description in status.get_transitions(self.status, self)
-        ]
 
     last_updated = models.DateTimeField(auto_now=True)
 
@@ -535,15 +441,24 @@ class Puzzle(models.Model):
     logistics_testsolve_length = models.CharField(max_length=512, blank=True)
     logistics_testsolve_skills = models.CharField(max_length=512, blank=True)
 
-    SPECIALIZED_TYPES = [
+    SPECIALIZED_TYPES = (
         ("PHY", "Physical Puzzle"),
         ("EVE", "Event"),
         ("", "None of the Above"),
-    ]
+    )
 
     logistics_specialized_type = models.CharField(
         max_length=3, choices=SPECIALIZED_TYPES, blank=True
     )
+
+    class Meta:
+        permissions = (
+            ("list_puzzle", "Can see all puzzles"),
+            ("unspoil_puzzle", "Can unspoil people"),
+        )
+
+    def __str__(self):
+        return self.spoiler_free_title()
 
     def save(self, *args, **kwargs):
         is_new = self._state.adding
@@ -562,6 +477,79 @@ class Puzzle(models.Model):
                 # Create a factcheck object the first time state changes to NEEDS_FACTCHECK
                 PuzzleFactcheck(puzzle=self).save()
 
+    def spoiler_free_name(self):
+        if self.codename:
+            return f"({self.codename})"
+        return self.name
+
+    def spoiler_free_title(self):
+        return self.spoiler_free_name()
+
+    @property
+    def spoilery_title(self):
+        name = self.name
+        if self.codename:
+            name += f" ({self.codename})"
+        return name
+
+    def important_tag_names(self):
+        if hasattr(self, "prefetched_important_tag_names"):
+            return self.prefetched_important_tag_names
+        return [t.name for t in self.tags.all() if t.important]
+
+    # This is done in an inner loop, so doing it with inclusion tags turns
+    # out to be a big performance hit. They're also small enough to be pretty
+    # easy to write in Python.
+    def html_display(self):
+        return format_html(
+            "{}: {} {}",
+            self.id,
+            format_html_join(
+                " ",
+                "<sup>[{}]</sup>",
+                ((name,) for name in self.important_tag_names()),
+            ),
+            self.spoiler_free_name(),
+        )
+
+    def puzzle_url(self):
+        return urls.reverse("puzzle", args=[self.id])
+
+    def html_link(self):
+        return format_html(
+            """<a href="{}" class="puzzle-link">{}</a>""",
+            self.puzzle_url(),
+            self.html_display(),
+        )
+
+    def html_link_no_tags(self):
+        return format_html(
+            """<a href="{}" class="puzzle-link">{}</a>""",
+            self.puzzle_url(),
+            self.spoiler_free_name(),
+        )
+
+    def get_status_rank(self):
+        return status.get_status_rank(self.status)
+
+    def get_status_emoji(self):
+        return status.get_emoji(self.status)
+
+    def get_blocker(self):
+        # just text describing what the category of blocker is, not a list of
+        # Users or anything like that
+        return status.get_blocker(self.status)
+
+    def get_transitions(self):
+        return [
+            {
+                "status": s,
+                "status_display": status.get_display(s),
+                "description": description,
+            }
+            for s, description in status.get_transitions(self.status, self)
+        ]
+
     def get_emails(self, exclude_emails=()):
         # tcs = User.objects.filter(groups__name__in=['Testsolve Coordinators']).exclude(email="").values_list("email", flat=True)
 
@@ -571,7 +559,7 @@ class Puzzle(models.Model):
         emails |= set(self.postprodders.values_list("email", flat=True))
 
         emails -= set(exclude_emails)
-        emails -= set(("",))
+        emails -= {""}
 
         return list(emails)
 
@@ -769,10 +757,10 @@ class PseudoAnswer(models.Model):
 
     class Meta:
         unique_together = ("puzzle", "answer")
-        ordering = ["puzzle", "answer"]
+        ordering = ("puzzle", "answer")
 
     def __str__(self):
-        return '"%s" (%s)' % (self.puzzle.name, self.answer)
+        return f'"{self.puzzle.name}" ({self.answer})'
 
     def get_yaml_data(self):
         return {
@@ -816,6 +804,9 @@ class PuzzleCredit(models.Model):
         max_length=3, choices=[ART, TECH, OTHER], default=ART
     )
 
+    class Meta:
+        unique_together = ("puzzle", "credit_type")
+
     def __str__(self):
         return f"{self.get_credit_type_display()}: %s" % (
             re.sub(
@@ -825,9 +816,6 @@ class PuzzleCredit(models.Model):
             )
             or "--"
         )
-
-    class Meta:
-        unique_together = ("puzzle", "credit_type")
 
 
 @receiver(pre_save, sender=Puzzle)
@@ -849,17 +837,21 @@ class SupportRequest(models.Model):
         ACC = ("ACC", "🔎 Accessibility")
         TECH = ("TECH", "👩🏽‍💻 Tech")
 
-    TEAM_TO_GROUP = {
-        Team.ART: "Art Lead",
-        Team.ACC: "Accessibility Lead",
-        Team.TECH: "Tech Lead",
-    }
+    TEAM_TO_GROUP = MappingProxyType(
+        {
+            Team.ART: "Art Lead",
+            Team.ACC: "Accessibility Lead",
+            Team.TECH: "Tech Lead",
+        }
+    )
 
-    GROUP_TO_TEAM = {
-        "Art Lead": Team.ART,
-        "Accessibility Lead": Team.ACC,
-        "Tech Lead": Team.TECH,
-    }
+    GROUP_TO_TEAM = MappingProxyType(
+        {
+            "Art Lead": Team.ART,
+            "Accessibility Lead": Team.ACC,
+            "Tech Lead": Team.TECH,
+        }
+    )
 
     class Status(models.TextChoices):
         NONE = ("NO", "No need")
@@ -894,6 +886,12 @@ class SupportRequest(models.Model):
     )
     outdated = models.BooleanField(default=False)
 
+    class Meta:
+        unique_together = ("puzzle", "team")
+
+    def __str__(self):
+        return f'{self.get_team_display()} request for "{self.puzzle.name}"'
+
     def get_emails(self):
         emails = {
             u.email
@@ -904,9 +902,6 @@ class SupportRequest(models.Model):
             emails.add(self.team_notes_updater.email)
 
         return list(emails)
-
-    class Meta:
-        unique_together = ("puzzle", "team")
 
 
 class PuzzlePostprod(models.Model):
@@ -923,10 +918,12 @@ class PuzzlePostprod(models.Model):
     mtime = models.DateTimeField(auto_now=True)
     host_url = models.CharField(
         max_length=255,
-        null=True,
         blank=True,
         help_text="The base URL where this puzzle is postprodded. Defaults to staging",
     )
+
+    def __str__(self):
+        return f"<Postprod {self.slug}>"
 
     def get_url(self, is_solution=False):
         act = next(iter(a.round.act_id for a in self.puzzle.answers.all()), 1)
@@ -938,9 +935,6 @@ class PuzzlePostprod(models.Model):
         subpath = "solutions" if is_solution else "puzzles"
         return f"{host}/{subpath}/{self.slug}"
 
-    def __str__(self):
-        return f"<Postprod {self.slug}>"
-
 
 class PuzzleFactcheck(models.Model):
     """Tracks factchecking for a puzzle."""
@@ -950,6 +944,9 @@ class PuzzleFactcheck(models.Model):
     )
     google_sheet_id = models.CharField(max_length=100)
     output = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"<Factcheck {self.puzzle_id} {self.puzzle.spoiler_free_name()}>"
 
     def save(self, *args, **kwargs):
         is_new = self._state.adding
@@ -963,9 +960,6 @@ class PuzzleFactcheck(models.Model):
             )
             super().save(*args, **kwargs)
 
-    def __str__(self):
-        return f"<Factcheck {self.puzzle_id} {self.puzzle.spoiler_free_name()}>"
-
 
 class StatusSubscription(models.Model):
     """An indication to email a user when any puzzle enters this status."""
@@ -977,9 +971,7 @@ class StatusSubscription(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
-        return "{} subscription to {}".format(
-            self.user, status.get_display(self.status)
-        )
+        return f"{self.user} subscription to {status.get_display(self.status)}"
 
 
 class PuzzleVisited(models.Model):
@@ -988,6 +980,9 @@ class PuzzleVisited(models.Model):
     puzzle = models.ForeignKey(Puzzle, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user} visited {self.puzzle}"
 
 
 class TestsolveSession(models.Model):
@@ -1016,6 +1011,9 @@ class TestsolveSession(models.Model):
         max_length=64,
         blank=True,
     )
+
+    def __str__(self):
+        return f"Testsolve session #{self.id} on {self.puzzle}"
 
     def save(self, *args, **kwargs):
         is_new = self._state.adding
@@ -1060,7 +1058,7 @@ class TestsolveSession(models.Model):
     def get_done_participants_display(self):
         participations = list(self.participations.all())
         done_participations = [p for p in participations if p.ended is not None]
-        return "{} / {}".format(len(done_participations), len(participations))
+        return f"{len(done_participations)} / {len(participations)}"
 
     def has_correct_guess(self):
         return any(g.correct for g in self.guesses.all())
@@ -1097,15 +1095,12 @@ class TestsolveSession(models.Model):
 
     def get_emails(self, exclude_emails=()):
         emails = set(self.puzzle.get_emails())
-        emails |= set(p.email for p in self.participants() if p.email is not None)
+        emails |= {p.email for p in self.participants() if p.email is not None}
 
         emails -= set(exclude_emails)
-        emails -= set(("",))
+        emails -= {""}
 
         return list(emails)
-
-    def __str__(self):
-        return "Testsolve session #{} on {}".format(self.id, self.puzzle)
 
 
 def create_testsolve_thread(instance: TestsolveSession):
@@ -1143,7 +1138,9 @@ def create_testsolve_thread(instance: TestsolveSession):
 
             return (thread.id, sheet_id)
         except Exception as e:
-            logger.exception("Failed to create Discord thread or Google sheets.", e)
+            logger.exception(
+                "Failed to create Discord thread or Google sheets.", exc_info=e
+            )
     return ("", "")
 
 
@@ -1184,13 +1181,13 @@ class PuzzleComment(models.Model):
     )
 
     def __str__(self):
-        return "Comment #{} on {}".format(self.id, self.puzzle)
+        return f"Comment #{self.id} on {self.puzzle}"
 
 
 class CommentReaction(models.Model):
     # Since these are frivolous and display-only, I'm not going to bother
     # restricting them on the database model layer.
-    EMOJI_OPTIONS = ["👍", "👎", "🎉", "❤️", "😄", "🤔", "😕", "❓", "👀", "🍖"]
+    EMOJI_OPTIONS = ("👍", "👎", "🎉", "❤️", "😄", "🤔", "😕", "❓", "👀", "🍖")
     emoji = models.CharField(max_length=8)
     comment = models.ForeignKey(
         PuzzleComment, on_delete=models.CASCADE, related_name="reactions"
@@ -1199,13 +1196,11 @@ class CommentReaction(models.Model):
         User, on_delete=models.CASCADE, related_name="reactions"
     )
 
-    def __str__(self):
-        return "{} reacted {} on {}".format(
-            self.reactor.username, self.emoji, self.comment
-        )
-
     class Meta:
         unique_together = ("emoji", "comment", "reactor")
+
+    def __str__(self):
+        return f"{self.reactor.username} reacted {self.emoji} on {self.comment}"
 
     @classmethod
     def toggle(cls, emoji, comment, reactor):
@@ -1242,35 +1237,29 @@ class TestsolveParticipation(models.Model):
     )
 
     general_feedback = models.TextField(
-        null=True,
         blank=True,
         help_text="What did you like & dislike about this puzzle? Is there anything you think should be changed (e.g. amount of flavor/cluing, errata, tech issues, mechanics, theming, etc.)?",
     )
 
     misc_feedback = models.TextField(
-        null=True,
         blank=True,
         help_text="Anything else you want to add? If you were spoiled, mention it here. (This can include: things you tried, any shortcuts you found, break-ins, stuck points, accessibility)",
     )
 
     clues_needed = models.TextField(
-        null=True,
         blank=True,
         help_text="Did you solve the complete puzzle before getting the answer, or did you shortcut, and if so, how much remained unsolved?",
     )
 
     aspects_enjoyable = models.TextField(
-        null=True,
         blank=True,
         help_text="What parts of the puzzle were particularly enjoyable, if any?",
     )
     aspects_unenjoyable = models.TextField(
-        null=True,
         blank=True,
         help_text="What parts of the puzzle were not enjoyable, if any?",
     )
     aspects_accessibility = models.TextField(
-        null=True,
         blank=True,
         help_text="If you have physical issues such as a hearing impairment, vestibular disorder, etc., what problems did you encounter with this puzzle, if any?",
     )
@@ -1281,40 +1270,37 @@ class TestsolveParticipation(models.Model):
         help_text="Did you encounter any technical problems with any aspect of the puzzle, including problems with your browser, any assistive device, etc. as well as any puzzle-specific tech?",
     )
     technical_issues_device = models.TextField(
-        null=True,
         blank=True,
         help_text="**If Yes:** What type of device was the issue associated with? Please be as specific as possible (PC vs Mac, what browser, etc",
     )
     technical_issues_description = models.TextField(
-        null=True, blank=True, help_text="**If Yes:** Please describe the issue"
+        blank=True, help_text="**If Yes:** Please describe the issue"
     )
 
     instructions_overall = models.BooleanField(
-        default=True, null=True, help_text="Were the instructions clear?"
+        default=True, help_text="Were the instructions clear?"
     )
     instructions_feedback = models.TextField(
-        null=True,
         blank=True,
         help_text="**If No:** What was confusing about the instructions?",
     )
 
-    FLAVORTEXT_CHOICES = [
+    FLAVORTEXT_CHOICES = (
         ("helpful", "It was helpful and appropriate"),
         ("too_leading", "It was too leading"),
         ("not_helpful", "It was not helpful"),
         ("confused", "It confused us, or led us in a wrong direction"),
         ("none_but_ok", "There was no flavor text, and that was fine"),
         ("none_not_ok", "There was no flavor text, and I would have liked some"),
-    ]
+    )
 
     flavortext_overall = models.CharField(
         max_length=20,
-        null=True,
         help_text="Which best describes the flavor text?",
         choices=FLAVORTEXT_CHOICES,
     )
     flavortext_feedback = models.TextField(
-        null=True, blank=True, help_text="**If Helpful:** How did the flavor text help?"
+        blank=True, help_text="**If Helpful:** How did the flavor text help?"
     )
 
     stuck_overall = models.BooleanField(
@@ -1323,35 +1309,29 @@ class TestsolveParticipation(models.Model):
         help_text="**Were you stuck at any point?** E.g. not sure how to start, not sure which data to gather, etc.",
     )
     stuck_points = models.TextField(
-        null=True,
         blank=True,
         help_text="**If Yes:** Where did you get stuck? List as many places as relevant.",
     )
     stuck_time = models.FloatField(
-        null=True,
         blank=True,
         help_text="**If Yes:** For about how long were you stuck?",
     )
     stuck_unstuck = models.TextField(
-        null=True,
         blank=True,
         help_text="**If Yes:** What helped you get unstuck? Was it a satisfying aha?",
     )
 
     errors_found = models.TextField(
-        null=True,
         blank=True,
         help_text="What errors, if any, did you notice in the puzzle?",
     )
 
     suggestions_change = models.TextField(
-        null=True,
         blank=True,
         help_text="Do you have suggestions to change the puzzle? Please explain why your suggestion(s) will help.",
     )
 
     suggestions_keep = models.TextField(
-        null=True,
         blank=True,
         help_text="Do you have suggestions for things that should definitely stay in the puzzle? Please explain what you like about them.",
     )
@@ -1382,9 +1362,6 @@ def add_testsolver_to_thread(
 class TestsolveGuess(models.Model):
     """A guess made by a user in a testsolve session."""
 
-    class Meta:
-        verbose_name_plural = "testsolve guesses"
-
     session = models.ForeignKey(
         TestsolveSession, on_delete=models.CASCADE, related_name="guesses"
     )
@@ -1394,6 +1371,9 @@ class TestsolveGuess(models.Model):
     partially_correct = models.BooleanField(default=False)
     partial_response = models.TextField(blank=True)
     date = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name_plural = "testsolve guesses"
 
     def __str__(self):
         correct_text = "Correct" if self.correct else "Incorrect"
@@ -1437,10 +1417,6 @@ def get_user_role(user, puzzle):
 
 
 class Hint(models.Model):
-    class Meta:
-        unique_together = ("puzzle", "description")
-        ordering = ["order"]
-
     puzzle = models.ForeignKey(Puzzle, on_delete=models.PROTECT, related_name="hints")
     order = models.FloatField(
         blank=False,
@@ -1466,11 +1442,15 @@ class Hint(models.Model):
         help_text="Canned hint to give a team (can be edited by us before giving it)",
     )
 
-    def get_keywords(self):
-        return self.keywords.split(",")
+    class Meta:
+        unique_together = ("puzzle", "description")
+        ordering = ("order",)
 
     def __str__(self):
         return f"Hint #{self.order} for {self.puzzle}"
+
+    def get_keywords(self):
+        return self.keywords.split(",")
 
     def get_yaml_data(self):
         return {
@@ -1493,7 +1473,7 @@ class SiteSetting(models.Model):
     value = models.TextField()
 
     def __str__(self):
-        return "{} = {}".format(self.key, self.value)
+        return f"{self.key} = {self.value}"
 
     @classmethod
     def get_setting(cls, key):

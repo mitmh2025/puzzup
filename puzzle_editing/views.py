@@ -3,91 +3,87 @@ import datetime
 import json
 import operator
 import os
-import random
 import re
 import traceback
 import typing as t
 from collections import defaultdict
 from functools import partial, reduce
+from types import MappingProxyType
 
-import django.forms as forms
-import django.urls as urls
 import pydantic
 import requests
+from django import forms, urls
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.models import Permission
 from django.core import validators
-from django.core.exceptions import ValidationError, PermissionDenied
-from django.db.models import Avg
-from django.db.models import BooleanField
-from django.db.models import Count
-from django.db.models import Exists
-from django.db.models import ExpressionWrapper
-from django.db.models import F
-from django.db.models import Max
-from django.db.models import OuterRef
-from django.db.models import Q
-from django.db.models import Subquery
+from django.core.exceptions import PermissionDenied, ValidationError
+from django.db.models import (
+    Avg,
+    BooleanField,
+    Count,
+    Exists,
+    ExpressionWrapper,
+    F,
+    Max,
+    OuterRef,
+    Q,
+    Subquery,
+)
 from django.db.models.functions import Lower
 from django.forms.fields import MultipleChoiceField
 from django.forms.models import ModelChoiceIterator
-from django.http import HttpRequest
-from django.http import HttpResponse
-from django.http import HttpResponseBadRequest
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
-from django.shortcuts import redirect
-from django.shortcuts import render
-from django.shortcuts import resolve_url
+from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils.http import urlencode
-from django.utils.safestring import mark_safe
-from django.utils.text import normalize_newlines
-from django.utils.text import slugify
+from django.utils.text import normalize_newlines, slugify
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
-from django.views.static import serve
 from googleapiclient.errors import HttpError
 
 import puzzle_editing.discord_integration as discord
-import puzzle_editing.messaging as messaging
-import puzzle_editing.status as status
-import puzzle_editing.utils as utils
-from .discord import Permission as DiscordPermission
-from .discord import TextChannel
-from .view_helpers import external_puzzle_url, require_testsolving_enabled
-from .view_helpers import group_required
-from .view_helpers import auto_postprodding_required
+from puzzle_editing import messaging, status, utils
 from puzzle_editing import models as m
 from puzzle_editing.google_integration import GoogleManager
 from puzzle_editing.graph import curr_puzzle_graph_b64
-from puzzle_editing.models import CommentReaction
-from puzzle_editing.models import get_user_role
-from puzzle_editing.models import Hint
-from puzzle_editing.models import is_author_on
-from puzzle_editing.models import is_editor_on
-from puzzle_editing.models import is_factchecker_on
-from puzzle_editing.models import is_postprodder_on
-from puzzle_editing.models import is_spoiled_on
-from puzzle_editing.models import PseudoAnswer
-from puzzle_editing.models import Puzzle
-from puzzle_editing.models import PuzzleAnswer
-from puzzle_editing.models import PuzzleComment
-from puzzle_editing.models import PuzzleCredit
-from puzzle_editing.models import PuzzleFactcheck
-from puzzle_editing.models import PuzzlePostprod
-from puzzle_editing.models import PuzzleTag
-from puzzle_editing.models import PuzzleVisited
-from puzzle_editing.models import Round
-from puzzle_editing.models import SiteSetting
-from puzzle_editing.models import StatusSubscription
-from puzzle_editing.models import SupportRequest
-from puzzle_editing.models import TestsolveGuess
-from puzzle_editing.models import TestsolveParticipation
-from puzzle_editing.models import TestsolveSession
-from puzzle_editing.models import User
+from puzzle_editing.models import (
+    CommentReaction,
+    Hint,
+    PseudoAnswer,
+    Puzzle,
+    PuzzleAnswer,
+    PuzzleComment,
+    PuzzleCredit,
+    PuzzleFactcheck,
+    PuzzlePostprod,
+    PuzzleTag,
+    PuzzleVisited,
+    Round,
+    SiteSetting,
+    StatusSubscription,
+    SupportRequest,
+    TestsolveGuess,
+    TestsolveParticipation,
+    TestsolveSession,
+    User,
+    get_user_role,
+    is_author_on,
+    is_editor_on,
+    is_factchecker_on,
+    is_postprodder_on,
+    is_spoiled_on,
+)
+
+from .discord import Permission as DiscordPermission
+from .discord import TextChannel
+from .view_helpers import (
+    auto_postprodding_required,
+    external_puzzle_url,
+    group_required,
+    require_testsolving_enabled,
+)
 
 # This file is so full of redefined-outer-name issues it swamps real problems.
 # It has them because e.g. there's a fn called user() and also lots of fns with
@@ -224,7 +220,7 @@ class MarkdownTextarea(forms.Textarea):
 
 class SupportForm(forms.ModelForm):
     def __init__(self, user, *args, **kwargs):
-        super(SupportForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if not user.is_staff:
             del self.fields["discord_channel_id"]
         self.fields["authors"] = UserMultipleChoiceField(initial=user)
@@ -232,12 +228,14 @@ class SupportForm(forms.ModelForm):
 
     class Meta:
         model = SupportRequest
-        fields = ["status", "author_notes", "team_notes"]
-        widgets = {
-            "status": forms.Textarea(attrs={"class": "textarea", "rows": 6}),
-            "author_notes": forms.TextInput(attrs={"class": "input"}),
-            "team_notes": forms.Textarea(attrs={"class": "textarea", "rows": 6}),
-        }
+        fields = ("status", "author_notes", "team_notes")
+        widgets = MappingProxyType(
+            {
+                "status": forms.Textarea(attrs={"class": "textarea", "rows": 6}),
+                "author_notes": forms.TextInput(attrs={"class": "input"}),
+                "team_notes": forms.Textarea(attrs={"class": "textarea", "rows": 6}),
+            }
+        )
 
 
 class SupportRequestAuthorNotesForm(forms.ModelForm):
@@ -245,7 +243,7 @@ class SupportRequestAuthorNotesForm(forms.ModelForm):
 
     class Meta:
         model = SupportRequest
-        fields = ["author_notes", "status"]
+        fields = ("author_notes", "status")
 
 
 class SupportRequestTeamNotesForm(forms.ModelForm):
@@ -253,7 +251,7 @@ class SupportRequestTeamNotesForm(forms.ModelForm):
 
     class Meta:
         model = SupportRequest
-        fields = ["team_notes", "status", "assignees"]
+        fields = ("team_notes", "status", "assignees")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -263,7 +261,7 @@ class SupportRequestTeamNotesForm(forms.ModelForm):
 class SupportRequestStatusForm(forms.ModelForm):
     class Meta:
         model = SupportRequest
-        fields = ["status"]
+        fields = ("status",)
 
 
 # based on UserCreationForm from Django source
@@ -315,16 +313,19 @@ class RegisterForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ("username", "email", "display_name", "bio", "credits_name")
-        widgets = {
-            "username": forms.TextInput(attrs={"class": "input"}),
-        }
+        widgets = MappingProxyType(
+            {
+                "username": forms.TextInput(attrs={"class": "input"}),
+            }
+        )
 
     def clean_password2(self):
         password1 = self.cleaned_data.get("password1")
         password2 = self.cleaned_data.get("password2")
         if password1 and password2 and password1 != password2:
+            msg = "The two password fields didn't match."
             raise forms.ValidationError(
-                "The two password fields didn't match.",
+                msg,
                 code="password_mismatch",
             )
         return password2
@@ -332,14 +333,15 @@ class RegisterForm(forms.ModelForm):
     def clean_site_password(self):
         site_password = self.cleaned_data.get("site_password")
         if site_password and site_password != settings.SITE_PASSWORD:
+            msg = "The site password was incorrect."
             raise forms.ValidationError(
-                "The site password was incorrect.",
+                msg,
                 code="password_mismatch",
             )
         return site_password
 
     def save(self, commit=True):
-        user = super(RegisterForm, self).save(commit=False)
+        user = super().save(commit=False)
         user.set_password(self.cleaned_data["password1"])
         if commit:
             user.save()
@@ -604,7 +606,7 @@ class UserMultipleChoiceField(forms.ModelMultipleChoiceField):
 
 class TestsolveFinderForm(forms.Form):
     def __init__(self, user, *args, **kwargs):
-        super(TestsolveFinderForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.fields["solvers"] = UserMultipleChoiceField(initial=user)
 
     solvers = forms.CheckboxSelectMultiple()
@@ -612,7 +614,7 @@ class TestsolveFinderForm(forms.Form):
 
 class PuzzleInfoForm(forms.ModelForm):
     def __init__(self, user, *args, **kwargs):
-        super(PuzzleInfoForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if not user.is_staff:
             del self.fields["discord_channel_id"]
         self.fields["authors"] = UserMultipleChoiceField(initial=user)
@@ -624,7 +626,7 @@ class PuzzleInfoForm(forms.ModelForm):
         self.fields["authors_addl"].label = "Additional authors"
 
     def clean(self):
-        cleaned_data = super(PuzzleInfoForm, self).clean()
+        cleaned_data = super().clean()
         lead_author = cleaned_data.get("lead_author")
         authors = cleaned_data.get("authors", [])
         if lead_author and lead_author not in authors:
@@ -633,7 +635,7 @@ class PuzzleInfoForm(forms.ModelForm):
 
     class Meta:
         model = Puzzle
-        fields = [
+        fields = (
             "name",
             "codename",
             "authors",
@@ -646,19 +648,21 @@ class PuzzleInfoForm(forms.ModelForm):
             "editor_notes",
             "notes",
             "is_meta",
-        ]
-        widgets = {
-            "authors": forms.CheckboxSelectMultiple(),
-            "name": forms.TextInput(attrs={"class": "input"}),
-            "authors_addl": forms.TextInput(attrs={"class": "input"}),
-            "codename": forms.TextInput(attrs={"class": "input"}),
-            "summary": MarkdownTextarea(attrs={"rows": 6}),
-            "description": MarkdownTextarea(attrs={"rows": 6}),
-            "flavor": MarkdownTextarea(attrs={"rows": 3}),
-            "editor_notes": forms.TextInput(attrs={"class": "input"}),
-            "notes": MarkdownTextarea(attrs={"rows": 6}),
-            "is_meta": forms.CheckboxInput(),
-        }
+        )
+        widgets = MappingProxyType(
+            {
+                "authors": forms.CheckboxSelectMultiple(),
+                "name": forms.TextInput(attrs={"class": "input"}),
+                "authors_addl": forms.TextInput(attrs={"class": "input"}),
+                "codename": forms.TextInput(attrs={"class": "input"}),
+                "summary": MarkdownTextarea(attrs={"rows": 6}),
+                "description": MarkdownTextarea(attrs={"rows": 6}),
+                "flavor": MarkdownTextarea(attrs={"rows": 3}),
+                "editor_notes": forms.TextInput(attrs={"class": "input"}),
+                "notes": MarkdownTextarea(attrs={"rows": 6}),
+                "is_meta": forms.CheckboxInput(),
+            }
+        )
 
 
 @login_required
@@ -809,7 +813,7 @@ class PuzzleCommentForm(forms.Form):
 class LogisticsInfoForm(forms.ModelForm):
     class Meta:
         model = Puzzle
-        fields = [
+        fields = (
             "logistics_difficulty_testsolve",
             "logistics_difficulty_postprod",
             "logistics_difficulty_factcheck",
@@ -817,91 +821,105 @@ class LogisticsInfoForm(forms.ModelForm):
             "logistics_testsolve_length",
             "logistics_testsolve_skills",
             "logistics_specialized_type",
-        ]
+        )
 
-        widgets = {
-            "logistics_difficulty_testsolve": RadioSelect(
-                choices=[
-                    (0, "0 - do not foresee problems with getting testsolvers"),
-                    (
-                        1,
-                        "1 - not all testsolvers may enjoy this (e.g. cryptics or logic puzzles)",
-                    ),
-                    (2, "2 - puzzle has a niche audience (e.g. blaseball)"),
-                ],
-            ),
-            "logistics_difficulty_postprod": RadioSelect(
-                choices=[
-                    (0, "0 - should be straightforward"),
-                    (
-                        1,
-                        "1 - might be a little tricky (e.g. very specific formatting, minor art, some client-side interactivity)",
-                    ),
-                    (
-                        2,
-                        "2 - will need to involve tech or art team (e.g. server-side code, websockets, hand-drawn art) - **please create a Support Request through PuzzUp**",
-                    ),
-                ],
-            ),
-            "logistics_difficulty_factcheck": RadioSelect(
-                choices=[
-                    (0, "0 - anyone could factcheck this puzzle"),
-                    (
-                        1,
-                        "1 - might be a little tricky (e.g. large puzzles, logic puzzles with branching)",
-                    ),
-                    (
-                        2,
-                        "2 - requires special skills, programming, or many people (e.g. hundreds of autogenerated minis, pen-testers, advanced math)",
-                    ),
-                ],
-            ),
-            "logistics_number_testsolvers": forms.TextInput(attrs={"class": "input"}),
-            "logistics_testsolve_length": forms.TextInput(attrs={"class": "input"}),
-            "logistics_testsolve_skills": forms.TextInput(attrs={"class": "input"}),
-            "logistics_specialized_type": RadioSelect(),
-        }
+        widgets = MappingProxyType(
+            {
+                "logistics_difficulty_testsolve": RadioSelect(
+                    choices=[
+                        (0, "0 - do not foresee problems with getting testsolvers"),
+                        (
+                            1,
+                            "1 - not all testsolvers may enjoy this (e.g. cryptics or logic puzzles)",
+                        ),
+                        (2, "2 - puzzle has a niche audience (e.g. blaseball)"),
+                    ],
+                ),
+                "logistics_difficulty_postprod": RadioSelect(
+                    choices=[
+                        (0, "0 - should be straightforward"),
+                        (
+                            1,
+                            "1 - might be a little tricky (e.g. very specific formatting, minor art, some client-side interactivity)",
+                        ),
+                        (
+                            2,
+                            "2 - will need to involve tech or art team (e.g. server-side code, websockets, hand-drawn art) - **please create a Support Request through PuzzUp**",
+                        ),
+                    ],
+                ),
+                "logistics_difficulty_factcheck": RadioSelect(
+                    choices=[
+                        (0, "0 - anyone could factcheck this puzzle"),
+                        (
+                            1,
+                            "1 - might be a little tricky (e.g. large puzzles, logic puzzles with branching)",
+                        ),
+                        (
+                            2,
+                            "2 - requires special skills, programming, or many people (e.g. hundreds of autogenerated minis, pen-testers, advanced math)",
+                        ),
+                    ],
+                ),
+                "logistics_number_testsolvers": forms.TextInput(
+                    attrs={"class": "input"}
+                ),
+                "logistics_testsolve_length": forms.TextInput(attrs={"class": "input"}),
+                "logistics_testsolve_skills": forms.TextInput(attrs={"class": "input"}),
+                "logistics_specialized_type": RadioSelect(),
+            }
+        )
 
 
 class PuzzleContentForm(forms.ModelForm):
     class Meta:
         model = Puzzle
-        fields = ["content"]
-        widgets = {
-            "content": MarkdownTextarea(attrs={"class": "textarea"}),
-        }
+        fields = ("content",)
+        widgets = MappingProxyType(
+            {
+                "content": MarkdownTextarea(attrs={"class": "textarea"}),
+            }
+        )
 
 
 class PuzzlePseudoAnswerForm(forms.ModelForm):
     class Meta:
         model = PseudoAnswer
-        exclude = []
-        help_texts = {
-            "response": (
-                "This could be a nudge in the right direction, or special instructions on how to obtain the actual answer."
-            ),
-        }
-        widgets = {
-            "puzzle": forms.HiddenInput(),
-        }
-        labels = {
-            "answer": "Partial Answer",
-        }
+        exclude = ()
+        help_texts = MappingProxyType(
+            {
+                "response": (
+                    "This could be a nudge in the right direction, or special instructions on how to obtain the actual answer."
+                ),
+            }
+        )
+        widgets = MappingProxyType(
+            {
+                "puzzle": forms.HiddenInput(),
+            }
+        )
+        labels = MappingProxyType(
+            {
+                "answer": "Partial Answer",
+            }
+        )
 
 
 class PuzzleSolutionForm(forms.ModelForm):
     class Meta:
         model = Puzzle
-        fields = ["solution"]
-        widgets = {
-            "solution": MarkdownTextarea(attrs={"class": "textarea"}),
-        }
+        fields = ("solution",)
+        widgets = MappingProxyType(
+            {
+                "solution": MarkdownTextarea(attrs={"class": "textarea"}),
+            }
+        )
 
 
 class PuzzlePriorityForm(forms.ModelForm):
     class Meta:
         model = Puzzle
-        fields = ["priority"]
+        fields = ("priority",)
 
 
 def guess_google_doc_id(google_doc_url="") -> str:
@@ -947,10 +965,12 @@ class PuzzlePostprodForm(forms.ModelForm):
 
     class Meta:
         model = PuzzlePostprod
-        exclude = []
-        widgets = {
-            "puzzle": forms.HiddenInput(),
-        }
+        exclude = ()
+        widgets = MappingProxyType(
+            {
+                "puzzle": forms.HiddenInput(),
+            }
+        )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -995,14 +1015,14 @@ class PuzzlePostprodForm(forms.ModelForm):
         if "docs.google.com" in google_doc_id:
             cleaned_id = guess_google_doc_id(google_doc_id)
             if not cleaned_id:
-                raise ValidationError("Unable to parse Google doc ID")
+                msg = "Unable to parse Google doc ID"
+                raise ValidationError(msg)
 
         try:
             return GoogleManager.instance().get_gdoc_html(cleaned_id)
-        except HttpError:
-            raise ValidationError(
-                "Could not find Google doc with corresponding ID! Please make sure it is in our Google Drive folder."
-            )
+        except HttpError as e:
+            msg = "Could not find Google doc with corresponding ID! Please make sure it is in our Google Drive folder."
+            raise ValidationError(msg) from e
 
     def clean_puzzle_google_doc_id(self):
         google_doc_id = self.cleaned_data["puzzle_google_doc_id"]
@@ -1018,7 +1038,8 @@ class PuzzlePostprodForm(forms.ModelForm):
         max_image_width = self.cleaned_data["max_image_width"]
         if self.cleaned_data["image_type"] == "PERCENT":
             if max_image_width < 0 or max_image_width > 100:
-                raise ValidationError("Must be between 0-100%")
+                msg = "Must be between 0-100%"
+                raise ValidationError(msg)
 
             return int(max_image_width / 100 * self.DEFAULT_PUZZLE_WIDTH_PX)
         return max_image_width
@@ -1034,26 +1055,30 @@ class PuzzleFactcheckForm(forms.ModelForm):
     class Meta:
         model = PuzzleFactcheck
         fields = ("output",)
-        widgets = {
-            "output": forms.Textarea(attrs={"class": "textarea"}),
-        }
+        widgets = MappingProxyType(
+            {
+                "output": forms.Textarea(attrs={"class": "textarea"}),
+            }
+        )
 
 
 class PuzzleHintForm(forms.ModelForm):
     class Meta:
         model = Hint
-        exclude = []
-        widgets = {
-            "description": forms.TextInput(attrs={"class": "input"}),
-            "order": forms.TextInput(
-                attrs={"class": "input", "placeholder": "e.g. 10.1"}
-            ),
-            "keywords": forms.TextInput(
-                attrs={"class": "input", "placeholder": "e.g. extraction"}
-            ),
-            "puzzle": forms.HiddenInput(),
-            "content": forms.Textarea(attrs={"class": "textarea", "rows": 4}),
-        }
+        exclude = ()
+        widgets = MappingProxyType(
+            {
+                "description": forms.TextInput(attrs={"class": "input"}),
+                "order": forms.TextInput(
+                    attrs={"class": "input", "placeholder": "e.g. 10.1"}
+                ),
+                "keywords": forms.TextInput(
+                    attrs={"class": "input", "placeholder": "e.g. extraction"}
+                ),
+                "puzzle": forms.HiddenInput(),
+                "content": forms.Textarea(attrs={"class": "textarea", "rows": 4}),
+            }
+        )
 
 
 def add_comment(
@@ -1087,7 +1112,7 @@ def add_comment(
         )
         emails = testsolve_session.get_emails(exclude_emails=(author.email,))
     else:
-        subject = "New comment on {}".format(puzzle.spoiler_free_title())
+        subject = f"New comment on {puzzle.spoiler_free_title()}"
         emails = puzzle.get_emails(exclude_emails=(author.email,))
 
     if send_email:
@@ -1240,7 +1265,7 @@ def puzzle_other_credit_update(request: HttpRequest, id, puzzle_id):
 
 
 @login_required
-def puzzle(request: HttpRequest, id, slug=None):  # noqa: C901
+def puzzle(request: HttpRequest, id, slug=None):
     puzzle: Puzzle = get_object_or_404(
         (
             Puzzle.objects.select_related("lead_author")
@@ -1407,10 +1432,10 @@ def puzzle(request: HttpRequest, id, slug=None):  # noqa: C901
             )
             if subscriptions:
                 status_template = status.get_template(new_status)
-                template = "emails/{}".format(status_template)
+                template = f"emails/{status_template}"
 
                 messaging.send_mail_wrapper(
-                    "{} ➡ {}".format(puzzle.spoiler_free_title(), status_display),
+                    f"{puzzle.spoiler_free_title()} ➡ {status_display}",
                     template,
                     {
                         "request": request,
@@ -1740,7 +1765,7 @@ class AnswerMultipleChoiceField(forms.ModelMultipleChoiceField):
 
 class PuzzleAnswersForm(forms.ModelForm):
     def __init__(self, user, *args, **kwargs):
-        super(PuzzleAnswersForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         puzzle = kwargs["instance"]
 
@@ -1756,10 +1781,12 @@ class PuzzleAnswersForm(forms.ModelForm):
 
     class Meta:
         model = Puzzle
-        fields = ["answers"]
-        widgets = {
-            "answers": forms.CheckboxSelectMultiple(),
-        }
+        fields = ("answers",)
+        widgets = MappingProxyType(
+            {
+                "answers": forms.CheckboxSelectMultiple(),
+            }
+        )
 
 
 @login_required
@@ -1852,10 +1879,12 @@ class PuzzleTaggingForm(forms.ModelForm):
 
     class Meta:
         model = Puzzle
-        fields = ["tags"]
-        widgets = {
-            "tags": forms.CheckboxSelectMultiple(),
-        }
+        fields = ("tags",)
+        widgets = MappingProxyType(
+            {
+                "tags": forms.CheckboxSelectMultiple(),
+            }
+        )
 
 
 @login_required
@@ -1955,20 +1984,19 @@ def puzzle_postprod(request, id):
                 },
             )
 
+    elif puzzle.has_postprod():
+        form = PuzzlePostprodForm(instance=puzzle.postprod)
     else:
-        if puzzle.has_postprod():
-            form = PuzzlePostprodForm(instance=puzzle.postprod)
-        else:
-            default_slug = slugify(puzzle.name.lower())
-            authors = [get_credits_name(user) for user in puzzle.authors.all()]
-            authors.sort(key=lambda a: a.upper())
-            form = PuzzlePostprodForm(
-                initial={
-                    "puzzle": puzzle,
-                    "slug": default_slug,
-                    "authors": ", ".join(authors),
-                }
-            )
+        default_slug = slugify(puzzle.name.lower())
+        authors = [get_credits_name(user) for user in puzzle.authors.all()]
+        authors.sort(key=lambda a: a.upper())
+        form = PuzzlePostprodForm(
+            initial={
+                "puzzle": puzzle,
+                "slug": default_slug,
+                "authors": ", ".join(authors),
+            }
+        )
 
     return render(
         request,
@@ -2021,16 +2049,16 @@ def export(request):
 @auto_postprodding_required
 @login_required
 def check_metadata(request):
-    puzzleFolder = os.path.join(settings.HUNT_REPO, "hunt/data/puzzle")
+    puzzleFolder = settings.HUNT_REPO / "hunt/data/puzzle"
     mismatches = []
     credits_mismatches = []
     notfound = []
     notfound = []
     exceptions = []
     for puzzledir in os.listdir(puzzleFolder):
-        datafile = os.path.join(puzzleFolder, puzzledir, "metadata.json")
+        datafile = puzzleFolder / puzzledir / "metadata.json"
         try:
-            with open(datafile) as data:
+            with datafile.open() as data:
                 metadata = json.load(data)
                 pu_id = metadata["puzzle_idea_id"]
                 slug_in_file = metadata["puzzle_slug"]
@@ -2047,9 +2075,8 @@ def check_metadata(request):
                     credits_mismatches.append(puzzle)
         except FileNotFoundError:
             notfound.append(puzzledir)
-            pass
         except Exception as e:
-            exceptions.append("{} - {}".format(puzzledir, e))
+            exceptions.append(f"{puzzledir} - {e}")
             print(datafile, e)
             # sys.exit(1)
 
@@ -2067,7 +2094,7 @@ def check_metadata(request):
 
 class PuzzleOtherCreditsForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
-        super(PuzzleOtherCreditsForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.fields["users"] = UserMultipleChoiceField(required=False)
         self.fields["credit_type"] = forms.ChoiceField(
             required=True,
@@ -2080,11 +2107,13 @@ class PuzzleOtherCreditsForm(forms.ModelForm):
 
     class Meta:
         model = PuzzleCredit
-        fields = ["users", "credit_type", "puzzle", "text"]
-        widgets = {
-            "puzzle": forms.HiddenInput(),
-            "text": forms.TextInput(attrs={"class": "input"}),
-        }
+        fields = ("users", "credit_type", "puzzle", "text")
+        widgets = MappingProxyType(
+            {
+                "puzzle": forms.HiddenInput(),
+                "text": forms.TextInput(attrs={"class": "input"}),
+            }
+        )
 
 
 @login_required
@@ -2097,9 +2126,9 @@ def puzzle_edit(request, id):
         if form.is_valid():
             if "authors" in form.changed_data:
                 old_authors = set(puzzle.authors.all())
-                new_authors = set(form.cleaned_data["authors"]) - old_authors
+                set(form.cleaned_data["authors"]) - old_authors
             else:
-                new_authors = set()
+                pass
             form.save()
 
             if form.changed_data:
@@ -2149,7 +2178,7 @@ def get_changed_data_message(form):
                 # XXX haxx
                 if len(users) == 1 and field_name.endswith("s"):
                     field_name = field_name[:-1]
-                lines.append("Assigned {} as {}".format(user_display, field_name))
+                lines.append(f"Assigned {user_display} as {field_name}")
             else:
                 lines.append("Unassigned all {}".format(field.replace("_", " ")))
 
@@ -2165,25 +2194,29 @@ def get_changed_data_message(form):
 class PuzzlePeopleForm(forms.ModelForm):
     class Meta:
         model = Puzzle
-        fields = [
+        fields = (
             "lead_author",
             "authors",
             "editors",
             "factcheckers",
             "postprodders",
             "spoiled",
-        ]
-        field_classes = {
-            "lead_author": UserChoiceField,
-            "authors": UserMultipleChoiceField,
-            "editors": partial(UserMultipleChoiceField, editors_only=True),
-            "factcheckers": UserMultipleChoiceField,
-            "postprodders": UserMultipleChoiceField,
-            "spoiled": UserMultipleChoiceField,
-        }
-        help_texts = {
-            "spoiled": "Note that lead author, authors, and editors will always be marked as spoiled, even if you de-select them here."
-        }
+        )
+        field_classes = MappingProxyType(
+            {
+                "lead_author": UserChoiceField,
+                "authors": UserMultipleChoiceField,
+                "editors": partial(UserMultipleChoiceField, editors_only=True),
+                "factcheckers": UserMultipleChoiceField,
+                "postprodders": UserMultipleChoiceField,
+                "spoiled": UserMultipleChoiceField,
+            }
+        )
+        help_texts = MappingProxyType(
+            {
+                "spoiled": "Note that lead author, authors, and editors will always be marked as spoiled, even if you de-select them here."
+            }
+        )
 
 
 @login_required
@@ -2411,7 +2444,6 @@ def warn_about_testsolving(is_spoiled, in_session, has_session):
 @login_required
 @require_testsolving_enabled
 def testsolve_history(request):
-
     past_sessions = TestsolveSession.objects.filter(
         participations__in=TestsolveParticipation.objects.filter(
             user=request.user, ended__isnull=False
@@ -2445,7 +2477,7 @@ def testsolve_main(request):
                 author=user,
                 is_system=True,
                 send_email=False,
-                content="Created testsolve session #{}".format(session.id),
+                content=f"Created testsolve session #{session.id}",
                 testsolve_session=session,
             )
 
@@ -2579,7 +2611,7 @@ class TestsolveSessionNotesForm(forms.ModelForm):
 
     class Meta:
         model = TestsolveSession
-        fields = ["notes"]
+        fields = ("notes",)
 
 
 class GuessForm(forms.Form):
@@ -2593,7 +2625,7 @@ def testsolve_queryset_to_csv(qs):
     writer = csv.writer(csvResponse)
 
     field_names = [field.name for field in opts.fields]
-    headers = [name for name in field_names]
+    headers = list(field_names)
     headers.insert(0, "puzzle_id")
     headers.insert(1, "puzzle_name")
     writer.writerow(headers)
@@ -2648,7 +2680,7 @@ def testsolve_participants(request, id):
 
 class TestsolveParticipantPicker(forms.Form):
     def __init__(self, user, exclude, *args, **kwargs):
-        super(TestsolveParticipantPicker, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.fields["add_testsolvers"] = UserMultipleChoiceField(
             initial=user, queryset=exclude
         )
@@ -2658,7 +2690,7 @@ class TestsolveParticipantPicker(forms.Form):
 
 @login_required
 @require_testsolving_enabled
-def testsolve_one(request, id):  # noqa: C901
+def testsolve_one(request, id):
     session = get_object_or_404(
         (
             TestsolveSession.objects.select_related()
@@ -2695,7 +2727,7 @@ def testsolve_one(request, id):  # noqa: C901
                     testsolve_session=session,
                     is_system=True,
                     send_email=False,
-                    content="Joined testsolve session #{}".format(session.id),
+                    content=f"Joined testsolve session #{session.id}",
                 )
 
         elif "edit_notes" in request.POST:
@@ -2999,13 +3031,13 @@ def spoiled(request):
 
 class TestsolveParticipationForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
-        super(TestsolveParticipationForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.fields["general_feedback"].required = True
 
     class Meta:
         model = TestsolveParticipation
-        exclude = [
+        exclude = (
             "session",
             "user",
             "started",
@@ -3030,45 +3062,47 @@ class TestsolveParticipationForm(forms.ModelForm):
             "errors_found",
             "suggestions_change",
             "suggestions_keep",
-        ]
-        widgets = {
-            "general_feedback": MarkdownTextarea(attrs={"rows": 5}),
-            "misc_feedback": MarkdownTextarea(attrs={"rows": 5}),
-            "fun_rating": RadioSelect(
-                choices=[
-                    (None, "n/a"),
-                    (1, "1: unfun"),
-                    (2, "2: neutral"),
-                    (3, "3: somewhat fun"),
-                    (4, "4: fun"),
-                    (5, "5: very fun"),
-                    (6, "6: one of the best puzzles I’ve done"),
-                ]
-            ),
-            "difficulty_rating": RadioSelect(
-                choices=[
-                    (None, "n/a"),
-                    (
-                        1,
-                        "1: very easy - straightforward for new solvers (e.g. Puzzled Pint)",
-                    ),
-                    (
-                        2,
-                        "2: easy – doable but challenging for new solvers (e.g. Fish/Students, teammate hunt intro round)",
-                    ),
-                    (
-                        3,
-                        "3: somewhat difficult – still straightforward for experienced teams (e.g. Ministry)",
-                    ),
-                    (
-                        4,
-                        "4: difficult – challenges most teams (e.g. main round MH, teammate hunt main rounds)",
-                    ),
-                    (5, "5: very difficult – hard even for MH"),
-                    (6, "6: extremely difficult - too hard even for MH"),
-                ]
-            ),
-        }
+        )
+        widgets = MappingProxyType(
+            {
+                "general_feedback": MarkdownTextarea(attrs={"rows": 5}),
+                "misc_feedback": MarkdownTextarea(attrs={"rows": 5}),
+                "fun_rating": RadioSelect(
+                    choices=[
+                        (None, "n/a"),
+                        (1, "1: unfun"),
+                        (2, "2: neutral"),
+                        (3, "3: somewhat fun"),
+                        (4, "4: fun"),
+                        (5, "5: very fun"),
+                        (6, "6: one of the best puzzles I've done"),
+                    ]
+                ),
+                "difficulty_rating": RadioSelect(
+                    choices=[
+                        (None, "n/a"),
+                        (
+                            1,
+                            "1: very easy - straightforward for new solvers (e.g. Puzzled Pint)",
+                        ),
+                        (
+                            2,
+                            "2: easy – doable but challenging for new solvers (e.g. Fish/Students, teammate hunt intro round)",
+                        ),
+                        (
+                            3,
+                            "3: somewhat difficult – still straightforward for experienced teams (e.g. Ministry)",
+                        ),
+                        (
+                            4,
+                            "4: difficult – challenges most teams (e.g. main round MH, teammate hunt main rounds)",
+                        ),
+                        (5, "5: very difficult – hard even for MH"),
+                        (6, "6: extremely difficult - too hard even for MH"),
+                    ]
+                ),
+            }
+        )
 
 
 @login_required
@@ -3141,10 +3175,7 @@ def testsolve_finish(request, id):
 
             return render(request, "testsolve_finish.html", context)
 
-    if participation:
-        form = TestsolveParticipationForm(instance=participation)
-    else:
-        form = None
+    form = TestsolveParticipationForm(instance=participation) if participation else None
 
     context = {
         "session": session,
@@ -3388,7 +3419,7 @@ class NormalizeEndingsField(forms.CharField):
 
 class AnswerForm(forms.ModelForm):
     def __init__(self, round, *args, **kwargs):
-        super(AnswerForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.fields["round"] = forms.ModelChoiceField(
             queryset=Round.objects.all(),  # ???
             initial=round,
@@ -3399,42 +3430,48 @@ class AnswerForm(forms.ModelForm):
 
     class Meta:
         model = PuzzleAnswer
-        fields = [
+        fields = (
             "answer",
             "round",
             "flexible",
             "notes",
             "case_sensitive",
             "whitespace_sensitive",
-        ]
-        widgets = {
-            "answer": forms.Textarea(
-                # Default to 1 row, but allow users to drag if they need more space.
-                attrs={"rows": 1, "cols": 30, "class": "answer notes-field"}
-            ),
-            "notes": forms.Textarea(
-                attrs={"rows": 4, "cols": 20, "class": "notes-field"}
-            ),
-        }
+        )
+        widgets = MappingProxyType(
+            {
+                "answer": forms.Textarea(
+                    # Default to 1 row, but allow users to drag if they need more space.
+                    attrs={"rows": 1, "cols": 30, "class": "answer notes-field"}
+                ),
+                "notes": forms.Textarea(
+                    attrs={"rows": 4, "cols": 20, "class": "notes-field"}
+                ),
+            }
+        )
 
-        field_classes = {
-            "answer": NormalizeEndingsField,
-        }
+        field_classes = MappingProxyType(
+            {
+                "answer": NormalizeEndingsField,
+            }
+        )
 
 
 class RoundForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
-        super(RoundForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.fields["editors"] = UserMultipleChoiceField(
             required=False, editors_only=True
         )
 
     class Meta:
         model = Round
-        fields = ["name", "description", "editors", "act"]
-        widgets = {
-            "description": MarkdownTextarea(),
-        }
+        fields = ("name", "description", "editors", "act")
+        widgets = MappingProxyType(
+            {
+                "description": MarkdownTextarea(),
+            }
+        )
 
 
 @group_required("EIC")
@@ -3831,7 +3868,7 @@ def statistics(request):
         .order_by("status")
         .annotate(count=Count("status"))
     )
-    rest = dict((p["status"], p["count"]) for p in all_counts)
+    rest = {p["status"]: p["count"] for p in all_counts}
     tags = PuzzleTag.objects.filter(important=True)
     tag_counts = {}
     for tag in tags:
@@ -3841,7 +3878,7 @@ def statistics(request):
             .order_by("status")
             .annotate(count=Count("status"))
         )
-        tag_counts[tag.name] = dict((p["status"], p["count"]) for p in query)
+        tag_counts[tag.name] = {p["status"]: p["count"] for p in query}
         for p in query:
             rest[p["status"]] -= p["count"]
     statuses = []
@@ -3907,7 +3944,7 @@ class PuzzleTagForm(forms.ModelForm):
 
     class Meta:
         model = PuzzleTag
-        fields = ["name", "description", "important"]
+        fields = ("name", "description", "important")
 
 
 @permission_required("puzzle_editing.change_round", raise_exception=True)
@@ -3928,10 +3965,7 @@ def single_tag(request, id):
     tag = get_object_or_404(PuzzleTag, id=id)
 
     count = tag.puzzles.count()
-    if count == 1:
-        label = "1 puzzle"
-    else:
-        label = "{} puzzles".format(count)
+    label = "1 puzzle" if count == 1 else f"{count} puzzles"
     return render(
         request,
         "single_tag.html",

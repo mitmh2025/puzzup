@@ -8,9 +8,9 @@
 
 <ul>
     {% for sess in outstanding %}
-    <li>
-        Testsolve session #{{ sess.session.id }} for <b>{{ sess.session.puzzle }}</b>: (<a href="https://lol.puzzup.lol/testsolve/{{ sess.session.id }}/finish">leave feedback</a>) (<a href="https://lol.puzzup.lol/testsolve/{{ sess.session.id }}">view</a>)
-    </li>
+        <li>
+            Testsolve session #{{ sess.session.id }} for <b>{{ sess.session.puzzle }}</b>: (<a href="https://lol.puzzup.lol/testsolve/{{ sess.session.id }}/finish">leave feedback</a>) (<a href="https://lol.puzzup.lol/testsolve/{{ sess.session.id }}">view</a>)
+        </li>
     {% endfor %}
 </ul>
 

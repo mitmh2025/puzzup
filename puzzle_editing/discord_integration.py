@@ -2,18 +2,13 @@ from __future__ import annotations
 
 import itertools
 from typing import Iterable
-from typing import Optional
 
 import requests
 from django.conf import settings
 from django.db.models import Q
 
 from . import models as m
-from .discord import Client
-from .discord import DiscordError
-from .discord import TextChannel
-from .discord import Thread
-from .discord import TimedCache
+from .discord import Client, DiscordError, TextChannel, Thread, TimedCache
 
 # Global channel cache with a 10m timeout
 _global_cache: TimedCache[str, TextChannel] = TimedCache(timeout=600)
@@ -31,10 +26,11 @@ def enabled():
 def get_client() -> Client:
     """Gets a discord client, or raises and error if discord isn't enabled."""
     if not enabled():
-        raise DiscordError(
+        msg = (
             "Discord is not enabled. Make sure settings.DISCORD_BOT_TOKEN "
             "and settings.DISCORD_GUILD_ID are set."
         )
+        raise DiscordError(msg)
     return Client(
         settings.DISCORD_BOT_TOKEN,
         settings.DISCORD_GUILD_ID,
@@ -87,7 +83,7 @@ def get_tags(users: Iterable[m.User], skip_missing: bool = True) -> list[str]:
     return items
 
 
-def get_channel(c: Client, p: m.Puzzle) -> Optional[TextChannel]:
+def get_channel(c: Client, p: m.Puzzle) -> TextChannel | None:
     """Get the channel for a puzzle, or None if hasn't got one.
 
     If the puzzle has a discord_channel_id set, but no channel has that id,
@@ -108,7 +104,7 @@ def get_channel(c: Client, p: m.Puzzle) -> Optional[TextChannel]:
         return None
 
 
-def get_thread(c: Client, s: m.TestsolvingSession) -> Optional[Thread]:
+def get_thread(c: Client, s: m.TestsolvingSession) -> Thread | None:
     """Get the thread for a testsolving session, or None if hasn't got one.
 
     If the session has a discord_thread_id set, but no thread has that id,
@@ -127,7 +123,7 @@ def get_thread(c: Client, s: m.TestsolvingSession) -> Optional[Thread]:
 
 def get_client_and_channel(
     p: m.Puzzle,
-) -> tuple[Optional[Client], Optional[TextChannel]]:
+) -> tuple[Client | None, TextChannel | None]:
     """Shorthand for get_client followed by get_channel.
 
     Returns (client, channel); both will be None if discord is disabled, and
@@ -141,7 +137,7 @@ def get_client_and_channel(
 
 
 def sync_puzzle_channel(
-    puzzle: m.Puzzle, tc: TextChannel, url: str = None, sync_users: bool = True
+    puzzle: m.Puzzle, tc: TextChannel, url: str | None = None, sync_users: bool = True
 ) -> TextChannel:
     """Syncs data from a puzzle to its TextChannel.
 
@@ -163,7 +159,7 @@ def sync_puzzle_channel(
     autheds = itertools.chain(
         puzzle.authors.all(), puzzle.editors.all(), puzzle.factcheckers.all()
     )
-    must_see = set(get_dids(autheds)) | set([settings.DISCORD_CLIENT_ID])
+    must_see = set(get_dids(autheds)) | {settings.DISCORD_CLIENT_ID}
     # anyone who is spoiled CAN see the channel
     can_see = set(get_dids(puzzle.spoiled.all()))
     # Loop over all users who must see and all who currently have overwrites;

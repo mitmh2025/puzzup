@@ -1,17 +1,12 @@
 import logging
 import re
-from typing import Any
-from typing import Optional
-from typing import Union
+from typing import Any, Optional, Union
 
 import pydantic
 import requests
 
 from .cache import TimedCache
-from .channel import Category
-from .channel import Channel
-from .channel import TextChannel
-from .channel import Thread
+from .channel import Category, Channel, TextChannel, Thread
 
 logger = logging.getLogger(__name__)
 
@@ -159,7 +154,8 @@ class Client:
         elif method in ["patch", "post", "put"]:
             headers["Content-Type"] = "application/json"
             return requests.request(method, api_url, headers=headers, json=json)
-        raise ValueError(f"Unknown method {method}")
+        msg = f"Unknown method {method}"
+        raise ValueError(msg)
 
     def _request(self, method: str, endpoint: str, json: Any = None) -> Any:
         resp = self._raw_request(method, endpoint, json)
@@ -261,7 +257,8 @@ class Client:
                 return self.save_channel(tc)
         # If we get to here, then we tried 10 possible categories and they
         # were all full, which means the server is maxed out on channels.
-        raise DiscordError(f"All 500 channels are in category {cat}?!")
+        msg = f"All 500 channels are in category {cat}?!"
+        raise DiscordError(msg)
 
     def save_channel(self, tc: TextChannel) -> TextChannel:
         """Saves a text channel.
@@ -366,7 +363,7 @@ class Client:
         many we can load before getting rate-limited."""
         messages = self.get_channel_messages(channel_id, message_limit)
         from_people = [m for m in messages if "webook_id" not in m]
-        authors = set([m["author"]["id"] for m in from_people])
+        authors = {m["author"]["id"] for m in from_people}
         return authors
 
     def delete_channel(self, channel_id: str) -> dict:
@@ -386,7 +383,7 @@ class Client:
         will be treated as dict(content=payload).
         """
         if isinstance(payload, str):
-            payload = dict(content=payload)
+            payload = {"content": payload}
         payload["content"] = payload.get("content", "")[:2000]
         pth = f"/channels/{channel_id}/messages"
         return self._request("post", pth, payload)

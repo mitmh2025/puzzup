@@ -5,34 +5,34 @@
 
 {% block main %}
 
-<h1 class="title">
-	Puzzle flavor & art
-</h1>
+    <h1 class="title">
+        Puzzle flavor & art
+    </h1>
 
-<div class="box">
-	<h2>
-		Puzzles that need flavor approved
-	</h2>
+    <div class="box">
+        <h2>
+            Puzzles that need flavor approved
+        </h2>
 
-	{% puzzle_list needs_flavor_approved show_last_status_change=False show_round=True show_flavor=True show_summary=False user=request.user %}
-</div>
+        {% puzzle_list needs_flavor_approved show_last_status_change=False show_round=True show_flavor=True show_summary=False user=request.user %}
+    </div>
 
-<div class="box">
+    <div class="box">
 
-	<h2>
-		Puzzles that are missing flavor
-	</h2>
+        <h2>
+            Puzzles that are missing flavor
+        </h2>
 
-	{% puzzle_list needs_flavor show_last_status_change=False show_round=True user=request.user %}
-</div>
+        {% puzzle_list needs_flavor show_last_status_change=False show_round=True user=request.user %}
+    </div>
 
-<div class="box">
+    <div class="box">
 
-	<h2>
-		Puzzles that have flavor approved
-	</h2>
+        <h2>
+            Puzzles that have flavor approved
+        </h2>
 
-	{% puzzle_list has_flavor_approved show_last_status_change=False show_round=True show_flavor=True show_summary=False user=request.user %}
-</div>
+        {% puzzle_list has_flavor_approved show_last_status_change=False show_round=True show_flavor=True show_summary=False user=request.user %}
+    </div>
 
 {% endblock %}

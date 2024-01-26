@@ -1,15 +1,7 @@
 from .cache import TimedCache
-from .channel import Category
-from .channel import TextChannel
-from .channel import Thread
-from .client import Client
-from .client import DiscordError
-from .client import JsonDict
-from .client import MsgPayload
-from .perm import Overwrite
-from .perm import Overwrites
-from .perm import Permission
-from .perm import PermLike
+from .channel import Category, TextChannel, Thread
+from .client import Client, DiscordError, JsonDict, MsgPayload
+from .perm import Permission, PermLike
 
 __all__ = [
     "Client",

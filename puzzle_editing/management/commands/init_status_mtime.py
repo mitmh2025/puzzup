@@ -3,8 +3,7 @@ import time
 from django.core.management.base import BaseCommand
 
 from puzzle_editing import status
-from puzzle_editing.models import Puzzle
-from puzzle_editing.models import PuzzleComment
+from puzzle_editing.models import Puzzle, PuzzleComment
 
 rev_status_map = {}
 for st in status.STATUSES:

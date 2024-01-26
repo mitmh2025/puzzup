@@ -1,7 +1,7 @@
 # flake8: noqa
 from decouple import config
 
-from settings.base import *  # pylint: disable=unused-wildcard-import,wildcard-import
+from settings.base import *
 
 HUNT_REPO = config("HUNT_REPO", "")
 
@@ -25,6 +25,6 @@ ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
 # Allow for local (per-user) override
 try:
-    from settings_local import *  # pylint: disable=wildcard-import
+    from settings_local import *
 except ImportError:
     pass

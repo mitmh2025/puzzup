@@ -2,8 +2,7 @@ import typing as t
 from enum import Flag
 from itertools import chain
 
-from pydantic import BaseModel
-from pydantic import Field
+from pydantic import BaseModel, Field
 
 # A PermLike is anything we can convert into a Permission.
 PermLike = t.Union["Permission", str, int, None]
@@ -182,9 +181,8 @@ class Overwrite(BaseModel):
         deny = Permission.of(deny)
         ignore = Permission.of(ignore)
         if allow & deny or allow & ignore or deny & ignore:
-            raise ValueError(
-                f"Contradiction: allow {allow}, deny {deny}, ignore {ignore}"
-            )
+            msg = f"Contradiction: allow {allow}, deny {deny}, ignore {ignore}"
+            raise ValueError(msg)
         return Overwrite(
             id=self.id,
             type=self.type,
@@ -272,13 +270,15 @@ class Overwrites(BaseModel):
     def get_user(self, uid):
         """Get a user's overwrite, or a default one if none exists"""
         if uid in self.roles:
-            raise ValueError(f"Id {uid} is a role, not a user.")
+            msg = f"Id {uid} is a role, not a user."
+            raise ValueError(msg)
         return self.users.get(uid, Overwrite(id=uid, type=1))
 
     def get_role(self, rid):
         """Get a role's overwrite, or a default one if none exists"""
         if rid in self.users:
-            raise ValueError(f"Id {rid} is a user, not a role.")
+            msg = f"Id {rid} is a user, not a role."
+            raise ValueError(msg)
         return self.roles.get(rid, Overwrite(id=rid, type=0))
 
     def user_ids(self) -> list[str]:
@@ -299,7 +299,8 @@ class Overwrites(BaseModel):
                 want, got = "role", "user"
             else:
                 want, got = "user", "role"
-            raise ValueError(f"Id {overwrite.id} is a {got}, not a {want}.")
+            msg = f"Id {overwrite.id} is a {got}, not a {want}."
+            raise ValueError(msg)
         if overwrite.is_empty():
             if overwrite.id in main:
                 del main[overwrite.id]
