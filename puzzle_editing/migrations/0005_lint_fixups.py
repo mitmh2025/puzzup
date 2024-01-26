@@ -113,12 +113,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterField(
             model_name='testsolveparticipation',
-            name='stuck_time',
-            field=models.FloatField(blank=True, default='', help_text='**If Yes:** For about how long were you stuck?'),
-            preserve_default=False,
-        ),
-        migrations.AlterField(
-            model_name='testsolveparticipation',
             name='stuck_unstuck',
             field=models.TextField(blank=True, default='', help_text='**If Yes:** What helped you get unstuck? Was it a satisfying aha?'),
             preserve_default=False,

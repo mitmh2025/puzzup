@@ -1313,6 +1313,7 @@ class TestsolveParticipation(models.Model):
         help_text="**If Yes:** Where did you get stuck? List as many places as relevant.",
     )
     stuck_time = models.FloatField(
+        null=True,
         blank=True,
         help_text="**If Yes:** For about how long were you stuck?",
     )
