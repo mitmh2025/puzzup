@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% load puzzle_list %}
+{% load perm_tags %}
+{% load markdown %}
+{% block title %}Users{% endblock %}
+
+{% block main %}
+  <h1 class="title is-2">Users</h1>
+  <div class="content"><p>🟢 Active 🛑 Deferred 💀 Dead 🏁 Done</p></div>
+  <div class="box">
+    <div class="table-container">
+      <table class="table sortable user-table is-fullwidth">
+        <thead>
+          <tr>
+            <th colspan="2">
+              <th colspan="4">Authored</th>
+              <th colspan="4">Editing</th>
+              <th colspan="2">Postprod</th>
+              <th colspan="4">Factchecking</th>
+              <th colspan="2">Testsolving</th>
+            </tr>
+            <tr class="is-size-6">
+              <th class="is-size-7">User</th>
+              <th class="is-size-7">Role</th>
+
+              <th class="is-size-7">🟢</th>
+              <th class="is-size-7 deemph">🛑</th>
+              <th class="is-size-7 deemph">💀</th>
+              <th class="is-size-7 deemph">🏁</th>
+
+              <th class="is-size-7">🟢</th>
+              <th class="is-size-7 deemph">🛑</th>
+              <th class="is-size-7 deemph">💀</th>
+              <th class="is-size-7 deemph">🏁</th>
+
+              <th class="left-border is-size-7">🟢</th>
+              <th class="is-size-7">🏁</th>
+
+              <th class="is-size-7">🟢</th>
+              <th class="is-size-7 deemph">🛑</th>
+              <th class="is-size-7 deemph">💀</th>
+              <th class="is-size-7 deemph">🏁</th>
+
+              <th class="is-size-7">🟢</th>
+              <th class="is-size-7">🏁</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for user in users %}
+              <tr>
+                <td><a href="{% url 'user' user.username %}">{{ user.credits_name }}</a></td>
+                <td>{{ user.hat }}</td>
+                <td class="left-border">{{ user.authored_active }}</td>
+                <td class="deemph">{{ user.authored_deferred }}</td>
+                <td class="deemph">{{ user.authored_dead }}</td>
+                <td class="deemph">{{ user.authored_done }}</td>
+                <td class="left-border">{{ user.editing_active }}</td>
+                <td class="deemph">{{ user.editing_deferred }}</td>
+                <td class="deemph">{{ user.editing_dead }}</td>
+                <td class="deemph">{{ user.editing_done }}</td>
+                <td class="left-border">{{ user.postprodding_active }}</td>
+                <td class="deemph">{{ user.postprodding_done }}</td>
+                <td class="left-border">{{ user.factchecking_active }}</td>
+                <td class="deemph">{{ user.factchecking_deferred }}</td>
+                <td class="deemph">{{ user.factchecking_dead }}</td>
+                <td class="deemph">{{ user.factchecking_done }}</td>
+                <td class="left-border">{{ user.testsolving_in_progress }}</td>
+                <td>{{ user.testsolving_done }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="content">
+      {% for user in users %}
+        <div id="user-{{ user.username }}" class="block">
+          <a href="{% url 'user' user.username %}">
+            <h4>{{ user.credits_name|default:user.username }}</h4>
+          </a>
+          <ul>
+            <li>Username: {{ user.username }}</li>
+            {% if user.discord_username %}
+              <li>Discord: <code>@{{ user.discord_username }}</code> {% if user.discord_nickname %}(a.k.a.
+                {{ user.discord_nickname }}){% endif %}
+              </li>
+            {% endif %}
+            {% if user.bio %}
+              <li>Bio:
+                {{ user.bio|markdown }}
+              </li>
+            {% endif %}
+          </ul>
+        </div>
+      {% endfor %}
+    </div>
+{% endblock %}

@@ -1,0 +1,52 @@
+# SQLite database
+/**/*.sqlite3
+
+# pyc files
+/**/*.pyc
+
+# Auto-collected static files folder
+/static/
+
+/puzzle_editing/static/css/main.css
+/puzzle_editing/static/css/main.css.map
+
+# Virtualenv
+/venv/
+/env/
+.env
+
+# pyenv
+.python-version
+
+# Ansible retry files
+/**/*.retry
+/**/*.log
+
+# Vagrant metadata
+.vagrant
+
+# pid files
+/**/*.pid
+
+# MacOS generated files
+.DS_Store
+
+# swap files
+*.swp
+
+# VSCode
+\.vscode/
+
+# uploaded puzzles
+puzzle_postprods/
+tph-site-puzzup/
+tph-site-tmp/
+
+# IntelliJ (e.g. Pycharm)
+.idea/
+
+*.codekit3
+settings_local.py
+.ruff_cache
+.mypy_cache
+.sass-cache

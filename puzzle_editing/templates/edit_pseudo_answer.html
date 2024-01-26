@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load user_list %}
+{% load markdown %}
+
+{% block title %}Edit Partial Answer {{ pseudo_answer.id }} for {{ pseudo_answer.puzzle }}{% endblock %}
+
+{% block main %}
+  <p>
+    <a href="{% url 'puzzle' pseudo_answer.puzzle.id %}">Back to puzzle</a>
+  </p>
+  <h1 class="title is-2">Edit Partial Answer {{ pseudo_answer.id }} for <a href="{% url 'puzzle' pseudo_answer.puzzle.id %}">{{ pseudo_answer.puzzle }}</a></h1>
+
+  <div class="block">
+    <form method="post">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      {% for field in form.visible_fields %}
+        <div class="columns">
+          <div class="column is-one-quarter">
+            <label class="label">{{ field.label }}</label>
+          </div>
+          <div class="column">
+            <div class="control">
+              {{ field }}
+              {% if field.help_text %}
+                <p class="help">{{ field.help_text|safe }}</p>
+              {% endif %}
+              {{ field.errors }}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+      {% for field in form.hidden_fields %}
+        {{ field }}
+      {% endfor %}
+
+      <div class="level">
+        <div class="level-left">
+          <div class="level-item">
+            <button class="button is-info">Submit changes</button>
+          </div>
+          <div class="level-item">
+            <button class="button is-danger" id="delete-partial-answer" name="delete">
+              Delete this partial answer
+            </button>
+          </div>
+        </div>
+      </div>
+      <script type="text/javascript">
+        document.getElementById('delete-partial-answer').addEventListener('click', (event) => {
+          if (!confirm('Are you sure you want to delete this partial answer?')) {
+            event.preventDefault();
+          }
+        });
+      </script>
+    </form>
+  </div>
+{% endblock %}

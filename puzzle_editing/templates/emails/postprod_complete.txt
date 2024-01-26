@@ -1,0 +1,7 @@
+{% if success %}
+Postprod export for {{ puzzle_title }} complete on branch {{ branch }}.
+
+View branch or make a PR at {{ branch_url }}.
+{% else %}
+Postprod export failed. Please contact tech, or complete the postprod manually.
+{% endif %}

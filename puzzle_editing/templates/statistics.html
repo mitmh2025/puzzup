@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% load get_item %}
+{% load puzzle_list %}
+{% load markdown %}
+
+{% block title %}Statistics{% endblock %}
+
+{% block main %}
+  <h1 class="title is-2">Statistics</h1>
+  <div class="box">
+    <h2 class="title is-3">Puzzle Status</h2>
+    <table class="table is-fullwidth">
+      <thead>
+        <tr align="left">
+          <th>Status</th>
+          <th>Count</th>
+          <th>Metas</th>
+          <th>Feeders</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in status %}
+          <tr>
+            <td>{{ s.status }}</td>
+            <td>{{ s.count }}</td>
+            <td>{{ s.meta_count }}</td>
+            <td>{{ s.feeder_count }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="box">
+    <div class="columns">
+      <div class="column is-half">
+        <h2 class="title is-3">Other Stuff</h2>
+        <table class="table is-fullwidth">
+          <thead>
+            <tr align="left">
+              <th>Answers...</th>
+              <th>#</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>in need of a puzzle</td>
+              <td>{{answers.waiting}}</td>
+            </tr>
+            <tr>
+              <td>not yet released</td>
+              <td title="UNRELEASED_PUZZLE_COUNT">{{unreleased_count|default_if_none:"?"}}</td>
+            </tr>
+            <tr>
+              <th>assigned already</th>
+              <th>{{answers.assigned}}</th>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="column">
+        <h2 class="title is-3">Writing Schedule</h2>
+        <table class="table is-fullwidth">
+          <thead>
+            <tr align="left">
+              <th>Puzzles</th>
+              <th>#</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>…past writing</td>
+              <td>{{ past_writing }}</td>
+            </tr>
+            <tr>
+              <td>…past testsolving</td>
+              <td>{{ past_testsolving }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div id="chart-anchor"></div>
+  </div>
+
+  <div class="box">
+    <h2 class="title is-3">Chart!</h2>
+    <div id="chart-container">
+      <div class="level is-mobile">
+        <div class="level-left">
+          <p class="level-item"><a class="button is-info" href="?time=projected#chart-anchor">Till hunt</a></p>
+          <p class="level-item"><a class="button is-info" href="?time=alltime#chart-anchor">All time</a></p>
+          <p class="level-item"><a class="button is-info" href="?time=1m#chart-anchor">1 Month</a></p>
+          <p class="level-item"><a class="button is-info" href="?time=2w#chart-anchor">2 weeks</a></p>
+          <p class="level-item"><a class="button is-info" href="?time=1w#chart-anchor">1 Week</a></p>
+          <p class="level-item"><a class="button is-info" href="?time=3d#chart-anchor">3 Days</a></p>
+          <p class="level-item"><a class="button is-info" href="?time=1d#chart-anchor">1 Day</a></p>
+        </div>
+      </div>
+      <p><img src="data:image/png;base64, {{ image_base64 }}" alt="puzzle stats" /></p>
+      <span class="deemph">TARGET_PUZZLE_COUNT = {{ target_count }}</span>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,52 @@
+-   model: auth.group
+    pk: 1
+    fields:
+        name: Editor  # Deprecated and superseded by EIC
+        permissions:
+        - 34
+-   model: auth.group
+    pk: 2
+    fields:
+        name: EIC
+        permissions:
+        - 34
+-   model: auth.group
+    pk: 3
+    fields:
+        name: Testsolve Coordinators
+        permissions: []
+-   model: auth.group
+    pk: 4
+    fields:
+        name: Art
+        permissions: []
+-   model: auth.group
+    pk: 5
+    fields:
+        name: Accessibility
+        permissions: []
+-   model: auth.group
+    pk: 6
+    fields:
+        name: Tech
+        permissions: []
+-   model: auth.group
+    pk: 7
+    fields:
+        name: Factcheck Coordinators
+        permissions: []
+-   model: auth.group
+    pk: 8
+    fields:
+        name: Art Lead
+        permissions: []
+-   model: auth.group
+    pk: 9
+    fields:
+        name: Accessibility Lead
+        permissions: []
+-   model: auth.group
+    pk: 10
+    fields:
+        name: Tech Lead
+        permissions: []

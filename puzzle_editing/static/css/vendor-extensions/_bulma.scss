@@ -1,0 +1,65 @@
+.help {
+  font-size: 0.85rem;
+}
+
+.column {
+  min-width: 0;
+}
+
+details:not([open]) > summary.title:not(:last-child) {
+  margin-bottom: 0;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.level .is-flex-wrap-wrap .level-item.is-narrow {
+  margin-bottom: 0.2rem;
+}
+
+.content ul:first-child {
+  margin-top: 0;
+}
+
+// h1
+.title.is-2:not(:last-child) {
+  margin-bottom: 0.5rem;
+
+  &:not(:first-child) {
+    margin-top: 1rem;
+  }
+}
+
+// h2
+.title.is-3:not(:last-child) {
+  margin-bottom: 0.5714rem;
+
+  &:not(:first-child) {
+    margin-top: 1.1428rem;
+  }
+}
+
+// h3
+.title.is-4:not(:last-child) {
+  margin-bottom: 0.6666rem;
+
+  &:not(:first-child) {
+    margin-top: 1.3333rem
+  }
+}
+
+// h4
+.title.is-5:not(:last-child) {
+  margin-bottom: 0.8rem;
+}
+
+// h5
+.title.is-6:not(:last-child) {
+  margin-bottom: 0.8888rem;
+}
+
+// h6
+.title.is-7:not(:last-child) {
+  margin-bottom: 1rem;
+}

@@ -1,0 +1,71 @@
+:root {
+  --bg: #fff;
+  --nav-bg: #f8f8cc;
+  --nav-bg-hover: #ffe;
+  --nav-selected-border: #aa6;
+  --text-color: black;
+  --deemphasized-color: #777;
+  --correct-color: #080;
+  --error-color: #900;
+  --secondary-bg: #f2f2f2;
+  --tertiary-bg: #e2e2e2;
+  --link-color: #00e;
+  --visited-color: #551a8b;
+  --border-color: #aaa;
+  --active-shadow-color: #69f;
+  --nav-color: var(--text-color);
+  --nav-link-color: var(--link-color);
+  --nav-visited-color: var(--visited-color);
+  --nav-deemphasized-color: var(--deemphasized-color);
+  --input-bg: var(--bg);
+  --by-author-color: #fee;
+  --testsolve-color: #efe;
+}
+
+html, body {
+  background-color: #fffbec;
+}
+
+nav {
+  margin-bottom: 1em;
+}
+
+p {
+  word-wrap: break-word;
+}
+
+.small-md {
+  p:first-child {
+    margin-top: 0;
+  }
+
+  p:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.empty {
+  color: var(--deemphasized-color);
+  font-style: italic;
+}
+
+.small {
+  font-size: 0.8em;
+}
+
+.success {
+  font-size: 200%;
+  color: var(--correct-color);
+}
+
+.hidden {
+  display: none;
+}
+
+details summary {
+  cursor: pointer;
+}
+
+details summary > * {
+  display: inline;
+}

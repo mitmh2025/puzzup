@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% load user_list %}
+{% load comment_list %}
+{% load markdown %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block outer_main %}
+
+  <h1 class="title is-2">{{ title }}</h1>
+  <div class="block">
+    <form method="GET">
+      <div class="level">
+        <div class="level-left">
+          <div class="level-item">
+            <p class="label">View:</p>
+          </div>
+          <div class="level-item">
+            <div class="buttons">
+              <input type="submit" class="button is-small" {% if team == "ALL" %}disabled{% endif %} name="team" value="ALL" title="All">
+              <input type="submit" class="button is-small" {% if team == "ART" %}disabled{% endif %} name="team" value="ART" title="Art">
+              <input type="submit" class="button is-small" {% if team == "ACC" %}disabled{% endif %} name="team" value="ACC" title="Accessibility">
+              <input type="submit" class="button is-small" {% if team == "TECH" %}disabled{% endif %} name="team" value="TECH" title="Technology">
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div class="box">
+    <h2 class="title is-3">Open requests</h2>
+    <div class="table-container">
+      <table class="table sortable">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Puzzle</th>
+            <th>Team</th>
+            <th>Status</th>
+            <th>Assignees</th>
+            <th>Author notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for request in open_requests %}
+            <tr>
+              <td><a class='button is-small is-info'
+                     href="{% url 'support_by_puzzle_id' request.puzzle.id request.team %}">View</a></td>
+              <td><a href="{% url 'puzzle' request.puzzle.id %}">{{ request.puzzle.name }}</a></td>
+              <td>{{ request.get_team_display }}</td>
+              <td>{{ request.get_status_display }}</td>
+              <td>{% user_list request.assignees linkify=True %}</td>
+              <td>{{ request.author_notes|markdown|truncatechars_html:50 }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% if not open_requests %}
+        <p class="empty">No open requests.</p>
+      {% endif %}
+    </div>
+  </div>
+
+
+  <div class="box">
+    <h2 class="title is-3">Closed requests</h2>
+
+    <div class="table-container">
+      <table class="table sortable">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Puzzle</th>
+            <th>Team</th>
+            <th>Status</th>
+            <th>Assignees</th>
+            <th>Author notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for request in closed_requests %}
+            <tr>
+              <td><a class='button is-small is-info'
+                     href="{% url 'support_by_puzzle_id' request.puzzle.id request.team %}">View</a></td>
+              <td>{{ request.puzzle.name }}</td>
+              <td>{{ request.get_team_display }}</td>
+              <td>{{ request.get_status_display }}</td>
+              <td>{% user_list request.assignees linkify=True %}</td>
+              <td>{{ request.author_notes|truncatewords:10 }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% if not closed_requests %}
+        <p class="empty">No closed requests.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if hidden_count > 0 %}
+    <p><i>Note: {{ hidden_count }} requests for unspoiled puzzles have been hidden.</i></p>
+  {% else %}
+    <p><i>All requests shown.</i></p>
+  {% endif %}
+
+{% endblock %}

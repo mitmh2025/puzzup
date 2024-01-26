@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load markdown %}
+
+{% block title %}New Testsolve{% endblock %}
+
+{% block main %}
+  <h1 class="title is-2">New Testsolve for {{ puzzle.html_link }}</h1>
+
+  <div class="content">
+    <p>Once you submit, sheets and threads will be created. This will take a bit!</p>
+  </div>
+  <form action="{% url 'testsolve_new' puzzle.id %}" method="post">
+    {% csrf_token %}
+    {% for field in form %}
+      <div class="columns">
+        <div class="column is-one-third">
+          <label class="label">{{ field.label }}</label>
+          <p class="help">{{ field.help_text|markdown|safe }}</p>
+        </div>
+        <div class="column">
+          <div class="control">
+            {{ field }}
+            {{ field.errors }}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+
+    <div class="columns">
+      <div class="column is-one-third">
+      </div>
+      <div class="column">
+        <button class="button is-primary" type="submit">Submit!</button>
+      </div>
+    </div>
+  </form>
+{% endblock %}

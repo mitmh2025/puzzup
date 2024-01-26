@@ -1,0 +1,38 @@
+.puzzle-sidebar {
+    background: var(--secondary-bg);
+
+    .title.people-header {
+        margin-bottom: .3em;
+    }
+
+    hr {
+        height: 1px;
+        background-color: #ddd;
+        margin: 1rem 0;
+    }
+}
+
+#self-buttons {
+    .field {
+        margin-bottom: 0.25rem;
+    }
+}
+
+#change-status {
+    .field {
+        margin-bottom: 0;
+    }
+    button {
+        text-align: left;
+        display: block;
+    }
+}
+
+#eic-change-status {
+    margin-top: 0.75rem;
+}
+
+.edit-link {
+    font-size: 80%;
+    font-weight: normal;
+}

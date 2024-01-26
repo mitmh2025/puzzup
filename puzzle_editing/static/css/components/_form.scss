@@ -1,0 +1,85 @@
+.is-required {
+  .label {
+    p::before {
+      content: "*";
+    }
+  }
+}
+
+input:required:invalid:focus {
+  border: 1px solid #FFF;
+  background-color: #FFEEEE;
+  box-shadow: 0 0 3px 1px #EA2034;
+}
+
+textarea:required:invalid:focus {
+  border: 1px solid #FFF;
+  background-color: #FFEEEE;
+  box-shadow: 0 0 3px 1px #EA2034;
+}
+
+.user-checkbox-select-multiple {
+  border: 1px solid var(--border-color);
+  background-color: var(--input-bg);
+  border-radius: 3px;
+  max-height: 20em;
+  overflow-y: auto;
+  padding: 0.5em;
+
+  ul {
+    margin: 0;
+    padding-top: 0.5em;
+  }
+
+  li {
+    padding: .1em .5em;
+    list-style-type: none;
+  }
+}
+
+.markdown-textarea {
+  border: 1px solid var(--border-color);
+  background-color: var(--input-bg);
+  border-radius: 3px;
+  padding: 0.5em;
+  margin-bottom: 1em;
+
+  .markdown-preview-toggle {
+    margin-bottom: 1em;
+  }
+
+  .markdown-preview {
+    padding: calc(0.75em - 1px);
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+
+    p {
+      &:first-child {
+        margin-top: 0;
+      }
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+}
+
+/* django */
+.errorlist {
+  color: var(--error-color);
+  font-weight: bold;
+}
+
+input[type="text"], input[type="password"], input[type="email"], textarea {
+  @extend %input; // provided by bulma
+}
+
+// Temporary until we figure out how to do form rendering better
+textarea {
+  padding: calc(0.5em - 1px) calc(0.75em - 1px);
+}
+
+select {
+  @extend .select;
+}

@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% load puzzle_list %}
+{% load testsolve_session_list %}
+{% load user_list %}
+{% load humanize %}
+{% load markdown %}
+
+{% block title %}Testsolving Admin Dashboard{% endblock %}
+
+{% block main %}
+
+  <h1 class="title is-2">Testsolving Admin Dashboard</h1>
+
+  <div class="box">
+    <p><a href="{% url 'testsolve_finder' %}">Testsolve Finder</a>
+    </div>
+
+    <div class="box">
+      <h2 class="title is-3">Testsolve queue</h2>
+      {% if puzzles_in_testsolving %}
+        <div class='table-container'>
+          <table class="table is-striped classic sortable is-fullwidth">
+            <thead>
+              <tr align="left">
+                <th>ID/Name</th>
+                <th>Create Testsolve</th>
+                <th>Entered Testsolving</th>
+                <th>Authors</th>
+                <th>Status</th>
+                <th>Priority</th>
+                <th>Editors</th>
+                <th>Num Active Sessions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for puzzle in puzzles_in_testsolving %}
+                <tr>
+                  <td sorttable_customkey="{{ puzzle.id }}">{{ puzzle.html_link }}</td>
+                  <td><a class="button is-link is-small" href="{% url 'testsolve_new' puzzle.id %}">Start new session</a></td>
+                  <td class="timestamp"
+                      sorttable_customkey="{{ puzzle.status_mtime.timestamp }}">
+                    {{ puzzle.status_mtime | naturaltime }}
+                  </td>
+                  <td>{% user_list puzzle.authors linkify=True %}</td>
+                  <td>
+                    <span class="tag">{{ puzzle.get_status_emoji }} {{ puzzle.get_status_display }}</span>
+                  </td>
+                  <td sorttable_customkey="{{ puzzle.priority }}">
+                    <span class="tag">{{ puzzle.get_priority_display }}</span>
+                  </td>
+                  <td>{% user_list puzzle.editors linkify=True %}</td>
+                  <td>{{ puzzle.num_active_testsolves }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="empty">No puzzles to list</div>
+      {% endif %}
+    </div>
+
+    <div class="box">
+      <h2 class="title is-3">Puzzles in factchecking (testsolve imminent)</h2>
+      {% puzzle_list puzzles_in_factcheck request.user %}
+    </div>
+
+    <div class="box">
+      <h2 class="title is-3">Active sessions that you are admin for</h2>
+      {% testsolve_session_list admin_active_sessions request.user is_testsolve_admin=True show_status=True %}
+    </div>
+
+    <div class="box">
+      <h2 class="title is-3">All active sessions</h2>
+      {% testsolve_session_list all_active_sessions request.user is_testsolve_admin=True show_status=True %}
+    </div>
+
+    <div class="box">
+      <details>
+        <summary class="title is-3"><h2 class="title">All past sessions</h2></summary>
+        {% testsolve_session_list all_past_sessions request.user is_testsolve_admin=True %}
+      </details>
+    </div>
+
+{% endblock %}

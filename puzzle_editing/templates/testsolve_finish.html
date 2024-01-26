@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% load user_list %}
+{% load markdown %}
+
+{% block bodyclass %}testsolving-session{% endblock %}
+{% block title %}Finish Testsolving {{ session.puzzle }}{% endblock %}
+
+{% block main %}
+  <a href="{% url 'testsolve_one' session.id %}">Back to testsolving session</a>
+  <h1 class="title is-2">
+    Finish Testsolving {{ session.puzzle }}, Session #{{ session.id }}
+  </h1>
+
+  <div class="block">
+    <form action="{% url 'testsolve_one' session.id %}" method="POST"
+          onsubmit="return confirm('This will remove you from this testsolving session without adding any feedback or spoiling you. Are you sure?');">
+      {% csrf_token %}
+      <div class="level">
+        <div class="level-left">
+          <div class="level-item"><p> Joined by accident?</p></div>
+          <p class="level-item">
+            <button class="button is-small" type="submit" name="escape_testsolve" value="1">Escape this testsolving
+              session
+            </button>
+          </p>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  {% if participation %}
+    <p><span style="color: red; ">*</span><em> required field</em></p>
+    <form class="testsolve-form" method="post">
+      {% csrf_token %}
+      {{ participation_form.non_field_errors }}
+      {{ feedback_form.non_field_errors }}
+      {% for field in participation_form %}
+        <div class="columns {{ field.name }}">
+          <div class="column is-one-quarter">
+          </div>
+          <div class="column form-column {{ field.field.required|yesno:"is-required," }}">
+            <label class="label">
+              {% if field.help_text %}
+                <div class="content">{{ field.help_text|safe|markdown }}</div>
+              {% else %}
+                <p><strong>{{ field.label }}</strong></p>
+              {% endif %}
+            </label>
+            <div class="control">
+              {{ field }}
+              {{ field.errors }}
+            </div>
+          </div>
+          <div class="column is-one-quarter">
+          </div>
+        </div>
+      {% endfor %}
+      {% for field in feedback_form %}
+        <div class="columns {{ field.name }}">
+          <div class="column is-one-quarter">
+          </div>
+          <div class="column form-column {{ field.field.required|yesno:"is-required," }}">
+            <label class="label">
+              {% if field.help_text %}
+                <div class="content">{{ field.help_text|safe|markdown }}</div>
+              {% else %}
+                <p><strong>{{ field.label }}</strong></p>
+              {% endif %}
+            </label>
+            <div class="control">
+              {{ field }}
+              {{ field.errors }}
+            </div>
+          </div>
+          <div class="column is-one-quarter">
+          </div>
+        </div>
+      {% endfor %}
+      <div class="columns">
+        <div class="column is-one-quarter"></div>
+        <div class="column">
+          <input class="button is-primary" type="submit" value="Submit">
+        </div>
+      </div>
+    </form>
+  {% else %}
+    <div class="notification is-warning">
+      You do not appear to be participating in testsolve session #{{ session.id }}.
+    </div>
+  {% endif %}
+
+{% endblock %}

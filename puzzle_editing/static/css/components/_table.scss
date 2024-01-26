@@ -1,0 +1,97 @@
+.table {
+  thead th {
+    background-color: var(--secondary-bg);
+  }
+
+  td {
+    &.left-border {
+      border-left: 1px solid #ccc !important;
+    }
+  }
+
+  tbody tr:last-child td {
+    border-bottom-width: 1px;
+  }
+
+  .timestamp {
+    font-size: .8rem;
+    line-height: 1.8rem;
+  }
+
+  .unvisited .puzzle-link {
+    font-weight: bold;
+    position: relative;
+
+    &::before {
+      position: absolute;
+      left: -0.8em;
+      width: 0.6em;
+      height: 0.6em;
+      border-radius: 0.3em;
+      background-color: var(--error-color);
+      content: " ";
+      display: block;
+    }
+  }
+}
+
+.puzzle-table-container {
+  margin-top: 1em;
+}
+
+.hide-dead:checked ~ div table tr.dead {
+  display: none;
+}
+
+.hide-deferred:checked ~ div table tr.deferred {
+  display: none;
+}
+
+.hide-visited:checked ~ div table tr.puzzle-row:not(.unvisited) {
+  display: none;
+}
+
+.show-only-answer:checked ~ div table tr.puzzle-row:not(.answered) {
+  display: none;
+}
+
+.hide-assigned:checked ~ div .assigned {
+  display: none;
+}
+
+.hide-assignments:checked ~ div > table .assignment-spoiler {
+  display: none;
+}
+
+.hide-assignments:not(:checked) ~ div > table .assignment-unspoiler {
+  display: none;
+}
+
+.hide-delete-answer:checked ~ div > table .delete-answer-button {
+  display: none;
+}
+
+.hide-assignments:not(:checked) ~ div > table .assignment-unspoiler {
+  display: none;
+}
+
+.hide-test-authored:checked + label + input + label + div > table tr.test-authored {
+  display: none;
+}
+
+.hide-test-spoiled:checked + label + div > table tr.test-spoiled {
+  display: none;
+}
+
+.show-delete-answer:checked ~ .deemph {
+  color: var(--deemphasized-color);
+  font-size: 80%;
+}
+
+.assigned-to-other {
+  color: var(--deemphasized-color);
+}
+
+.hide-assigned-to-other:checked + label + br + br + div table tr.assigned-to-other {
+  display: none;
+}

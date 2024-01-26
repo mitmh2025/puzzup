@@ -1,0 +1,51 @@
+.puzzle-desc {
+
+
+  >p:not(:last-child) {
+    margin-bottom: 0;
+  }
+}
+
+body.rounds {
+  h2 {
+    .edit-link {
+      font-size: .6em;
+      font-weight: normal;
+    }
+  }
+}
+
+.sure-delete:checked + label + br + input.delete-round-button {
+  display: block !important;
+}
+
+.delete-round-button {
+  display: none;
+}
+
+body.byround {
+  table {
+
+    font-size: .95rem !important;
+
+    .authors, .editors {
+      font-size: .9em;
+    }
+
+    .mechanics, .notes {
+      font-size: .8em;
+    }
+  }
+
+  .meta {
+    background: fade-out(green, .95);
+  }
+}
+
+.editor-overview {
+  .status-grouper {
+    th, td {
+      background-color: var(--tertiary-bg);
+    }
+  }
+}

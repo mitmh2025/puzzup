@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load puzzle_list %}
+
+{% block title %}All Puzzles{% endblock %}
+
+{% block main %}
+  <h1 class="title is-2">All Puzzles</h1>
+
+  <div class="card block">
+    <div class="card-content">
+      {% puzzle_list puzzles request.user show_editors=True show_disc_editors=True show_summary=False %}
+    </div>
+  </div>
+{% endblock %}

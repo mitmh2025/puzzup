@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block bodyclass %}awaiting-editor{% endblock %}
+
+{% block title %}Editors-In-Chief Inbox{% endblock %}
+
+{% block main %}
+
+  <div class="content"><p>🚨 SPOILERS BELOW</p></div>
+
+  {% include "_editor_list.html" with puzzles=awaiting_eic title="🎩 Awaiting Approval by EIC" %}
+  {% include "_editor_list.html" with puzzles=needs_discussion title="🗣 Needs Discussion" %}
+  {% include "_editor_list.html" with puzzles=awaiting_answer title="🤷🏽‍♀️ Awaiting Answer Assignment" %}
+  {% include "_editor_list.html" with puzzles=awaiting_approval_for_testsolving title="📥 Awaiting Approval for Testsolving" %}
+  {% include "_editor_list.html" with puzzles=awaiting_approval_post_testsolving title="🏁 Awaiting Approval to Leave Testsolving" %}
+  {% include "_editor_list.html" with puzzles=awaiting_hints_approval title="⁉ Awaiting Hints Approval" %}
+  {% include "_editor_list.html" with puzzles=awaiting_approval_postprod title="🏠 Awaiting Approval After Postprod" %}
+
+
+{% endblock %}

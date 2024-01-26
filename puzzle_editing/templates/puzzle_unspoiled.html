@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load user_list %}
+{% load markdown %}
+
+{% block title %}{{ puzzle.spoiler_free_title }}{% endblock %}
+
+{% block main %}
+  <h1 class="title is-2">
+    {{ puzzle.spoiler_free_title }}
+  </h1>
+
+  <div class="columns">
+    <div class="column is-half">
+      <div class="box">
+        <div class="content">
+          <p>You are not spoiled on this puzzle!</p>
+          {% if role %}
+            <p><b>You currently have the <i>{{ role }}</i> role on this puzzle, so it's likely that you want to spoil
+              yourself.</b></p>
+            <form method="post">
+              {% csrf_token %}
+              <input class="button is-info" type="submit" name="do_spoil" value="Spoil me">
+            </form>
+          {% endif %}
+          {% if maybe_postproddable %}
+            <p><b>This puzzle might be ready for postprod, or you might be doing the work to get it there or check it after postprod.</b></p>
+            <form method="post">
+              {% csrf_token %}
+              <input class="button is-info" type="submit" name="do_spoil" value="Spoil me">
+            </form>
+          {% endif %}
+          {% if user.is_eic or user.is_testsolve_coordinator %}
+            <p><b>You're an EIC / Testsolve Admin, so it's likely that you want to spoil yourself.</b></p>
+            <form method="post">
+              {% csrf_token %}
+              <input class="button is-info" type="submit" name="do_spoil" value="Spoil me">
+            </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

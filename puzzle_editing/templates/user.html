@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}{{them}}'s Puzzles{% endblock %}
+{% load puzzle_list %}
+{% load testsolve_session_list %}
+{% load markdown %}
+{% block main %}
+
+  <h1>{{them.credits_name | default:them}}</h1>
+  {% if them.bio %}
+    <h2>Bio</h2>
+    <em>{{them.bio|markdown}}</em>
+  {% endif %}
+
+  <p class="block">
+    <code>{{them.discord_username}}</code> on discord
+  </p>
+
+  {% if user.is_eic %}
+    <div class="box">
+      <h2>Puzzles {{them.credits_name | default:them}} is authoring</h2>
+      {% puzzle_list them.authored_puzzles request.user %}
+    </div>
+
+    {% if them.editing_puzzles %}
+      <div class="box">
+        <h2>Puzzles {{them.credits_name | default:them}} is editing</h2>
+        {% puzzle_list them.editing_puzzles request.user %}
+      </div>
+    {% endif %}
+
+    <div class="box">
+      <h2>Puzzles {{them.credits_name | default:them}} is factchecking</h2>
+      {% puzzle_list them.factchecking_puzzles request.user %}
+    </div>
+
+    <div class="box">
+      <h2>Puzzles {{them.credits_name | default:them}} is postprodding</h2>
+      {% puzzle_list them.postprodding_puzzles request.user %}
+    </div>
+  {% endif %}
+
+  {% if user.is_eic or user.is_testsolve_coordinator %}
+    <div class="box">
+      <h2>Testsolving sessions {{them.credits_name|default:them}} has been in</h2>
+      {% testsolve_session_list testsolving_sessions request.user %}
+    </div>
+  {% endif %}
+
+{% endblock %}

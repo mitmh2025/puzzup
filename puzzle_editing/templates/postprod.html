@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load puzzle_list %}
+{% block title %}
+  Postprodding
+{% endblock %}
+{% block main %}
+  <h1 class="title is-3">
+    Postprodding
+  </h1>
+
+  <div class="block">
+    <p>
+      <a href="{% url 'postprod_all' %}">View all in postprod pipeline</a>
+    </p>
+  </div>
+
+  <div class="box">
+    <h2 class="title is-3">
+      Puzzles you are actively postprodding
+    </h2>
+
+    {% puzzle_list postprodding request.user show_summary=False show_editors=False %}
+  </div>
+
+  <div class="box">
+    <h2 class="title is-3">
+      Puzzles that need a postprodder
+    </h2>
+
+    {% puzzle_list needs_postprod request.user show_summary=False show_editors=False postprod=True %}
+  </div>
+
+  <div class="box">
+    <h2 class="title is-3">
+      Puzzles that need extra prep for postprodding
+    </h2>
+    {% puzzle_list postprod_blocked request.user show_summary=False show_editors=False postprod=True %}
+  </div>
+
+{% endblock %}

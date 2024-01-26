@@ -1,0 +1,9 @@
+p.warning {
+  font-weight: bold;
+
+  &::before {
+    content: "⚠️";
+    font-size: 150%;
+    margin-right: 0.2em;
+  }
+}

@@ -1,0 +1,43 @@
+.testsolve-finish {
+    font-size: 120%;
+}
+
+#testsolve-finish-correct {
+    font-weight: bold;
+    border: 0.25em solid var(--correct-color);
+    padding: 0.25em;
+}
+
+.guess.correct {
+    font-weight: bold;
+    font-family: monospace;
+    color: var(--correct-color);
+
+    &::before {
+        content: "✅";
+    }
+}
+
+.guess.partially_correct {
+    font-weight: bold;
+}
+.guess.partially_correct::before {
+    content: "❓";
+}
+
+.guess.incorrect::before {
+    content: "❌";
+}
+
+.testsolving-session {
+    label {
+        font-weight: normal;
+    }
+}
+
+.pretitle {
+    display: block;
+    font-size: 1rem;
+    margin-bottom: .5em;
+    font-weight: normal;
+}

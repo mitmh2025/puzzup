@@ -1,0 +1,60 @@
+.date {
+  font-size: 80%;
+}
+
+.comments {
+  .system {
+    color: var(--deemphasized-color);
+  }
+
+  .by-author {
+    background-color: var(-y-author-color);
+  }
+
+  .testsolve {
+    background-color: var(--testsolve-color);
+  }
+
+  .comment-id {
+    font-size: 85%;
+    opacity: 50%;
+  }
+
+  .status-change {
+    color: var(--deemphasized-color);
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    padding: 0.25em;
+
+    &::before {
+      content: "→ ";
+    }
+  }
+
+  .ghost-button {
+    background-color: transparent;
+    color: inherit;
+    border: 1px dashed var(--border-color);
+    border-radius: 3px;
+    cursor: pointer;
+  }
+
+  .ghost-selected {
+    border: 3px double var(--border-color);
+    font-weight: bold;
+  }
+
+  .media-left {
+    width: 30%;
+  }
+
+  .media-content {
+    .content {
+      margin-bottom: 1rem;
+    }
+  }
+}
+
+#comment-changes .field {
+  margin-bottom: 0;
+}

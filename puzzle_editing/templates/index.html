@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load puzzle_list %}
+{% load testsolve_session_list %}
+{% load markdown %}
+{% block main %}
+  <h1 class="title">Welcome to PuzzUp!</h1>
+  {% if announcement %}{{ announcement|markdown }}{% endif %}
+
+  {% if blocked_on_editor_puzzles %}
+    <div class="box">
+      <p class="title is-4">
+        <p class="title is-4">Your queue as editor</p>
+        {% puzzle_list blocked_on_editor_puzzles request.user with_new_link=True %}
+      </div>
+  {% endif %}
+
+  <div class="box">
+    <p class="title is-4">Testsolving sessions you are in</p>
+    {% testsolve_session_list current_sessions request.user show_notes=True show_leave_button=True %}
+  </div>
+
+  {% if discussing %}
+    <div class="box">
+      <p class="title is-4">Puzzles you are discussing</p>
+      {% puzzle_list discussing request.user %}
+    </div>
+  {% endif %}
+
+  {% if factchecking %}
+    <div class="box">
+      <p class="title is-4">Puzzles you are factchecking</p>
+      {% puzzle_list factchecking request.user %}
+    </div>
+  {% endif %}
+
+  {% if supporting %}
+    <div class="box">
+      <p class="title is-4">Puzzles you are supporting</p>
+      {% puzzle_list supporting request.user %}
+    </div>
+  {% endif %}
+
+  {% if postprodding %}
+    <div class="box">
+      <p class="title is-4">Puzzles you are postprodding</p>
+      {% puzzle_list postprodding request.user %}
+    </div>
+  {% endif %}
+
+  {% if inbox_puzzles %}
+    <div class="box">
+      <p class="title is-4">Unread spoiled puzzles</p>
+      {% puzzle_list inbox_puzzles request.user %}
+    </div>
+  {% endif %}
+
+  <div class="card block">
+    <div class="card-content">
+      <div class="content">
+        <p class="title is-4">Your queue</p>
+        {% puzzle_list blocked_on_author_puzzles request.user with_new_link=True %}
+      </div>
+    </div>
+    <footer class="card-footer">
+      <a class="card-footer-item" href="{% url 'authored' %}">See all of your puzzles</a>
+    </footer>
+  </div>
+
+{% endblock %}

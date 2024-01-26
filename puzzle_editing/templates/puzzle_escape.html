@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}{{ puzzle.spoiler_free_title }} / Escape Hatch{% endblock %}
+
+{% block main %}
+  <h1 class="title is-2">Escape Hatch: <a href="{% url 'puzzle' puzzle.id %}">{{ puzzle.spoiler_free_title }}</a></h1>
+
+  <div class="box">
+    {% if spoiled %}
+      <div class="block">
+        <p>
+          You are spoiled on this puzzle.
+        </p>
+      </div>
+      <form method="POST">
+        {% csrf_token %}
+        <div class="field">
+          <div class="control">
+            <button class="button is-info" type="submit" name="unspoil">Unspoil me</button>
+          </div>
+        </div>
+      </form>
+    {% else %}
+      <p>
+        You are unspoiled on this puzzle, so you can just <a href="{% url 'puzzle' puzzle.id %}">go to the puzzle</a>
+        and spoil yourself.
+      </p>
+    {% endif %}
+  </div>
+{% endblock %}

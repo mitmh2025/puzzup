@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}My spoiled{% endblock %}
+
+{% block main %}
+  <h1 class="title is-2">My spoiled</h1>
+
+  <div class="box">
+    <table class='table sortable'>
+      <thead>
+        <tr>
+          <th>Status</th>
+          <th>Puzzle</th>
+          <th>Answer</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for puzzle in spoiled %}
+          <tr>
+            <td><span class="tag">{{ puzzle.get_status_emoji }} {{ puzzle.get_status_display }}</span></td>
+            <td><a href="{% url 'puzzle' puzzle.id %}">{{ puzzle.spoilery_title }}</a></td>
+            <td>{% for ans in puzzle.answers.all %}
+              <code>{{ ans }}</code>
+            {% endfor %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load user_list %}
+
+{% block title %}Edit {{ other_credit.get_credit_type_display }} credit for {{ puzzle.spoiler_free_title }}{% endblock %}
+
+{% block outer_main %}
+  <h3 class="title is-4">Edit {{ other_credit.get_credit_type_display }} credit for <a href="{% url 'puzzle' puzzle.id %}">{{ puzzle.spoiler_free_title }}</a></h3>
+
+  <p>
+    <a href="{% url 'puzzle_other_credits' puzzle.id %}">Back to all credits</a>
+  </p>
+  <div class="box">
+    <form method="POST">
+      {% csrf_token %}
+      {% for field in other_credit_form.hidden_fields %}
+        {{ field }}
+      {% endfor %}
+      {% for field in form.visible_fields %}
+        <div class="columns">
+          <div class="column is-one-quarter">
+            <label class="label">{{ field.label }}</label>
+          </div>
+          <div class="column">
+            <div class="control">
+              {{ field }}
+              {% if field.help_text %}
+                <p class="help">{{ field.help_text|safe }}</p>
+              {% endif %}
+              {{ field.errors }}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+
+      <p class="notification is-warning">Please select Puzzup users where possible. If you enter free text in the <strong>Text</strong> field above, any users selected will be ignored.</p>
+      <p>
+        <input type="submit" class="button is-primary" value="Update">
+        <input type="submit" class="button is-danger" value="Delete" name="delete_oc">
+      </p>
+    </form>
+  </div>
+
+{% endblock %}

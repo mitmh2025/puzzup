@@ -1,0 +1,147 @@
+{% load user_list %}
+{% load markdown %}
+{% load humanize %}
+
+{% if puzzles %}
+  {# This can't be reorganized yet because of CSS. #}
+  {% if not factcheck and not postprod %}
+    <input id="hide-dead-{{ random_id }}" type="checkbox" class="hide-dead" checked> <label
+      for="hide-dead-{{ random_id }}">Hide dead puzzles</label>
+    <input id="hide-deferred-{{ random_id }}" type="checkbox" class="hide-deferred" checked> <label
+      for="hide-deferred-{{ random_id }}">Hide deferred puzzles</label>
+    <input id="hide-visited-{{ random_id }}" type="checkbox" class="hide-visited"> <label
+      for="hide-visited-{{ random_id }}">Only show spoiled+unvisited</label>
+    <input id="hide-past-solution-{{ random_id }}" type="checkbox" class="hide-past-solution"> <label
+      for="hide-past-solution-{{ random_id }}">Hide puzzles &ge; Needs Solution</label>
+    <input id="show-only-answer-{{ random_id }}" type="checkbox" class="show-only-answer"> <label
+      for="show-only-answer-{{ random_id }}">Show only puzzles with answers</label>
+  {% endif %}
+  <div class="table-container puzzle-table-container">
+    <table class="table is-striped sortable is-fullwidth">
+      <thead>
+        <tr>
+          <th>🤔</th>
+          <th>ID/Name</th>
+          <th>Status</th>
+          <th>Status Changed</th>
+          {% if show_authors %}
+            <th>Authors</th>
+          {% endif %}
+          {% if show_summary %}
+            <th>Summary</th>
+          {% endif %}
+          <th>Priority</th>
+          {% if show_editors %}
+            <th>Editors</th>
+          {% endif %}
+          {% if show_disc_editors %}
+            <th>Disc. Editors</th>
+          {% endif %}
+          <th>Updated</th>
+          <th>Commented</th>
+          <th>Meta</th>
+          {% if not factcheck and not postprod %}
+            <th>🏃</th>
+          {% endif %}
+          {% if show_checkers %}
+            <th>Quickcheckers</th>
+            <th>Factcheckers</th>
+          {% endif %}
+          {% if factcheck or postprod %}
+            <th></th>
+          {% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for puzzle in puzzles %}
+          <tr
+            class="puzzle-row {% if puzzle.status == dead_status %}dead{% elif puzzle.status == deferred_status %}deferred{% endif %} {% if puzzle.is_spoiled %}spoiled {% if not puzzle.last_visited_date or puzzle.last_comment_date and puzzle.last_comment_date > puzzle.last_visited_date %}unvisited{% endif %}{% endif %} {% if puzzle.has_answer %}answered{% endif %}">
+            {% if puzzle.is_author %}
+              <td sorttable_customkey="1" title="You are an author">📝</td>
+            {% elif puzzle.is_editing %}
+              <td sorttable_customkey="2" title="You are an editor">💬</td>
+            {% elif puzzle.is_factchecking %}
+              <td sorttable_customkey="3" title="You are a factchecker">🛂</td>
+            {% elif puzzle.is_postprodding %}
+              <td sorttable_customkey="4" title="You are a postprodder">🖼️</td>
+            {% elif puzzle.is_art_support %}
+              <td sorttable_customkey="4" title="You are art support">🎨</td>
+            {% elif puzzle.is_tech_support %}
+              <td sorttable_customkey="4" title="You are tech support">👩🏽‍💻</td>
+            {% elif puzzle.is_acc_support %}
+              <td sorttable_customkey="4" title="You are accessibility support">🔎</td>
+            {% elif puzzle.is_spoiled %}
+              <td sorttable_customkey="98" title="You are spoiled">👀</td>
+            {% else %}
+              <td sorttable_customkey="99" title="You are not spoiled">❓</td>
+            {% endif %}
+            <td sorttable_customkey="{{ puzzle.id }}">{{ puzzle.html_link }}</td>
+            {% if limit is None or forloop.counter0 < limit %}
+              <td sorttable_customkey="{{ puzzle.get_status_rank }}">
+                <span class="tag">{{ puzzle.get_status_emoji }} {{ puzzle.get_status_display }}</span>
+              </td>
+              <td class="timestamp"
+                  sorttable_customkey="{{ puzzle.status_mtime.timestamp }}">{{ puzzle.status_mtime | naturaltime }}</td>
+              {% if show_authors %}
+                <td>{{ puzzle.authors_html }}</td>
+              {% endif %}
+              {% if show_summary %}
+                <td class="small-md content">{{ puzzle.summary|markdown }}</td>
+              {% endif %}
+              <td sorttable_customkey="{{ puzzle.priority }}"><span class="tag">{{ puzzle.get_priority_display }}</span>
+              </td>
+              {% if show_editors %}
+                <td>{{ puzzle.opt_editors|length }} / {{ puzzle.needed_editors }}: {{ puzzle.editors_html }}</td>
+              {% endif %}
+              {% if show_disc_editors %}
+                <td>{{ puzzle.disc_editors_html }}</td>
+              {% endif %}
+              <td sorttable_customkey="{{ puzzle.last_updated.timestamp }}"
+                  class="timestamp">{{ puzzle.last_updated|timesince }} ago
+              </td>
+              {% if puzzle.last_comment_date %}
+                <td sorttable_customkey="{{ puzzle.last_comment_date.timestamp }}"
+                    class="timestamp">{{ puzzle.last_comment_date|timesince }} ago
+                </td>
+              {% else %}
+                <td sorttable_customkey="0">—</td>
+              {% endif %}
+              <td>{% if puzzle.is_meta %}✔{% endif %}</td>
+              {% if not factcheck and not postprod %}
+                <td><a href="{% url 'puzzle_escape' puzzle.id %}">🏃</a></td>
+              {% endif %}
+              {% if show_checkers %}
+                <td>{{ puzzle.quickcheckers_html }}</td>
+                <td>{{ puzzle.factcheckers_html }}</td>
+              {% endif %}
+              {% if factcheck %}
+                <td>
+                  <form method="POST" action="/factcheck">
+                    {% csrf_token %}
+                    <input type="hidden" name="puzzle_id" value="{{ puzzle.id }}">
+                    <button name="factcheck" class="button is-small is-light">Begin new factcheck</button>
+                  </form>
+                </td>
+              {% elif postprod %}
+                <td>
+                  <form method="POST" action="/postprod">
+                    {% csrf_token %}
+                    <input type="hidden" name="puzzle_id" value="{{ puzzle.id }}">
+                    <button name="factcheck" class="button is-small is-light">Begin postprod</button>
+                  </form>
+                </td>
+              {% endif %}
+            {% endif %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <div class="empty">
+    No puzzles to list.
+    {% if new_puzzle_link %}
+      <a href="{% url 'puzzle_new' %}">New Puzzle</a>
+    {% endif %}
+  </div>
+{% endif %}

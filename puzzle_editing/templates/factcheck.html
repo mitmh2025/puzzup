@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% load puzzle_list %}
+
+{% block title %}Factchecking{% endblock %}
+
+{% block main %}
+
+  <h1 class="title is-2">
+    Factchecking
+  </h1>
+
+  <div class="box">
+    <h2 class="title is-3">
+      Puzzles you are factchecking
+    </h2>
+    {% puzzle_list factchecking request.user factcheck=True%}
+  </div>
+
+  <div class="box">
+    <h2 class="title is-3">
+      Puzzles that need a pretestsolve factcheck
+    </h2>
+    {% puzzle_list needs_pretestsolve_factchecking request.user show_summary=False show_editors=False factcheck=True %}
+  </div>
+
+
+  <div class="box">
+    <h2 class="title is-3">
+      Puzzles that need factchecking
+    </h2>
+
+    {% puzzle_list needs_factchecking request.user show_summary=False show_editors=False factcheck=True %}
+  </div>
+
+  <div class="box">
+    <h2 class="title is-3">
+      Puzzles that need copy editing
+    </h2>
+
+    {% puzzle_list needs_copyediting request.user show_summary=False show_editors=False factcheck=True%}
+  </div>
+
+  <div class="box">
+    <h2 class="title is-3">
+      All puzzles in factchecking
+    </h2>
+
+    {% puzzle_list all_factchecking request.user show_summary=False show_editors=False show_checkers=True factcheck=True %}
+  </div>
+
+{% endblock %}

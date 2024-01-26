@@ -1,0 +1,145 @@
+{% load markdown %}
+{% load user_display %}
+<section class="comments">
+  <div class="box">
+    <h2 class="title is-3">Comments</h2>
+
+    <div class="block">
+      {% for comment in comments %}
+        {# NOTE: carefully avoid hitting the database to get testsolve_session #}
+        {# we only need its id and presence/absence, which is testsolve_session_id #}
+        <article class="media
+                        {% if comment.is_system %}
+                          system
+                        {% elif comment.testsolve_session_id %}
+                          testsolve
+                        {% elif comment.author.is_author %}
+                          by-author
+                        {% endif %}
+                       ">
+          <div class="media-left">
+            {% with comment.id as id %}
+              <p id="comment-{{ id }}">
+                <a href="#comment-{{ id }}" class="comment-id">(#{{ comment.id }})</a>
+                {% user_display comment.author %}
+              </p>
+              <p class="date">
+                @
+                <span class="timestamp"
+                      data-timestamp="{{ comment.date.timestamp }}">{{ comment.date }}
+                </span>
+              </p>
+              {% if comment.is_system %}
+                <p>(system)</p>
+              {% endif %}
+              {% if show_testsolve_session_links and comment.testsolve_session_id %}
+                <p>(<a href="{% url "testsolve_one" comment.testsolve_session_id %}">testsolve
+                  session {{ comment.testsolve_session_id }}</a>)</p>
+              {% endif %}
+              {% if comment.author.is_current_user and not comment.is_system %}
+                <p>(<a href="{% url "edit_comment" comment.id %}">edit</a>)</p>
+              {% endif %}
+            {% endwith %}
+          </div>
+          <div class="media-content">
+            <div class="content">
+              {{ comment.content|markdown }}
+              {% if comment.status_change %}
+                <p class="status-change">Status changed to
+                  <strong>{{ comment.get_status_change_display }}</strong></p>
+              {% endif %}
+            </div>
+            <form method="post">
+              {% csrf_token %}
+              {% if comment.merged_reactions %}
+                {% for emoji, reactors in comment.merged_reactions.items %}
+                  <button title="{{ reactors|join:", " }}"
+                          class="ghost-button {% if user.username in reactors %}ghost-selected{% endif %}" name="emoji"
+                          value="{{ emoji }}">{{ emoji }}: {{ reactors|length }}</button>
+                {% endfor %}
+              {% endif %}
+              <button type="button" class="ghost-button toggle-show" data-target="reactions-{{ comment.id }}"
+                      data-rehide="−😀…">+😀…
+              </button>
+              <span class="hidden" id="reactions-{{ comment.id }}">
+                <input type="hidden" name="react_comment" value="{{ comment.id }}">
+                {% for emoji in emoji_options %}
+                  {% if emoji not in comment.merged_reactions %}
+                    <button type="submit" class="ghost-button" name="emoji">{{ emoji }}</button>
+                  {% endif %}
+                {% endfor %}
+              </span>
+            </form>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+      {% for field in comment_form %}
+        <div class="field">
+          <label class="label">{{ field.label }}:</label>
+          <div class="control">
+            {{ field }}
+          </div>
+        </div>
+      {% endfor %}
+      {% if transitions or user.is_eic %}
+        <div class="field is-grouped">
+          <p class="control">
+            <button name="add_comment" class="button is-primary is-small">Add Comment</button>
+          </p>
+          <p class="control">
+            <button type="button" class="button toggle-show is-outlined is-small" data-target="comment-changes"
+                    data-rehide="Hide buttons to comment and change status">
+              Show buttons to comment and change status together
+            </button>
+          </p>
+        </div>
+        <div id="comment-changes" class="hidden">
+          {% if transitions %}
+            <div class="block">
+              <p class="label">Suggested status changes from current status ({{ puzzle.get_status_display }}):</p>
+              {% for transition in transitions %}
+                <div class="field">
+                  <p class="control">
+                    <button type="submit" class="button is-small" name="add_comment_change_status"
+                            value="{{ transition.status }}">
+                      Comment + {{ transition.description }}
+                    </button>
+                    {# (send to {{ transition.status_display }})#}
+                  </p>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+          <div class="block">
+            <p>
+              <button type="button" class="toggle-show button is-small is-dark is-outlined"
+                      data-target="comment-all-statuses"
+                      data-rehide="Hide all status changes">Show all status changes
+              </button>
+            </p>
+          </div>
+          {% if user.is_eic %}
+            <div id="comment-all-statuses" class="hidden">
+              {% for status in all_statuses %}
+                <div class="field">
+                  <p class="control">
+                    <button type="submit" class="button is-small" name="add_comment_change_status"
+                            value="{{ status.value }}">
+                      Comment + Send to {{ status.display }}
+                    </button>
+                  </p>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+      {% else %}
+        <p><input class="button is-info" type="submit" name="add_comment" value="Add Comment"></p>
+      {% endif %}
+    </form>
+  </div>
+</section>

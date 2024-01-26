@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load puzzle_list %}
+{% load testsolve_session_list %}
+{% load user_list %}
+{% load humanize %}
+{% load markdown %}
+{% comment %} {% load card %} {% endcomment %}
+
+{% block title %}Testsolving{% endblock %}
+
+{% block main %}
+
+  <h1 class="title is-2">Testsolving</h1>
+
+  {% if testsolve_admin_view %}
+    <div class="box">
+      <p><a href="{% url "testsolve_admin" %}">Testsolving Admin Dashboard</a></p>
+    </div>
+  {% endif %}
+
+  <div class="box">
+    <div class="block">
+      <h2 class="title is-3">Active testsolving sessions you are in</h2>
+      {% testsolve_session_list current_sessions request.user show_notes=True show_leave_button=True %}
+    </div>
+    <p>
+      <em>If you are an author or editor on a puzzle, you will not appear in the list or count of participants.</em>
+    </p>
+  </div>
+
+  <div class="box">
+    <h2 class="title is-3">Your past testsolving sessions</h2>
+    {% testsolve_session_list past_sessions request.user show_ratings=True %}
+  </div>
+
+{% endblock %}

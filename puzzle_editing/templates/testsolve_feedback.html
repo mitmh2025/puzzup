@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% load markdown %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block main %}
+
+  <div class="content">
+    {% if bulk == False %}
+      <p><a href="{% url 'testsolve_one' session.id %}">Back to Session {{ session.id }}</a></p>
+      {% if no_feedback == participants %}
+        <p>No feedback has been left for this session yet.</p>
+      {% elif no_feedback == 0 %}
+        <p>There {{ participants|pluralize:"is,are" }} {{ participants }} tester{{ participants|pluralize }} in this
+          session and everyone has given feedback.</p>
+      {% else %}
+        <p>There {{ participants|pluralize:"is,are" }} {{ participants }} tester{{ participants|pluralize }} in this
+          session and {{ no_feedback }} tester{{ no_feedback|pluralize }} {{ no_feedback|pluralize:"is,are" }} yet to
+          give feedback.</p>
+      {% endif %}
+    {% endif %}
+  </div>
+
+  {% regroup feedback by session.puzzle as puzzle_list %}
+
+  {% for puzzle in puzzle_list %}
+    {% if bulk == False %}
+      <h2 class="title is-3 is-spaced">Testsolve {{ session.id }} feedback for <a
+        href="{% url 'puzzle' puzzle.grouper.id %}">{{ puzzle.grouper.spoilery_title }}</a></h2>
+    {% endif %}
+    {% regroup puzzle.list by session as session_list %}
+
+    {% for session in session_list %}
+      <h3 class="subtitle is-5">Testsolve session <a
+        href="{% url 'testsolve_one' session.grouper.id %}">#{{ session.grouper.id }}</a>
+        on {{ session.grouper.puzzle.name }}</h3>
+
+      {% for participation in session.list %}
+        <div class="box">
+          <div class="columns">
+            <div class="column is-2">
+              <h4 class="title is-5">{{ participation.user.credits_name }}</h4>
+              <div class="tags has-addons are-small">
+                <span class="tag is-info">{{ participation.fun_rating | floatformat }}</span>
+                <span class="tag is-dark">Fun</span>
+              </div>
+              <div class="tags has-addons are-small">
+                <span class="tag is-info">{{ participation.difficulty_rating | floatformat }}</span>
+                <span class="tag is-dark">Difficulty</span>
+              </div>
+              <div class="tags has-addons are-small">
+                <span class="tag is-info">{{ participation.hours_spent | floatformat }}</span>
+                <span class="tag is-dark">Hours</span>
+              </div>
+            </div>
+            <div class="column">
+
+              {% for feedback in participation.feedbacks.all %}
+                <article class="media">
+                  <div class="media-content">
+                    <p class="date">{{ feedback.date }}</p>
+                    <br>
+                    <h5 class="title is-6">Solve Path</h5>
+                    <div class="content">
+                      <p>{{ feedback.solve_path|markdown|default:"No solve path provided" }}</p>
+                    </div>
+                    <h5 class="title is-6">Meta Info</h5>
+                    <div class="content">
+                      <p>{{ feedback.meta_info|markdown|default:"No meta info provided" }}</p>
+                    </div>
+                    <h5 class="title is-6">General Feedback</h5>
+                    <div class="content">
+                      <p>{{ feedback.general_feedback|markdown|default:"No general feedback provided" }}</p>
+                    </div>
+                    <h5 class="title is-6">Accessibility Feedback</h5>
+                    <div class="content">
+                      <p>{{ feedback.aspects_accessibility|markdown|default:"No accessibility feedback provided" }}</p>
+                    </div>
+                  </div>
+                </article>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    {% endfor %}
+  {% endfor %}
+{% endblock %}

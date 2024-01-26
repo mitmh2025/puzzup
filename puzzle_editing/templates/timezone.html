@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load tz %}
+{% block title %}Set Timezone{% endblock %}
+{% block main %}
+
+  <div class="content"><p>Current time zone: {{ current }}</p></div>
+  <form action="{% url 'set_timezone' %}" method="POST">
+    {% csrf_token %}
+    <div class="field is-horizontal">
+      <div class="field-label">
+        <label class="label" for="timezone">Time zone:</label>
+      </div>
+      <div class="field-body">
+        <div class="control">
+          <select name="timezone">
+            {% for city, tz in timezones %}
+              <option value="{{ tz }}"{% if tz == current %} selected{% endif %}>{{ city }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="field is-horizontal">
+      <div class="field-label">
+      </div>
+      <div class="field-body">
+        <div class="control">
+          <input class="button is-primary" type="submit" value="Set">
+        </div>
+      </div>
+    </div>
+
+  </form>
+
+{% endblock %}

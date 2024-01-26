@@ -1,0 +1,102 @@
+[tool.poetry]
+name = "puzzup"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10,<3.13"
+django = "^4.2.2"
+gevent = "^23.9.1"
+markdown = "^3.4.1"
+bleach = "^6.0.0"  # Bleach is deprecated; look for new library.
+gitpython = "^3.1.37"
+matplotlib = "^3.6.3"
+numpy = "^1.26.0"
+pydantic = "^1.10.9"
+dj-database-url = "^2.1.0"
+psycopg2-binary = "^2.9.5"
+whitenoise = "^6.3.0"
+django-import-export = "^3.0.2"
+python-decouple = "^3.7"
+django-debug-toolbar = "^4.1.0"
+sentry-sdk = "^1.25.1"
+invoke = "^2.1.2"
+djangorestframework = "^3.14.0"
+discord-interactions = "^0.4.0"
+django-filter = "^23.2"
+gunicorn = "^21.2.0"
+requests = "^2.31.0"
+# boto3 = "^1.26.150"
+python-dotenv = "^1.0"
+beautifulsoup4 = "^4.11.2"
+google-api-python-client = "^2.88.0"
+pymdown-extensions = "^10.0.1"
+django-compressor = "^4.3.1"
+django-sass-processor = "^1.2.2"
+django-sass-processor-dart-sass = "^0.1.0"
+celery = {version = "^5.3.0", extras = ["redis"]}
+django-celery-results = "^2.5.1"
+pygithub = "^1.59.0"
+
+[tool.poetry.group.dev.dependencies]
+black = "*"
+ruff = "*"
+pre-commit = "*"
+djhtml = "*"
+types-beautifulsoup4 = "^4.11.2"
+types-Markdown = "^3.4.1"
+types-bleach = "^6.0.0"
+types-requests = "^2.28.2"
+django-stubs = { version = "^4.2.1", extras = ["compatible-mypy"] }
+djangorestframework-stubs = { version = "^3.14.1", extras = ["compatible-mypy"] }
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+color = true
+line-length = 88
+target-version = ['py310']
+preview = true
+
+[tool.mypy]
+plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
+ignore_missing_imports = true
+disable_error_code = ["annotation-unchecked"]
+
+[tool.django-stubs]
+django_settings_module = "settings.base"
+
+[tool.ruff]
+fix = true
+line-length = 88
+extend-exclude = ["puzzle_editing/migrations"]
+# By default, includes E (pycodestyle error), F (pyflakes)
+extend-select = [
+    "W",
+    "I", # isort
+    "UP", # pyupgrade
+    "B", # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "DJ", # flake8-django
+    "ISC", # flake8-implicit-string-concat
+    "EM", # flake8-errmsg
+    "PIE",
+    "Q", # flake8-quotes
+    "SIM", # flake8-simplify
+    "PTH",  # flake8-pathlib
+    "PL",
+    "RUF",
+]
+ignore = [
+    "E501",
+    "SIM102",
+    "PLR091",
+    "PLR2004",
+]
+
+[tool.ruff.mccabe]
+max-complexity = 18

@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% load user_list %}
+{% load markdown %}
+
+{% block title %}{{ support.get_team_display|title }} support for {{ support.puzzle.name }}{% endblock %}
+
+{% block main %}
+  <a href="{% url 'support_by_puzzle' support.puzzle.id %}">Back to support for  {{ support.puzzle }}</a>
+  <h1 class="title is-2">{{ support.get_team_display }} support request for {{ support.puzzle }}</h1>
+  <div class="columns">
+    <div class="column is-one-third">
+      <div class="box support-sidebar">
+        <div class="block">
+          <h5 class="title is-6">Puzzle</h5>
+          <a href="{% url 'puzzle' support.puzzle.id %}">{{ support.puzzle }}</a>
+        </div>
+        <div class="block">
+          <h5>Status</h5>
+          {{ support.puzzle.get_status_display }}
+        </div>
+        <div class="block">
+          <h5 class="title is-6">Author{{ support.puzzle.authors|pluralize }}</h5>
+          {% user_list support.puzzle.authors linkify=True %}
+        </div>
+        <div class="block">
+          <h5 class="title is-6">Editor{{ support.puzzle.authors|pluralize }}</h5>
+          {% user_list support.puzzle.editors linkify=True %}
+        </div>
+        <div class="block">
+          <h5 class="title is-6">Status</h5>
+          {{ support.get_status_display }}
+        </div>
+        <div class="block">
+          <h5 class="title is-6">Assignee{{ support.assignees.count|pluralize }}</h5>
+          {% user_list support.assignees linkify=True %}
+        </div>
+      </div>
+    </div>
+    <div class="column">
+      <div class="box content">
+        <h2 class="title is-3">Author notes <button type="button" class="button is-small toggle-show" data-target="author-notes-form" data-rehide="Hide editing">Edit</button></h2>
+        <p>
+          {% if support.author_notes_updater %}
+            <i>Last updated by {{ support.author_notes_updater.credits_name|default_if_none:"none" }} <time datetime="{{ support.author_notes_mtime }}">{{ support.author_notes_mtime|timesince }} ago</time></i>
+          {% endif %}
+        </p>
+        <form method="POST" id="author-notes-form" class="hidden pt-4">
+          {% csrf_token %}
+          {% for field in author_notes_form %}
+            <div class="columns">
+              <div class="column is-one-quarter form-column">{{ field.label }}</div>
+              <div class="control">
+                {{ field }}
+                {{ field.errors }}
+              </div>
+            </div>
+          {% endfor %}
+          <input class="button is-primary" type="submit" name="edit_author_notes" value="Submit">
+        </form>
+        {{ support.author_notes|default:"(none)"|markdown }}
+      </div>
+
+      <div class="box content">
+        <h2 class="title is-3">Team notes + Assignees <button type="button" class="button is-small toggle-show" data-target="team-notes-form" data-rehide="Hide editing">Edit</button></h2>
+        <p>{% if support.team_notes_updater %}
+          <i>Last updated by {{ support.team_notes_updater.credits_name|default_if_none:"none" }} <time datetime="{{ support.team_notes_mtime }}">{{ support.team_notes_mtime|timesince }} ago</time></i>
+        {% endif %}
+        </p>
+        <form method="POST" id="team-notes-form" class="hidden pt-4">
+          {% csrf_token %}
+          {% for field in team_notes_form %}
+            <div class="columns">
+              <div class="column is-one-quarter form-column">{{ field.label }}</div>
+              <div class="control">
+                {{ field }}
+                {{ field.errors }}
+              </div>
+            </div>
+          {% endfor %}
+          <input class="button is-primary" type="submit" name="edit_team_notes" value="Submit">
+        </form>
+        {{ support.team_notes|default:"(none)"|markdown }}
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% spaceless %}
+  <div class="markdown-textarea">
+    <div>
+      <button class="markdown-preview-toggle button is-small is-info" type="button">Preview</button>
+    </div>
+    <textarea
+      class="textarea"
+      name="{{ widget.name }}"
+      {% include "django/forms/widgets/attrs.html" %}
+      placeholder="Markdown is supported"
+    >{% if widget.value %}{{ widget.value }}{% endif %}</textarea>
+    <div class="markdown-preview hidden content"></div>
+  </div>
+{% endspaceless %}

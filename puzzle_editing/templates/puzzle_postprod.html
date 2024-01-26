@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% load markdown %}
+
+{% block title %}
+  {% if spoiled %}{{ puzzle.spoilery_title }}{% else %}{{puzzle.spoiler_free_title}}{%endif%} / Postprodding
+{% endblock %}
+{% block main %}
+  <h1 class="title is-2">Postprodding {{ puzzle.spoilery_title }}</h1>
+  <p><a href="{% url 'puzzle' puzzle.id %}">Back to {{ puzzle }}</a></p>
+  {% if spoiled %}
+    <div class="content">
+      <h2 class="title is-3">How to postprod a puzzle</h2>
+
+      <ol>
+        <li>
+          <b>Choose a slug (unique identifier).</b> This is typically the puzzle
+          name normalized to lower-case-with-hyphens.
+        </li>
+        <li>
+          <b>Prepare a Google Doc with your puzzle content.</b> PuzzUp will
+          automatically extract the HTML of this doc and create a commit on a
+          new branch in the hunt repo.
+          <br/>
+          Note: if there are interactive components or if you'd like to
+          postprod manually, you can leave this field blank.
+          <li>
+            <b>Prepare a Google Doc with your solution content.</b> Similarly,
+            PuzzUp will automatically extract the HTML of this doc.
+          </li>
+        </ol>
+
+        <p class="small">
+          This puzzle's <a href="{% url 'puzzle_yaml' puzzle.id %}">puzzle.yaml</a>
+          metadata will automatically be saved to HUNT_REPO/server/tph/fixtures/puzzles/SLUG.yaml
+        </p>
+        <p>
+          This may take some time, and may not be done when the page refreshes.
+          When it's done, the exported metadata and puzzle content will be
+          available in a new branch in the Git hunt repo.
+        </p>
+      </div>
+
+      {% if puzzle.has_postprod %}
+        <h2 class="title is-3">Current postprod</h2>
+        <p>
+          Puzzle postprodded at
+          <span class="timestamp" data-timestamp="{{puzzle.postprod.mtime.timestamp}}">{{puzzle.postprod.mtime}}</span>,
+        </p>
+        <p>Puzzle viewable at <a href="{{ postprod_url }}">{{ postprod_url }}</a>.</p>
+      {% endif %}
+
+      <h2 class="title is-3">Submit new postprod</h2>
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+
+        <div class="columns">
+          <div class="column is-one-third">
+            <label class="label">Title:</label>
+          </div>
+          <div class="column">
+            <div class="control">
+              {{ puzzle.name }}
+            </div>
+          </div>
+        </div>
+
+        <div class="columns">
+          <div class="column is-one-third">
+            <label class="label">Answer(s):</label>
+          </div>
+          <div class="column">
+            <div class="control">
+              {% with puzzle.answers.all as answers %}{% if answers %}{{ answers|join:", " }}{% else %}<span class="empty">(none)</span>{% endif %}{% endwith %}
+            </div>
+          </div>
+        </div>
+
+        {% for field in form %}
+          <div class="columns">
+            <div class="column is-one-third">
+              {% if not field.is_hidden %}
+                <label class="label">
+                  {{ field.label }}
+                </label>
+              {% endif %}
+              <div class="help">{{ field.help_text|safe|markdown }}</div>
+            </div>
+            <div class="column">
+              <div class="control">
+                {{ field }}
+                {{ field.errors }}
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+
+        <button class="button is-info">Submit</button>
+
+      </form>
+  {% else %}
+    <p>You are not spoiled on this puzzle. I'm not sure you want to be postprodding it.</p>
+    <p>If you really want to, you can click back to it and spoil yourself.</p>
+  {% endif %}
+{% endblock %}
