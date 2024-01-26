@@ -17,7 +17,9 @@
 	{% if unspoiled_rounds and unspoiled_answers %}
 	<p>
 		Not shown: {{ unspoiled_answers }} answer{{ unspoiled_answers|pluralize }} from {{ unspoiled_rounds }} round{{ unspoiled_answers|pluralize }} that you aren't spoiled on.
+		{% if perms.puzzle_editing.change_round %}
 		To assign them, you can visit <a href="{% url 'rounds' %}">Rounds</a> to spoil yourself on the rounds first.
+		{% endif %}
 	</p>
 	{% endif %}
 	<div class="block">
