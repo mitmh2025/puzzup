@@ -65,24 +65,6 @@ html5lib = ["html5lib"]
 lxml = ["lxml"]
 
 [[package]]
-name = "bleach"
-version = "6.1.0"
-description = "An easy safelist-based HTML-sanitizing tool."
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "bleach-6.1.0-py3-none-any.whl", hash = "sha256:3225f354cfc436b9789c66c4ee030194bee0568fbf9cbdad3bc8b5c26c5f12b6"},
-    {file = "bleach-6.1.0.tar.gz", hash = "sha256:0a31f1837963c41d46bbf1331b8778e1308ea0791db03cc4e7357b97cf42a8fe"},
-]
-
-[package.dependencies]
-six = ">=1.9.0"
-webencodings = "*"
-
-[package.extras]
-css = ["tinycss2 (>=1.1.0,<1.3)"]
-
-[[package]]
 name = "boto3"
 version = "1.34.29"
 description = "The AWS SDK for Python"
@@ -1172,6 +1154,31 @@ files = [
 ]
 
 [[package]]
+name = "nh3"
+version = "0.2.15"
+description = "Python bindings to the ammonia HTML sanitization library."
+optional = false
+python-versions = "*"
+files = [
+    {file = "nh3-0.2.15-cp37-abi3-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl", hash = "sha256:9c0d415f6b7f2338f93035bba5c0d8c1b464e538bfbb1d598acd47d7969284f0"},
+    {file = "nh3-0.2.15-cp37-abi3-macosx_10_12_x86_64.whl", hash = "sha256:6f42f99f0cf6312e470b6c09e04da31f9abaadcd3eb591d7d1a88ea931dca7f3"},
+    {file = "nh3-0.2.15-cp37-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:ac19c0d68cd42ecd7ead91a3a032fdfff23d29302dbb1311e641a130dfefba97"},
+    {file = "nh3-0.2.15-cp37-abi3-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:5f0d77272ce6d34db6c87b4f894f037d55183d9518f948bba236fe81e2bb4e28"},
+    {file = "nh3-0.2.15-cp37-abi3-manylinux_2_17_ppc64.manylinux2014_ppc64.whl", hash = "sha256:8d595df02413aa38586c24811237e95937ef18304e108b7e92c890a06793e3bf"},
+    {file = "nh3-0.2.15-cp37-abi3-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:86e447a63ca0b16318deb62498db4f76fc60699ce0a1231262880b38b6cff911"},
+    {file = "nh3-0.2.15-cp37-abi3-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:3277481293b868b2715907310c7be0f1b9d10491d5adf9fce11756a97e97eddf"},
+    {file = "nh3-0.2.15-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:60684857cfa8fdbb74daa867e5cad3f0c9789415aba660614fe16cd66cbb9ec7"},
+    {file = "nh3-0.2.15-cp37-abi3-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:3b803a5875e7234907f7d64777dfde2b93db992376f3d6d7af7f3bc347deb305"},
+    {file = "nh3-0.2.15-cp37-abi3-musllinux_1_2_aarch64.whl", hash = "sha256:0d02d0ff79dfd8208ed25a39c12cbda092388fff7f1662466e27d97ad011b770"},
+    {file = "nh3-0.2.15-cp37-abi3-musllinux_1_2_armv7l.whl", hash = "sha256:f3b53ba93bb7725acab1e030bc2ecd012a817040fd7851b332f86e2f9bb98dc6"},
+    {file = "nh3-0.2.15-cp37-abi3-musllinux_1_2_i686.whl", hash = "sha256:b1e97221cedaf15a54f5243f2c5894bb12ca951ae4ddfd02a9d4ea9df9e1a29d"},
+    {file = "nh3-0.2.15-cp37-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:a5167a6403d19c515217b6bcaaa9be420974a6ac30e0da9e84d4fc67a5d474c5"},
+    {file = "nh3-0.2.15-cp37-abi3-win32.whl", hash = "sha256:427fecbb1031db085eaac9931362adf4a796428ef0163070c484b5a768e71601"},
+    {file = "nh3-0.2.15-cp37-abi3-win_amd64.whl", hash = "sha256:bc2d086fb540d0fa52ce35afaded4ea526b8fc4d3339f783db55c95de40ef02e"},
+    {file = "nh3-0.2.15.tar.gz", hash = "sha256:d1e30ff2d8d58fb2a14961f7aac1bbb1c51f9bdd7da727be35c63826060b0bf3"},
+]
+
+[[package]]
 name = "nodeenv"
 version = "1.8.0"
 description = "Node.js virtual environment builder"
@@ -2231,17 +2238,6 @@ files = [
 ]
 
 [[package]]
-name = "webencodings"
-version = "0.5.1"
-description = "Character encoding aliases for legacy web content"
-optional = false
-python-versions = "*"
-files = [
-    {file = "webencodings-0.5.1-py2.py3-none-any.whl", hash = "sha256:a0af1213f3c2226497a97e2b3aa01a7e4bee4f403f95be16fc9acd2947514a78"},
-    {file = "webencodings-0.5.1.tar.gz", hash = "sha256:b36a1c245f2d304965eb4e0a82848379241dc04b865afcc4aab16748587e1923"},
-]
-
-[[package]]
 name = "whitenoise"
 version = "6.6.0"
 description = "Radically simplified static file serving for WSGI applications"
@@ -2285,4 +2281,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.12,<3.13"
-content-hash = "b54d3955ee84d9d621bbba0b5b1bb6495838f274adbf7ef1e9496143e5f218a4"
+content-hash = "f639b6e00342eb4caaa1b0893bb1ddecb3816ad9d815b09d903e7949db989082"

@@ -1,64 +1,11 @@
-from bleach import Cleaner
-from bleach.linkifier import LinkifyFilter
 from django import template
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from markdown import markdown as convert_markdown
+from nh3 import clean
 from pymdownx import emoji
 
 register = template.Library()
-
-SAFE_TAGS = [
-    "a",
-    "abbr",
-    "acronym",
-    "b",
-    "big",
-    "blockquote",
-    "br",
-    "cite",
-    "code",
-    "dd",
-    "del",
-    "div",
-    "dl",
-    "dt",
-    "em",
-    "h1",
-    "h2",
-    "h3",
-    "h4",
-    "h5",
-    "h6",
-    "hr",
-    "i",
-    "img",
-    "ins",
-    "li",
-    "ol",
-    "p",
-    "pre",
-    "q",
-    "s",
-    "small",
-    "span",
-    "sub",
-    "sup",
-    "strike",
-    "strong",
-    "table",
-    "tbody",
-    "td",
-    "th",
-    "thead",
-    "tfoot",
-    "tr",
-    "u",
-    "ul",
-]
-
-# LinkifyFilter converts raw URLs in text into links
-cleaner = Cleaner(tags=SAFE_TAGS, filters=[LinkifyFilter])
 
 
 @register.simple_tag(takes_context=False)
@@ -72,10 +19,10 @@ def markdown(text):
     if text is None:
         return text
     return mark_safe(
-        cleaner.clean(
+        clean(
             convert_markdown(
                 text,
-                extensions=["extra", "nl2br", "pymdownx.emoji"],
+                extensions=["extra", "nl2br", "pymdownx.emoji", "pymdownx.magiclink"],
                 extension_configs={
                     "pymdownx.emoji": {
                         "emoji_index": emoji.gemoji,
