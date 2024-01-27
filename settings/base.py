@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     "django.contrib.humanize",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "rest_framework",
     "django_filters",
     "import_export",
 ]
@@ -218,18 +217,6 @@ HUNT_TIME = datetime.datetime(
     microsecond=0,
     tzinfo=datetime.timezone.utc,
 )
-
-# API stuff
-REST_FRAMEWORK = {
-    "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.IsAuthenticated",
-    ],
-    "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.BasicAuthentication",
-        "rest_framework.authentication.SessionAuthentication",
-    ],
-    "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
-}
 
 DRIVE_SETTINGS = {}
 credentials_file = BASE_DIR / "credentials/drive-credentials.json"
