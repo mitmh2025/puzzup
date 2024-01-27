@@ -1085,34 +1085,38 @@ def create_testsolve_thread(instance: TestsolveSession):
             puzzle = instance.puzzle
             c = discord.get_client()
 
-            thread = discord.build_testsolve_thread(instance, c.guild_id)
-            thread = c.save_thread(thread)
+            vc = discord.build_testsolve_channel(instance, c.guild_id)
+            vc.add_visibility([settings.DISCORD_CLIENT_ID])
+            vc.add_visibility([p.user.discord_user_id for p in puzzle.authors.all()])
+            vc.add_visibility([p.user.discord_user_id for p in puzzle.editors.all()])
+            vc.make_private()
 
             author_tags = discord.get_tags(puzzle.authors.all(), False)
             editor_tags = discord.get_tags(puzzle.editors.all(), False)
+
+            vc = c.save_channel_to_cat(
+                vc, f"{settings.DISCORD_CATEGORY_PREFIX} Testsolve Sessions"
+            )
             c.post_message(
-                thread.id,
-                f"New testsolve session created for {puzzle.name}.\n"
-                # This is a hack to auto-add authors and editors to the thread
-                # by tagging them (to get around Discord rate limits).
+                vc.id,
+                f"New testsolving session for {puzzle.name}\n"
                 f"Author(s): {', '.join(author_tags)}\n"
-                f"Editor(s): {', '.join(editor_tags)}",
+                f"Editor(s): {', '.join(editor_tags)}\n",
             )
 
             sheet_id = google.GoogleManager.instance().create_testsolving_sheet(
                 instance
             )
-            message = c.post_message(
-                thread.id,
+            c.post_message(
+                vc.id,
                 f"Google Sheets link: https://docs.google.com/spreadsheets/d/{sheet_id}",
             )
-            c.pin_message(thread.id, message["id"])
 
             TestsolveSession.objects.filter(id=instance.id).update(
-                discord_thread_id=thread.id, google_sheets_id=sheet_id
+                discord_thread_id=vc.id, google_sheets_id=sheet_id
             )
 
-            return (thread.id, sheet_id)
+            return (vc.id, sheet_id)
         except Exception as e:
             logger.exception(
                 "Failed to create Discord thread or Google sheets.", exc_info=e
@@ -1320,7 +1324,7 @@ class TestsolveParticipation(models.Model):
 
 
 @receiver(post_save, sender=TestsolveParticipation)
-def add_testsolver_to_thread(
+def add_testsolver_to_voice_channel(
     sender, instance: TestsolveParticipation, created: bool, **kwargs
 ):
     if not created:
@@ -1328,12 +1332,15 @@ def add_testsolver_to_thread(
     if discord.enabled():
         session = instance.session
         c = discord.get_client()
-        thread = discord.get_thread(c, session)
-        if not thread:
+        vc = discord.get_voice_channel(c, session)
+        if not vc:
             return
         for did in discord.get_dids([instance.user]):
-            if did:
-                c.add_member_to_thread(thread.id, did)
+            c.add_member_to_channel(vc.id, did)
+            c.post_message(
+                vc.id,
+                f"Welcome to the testsolve, {', '.join(discord.get_tags([instance.user], False))}",
+            )
 
 
 class TestsolveGuess(models.Model):

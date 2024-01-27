@@ -436,5 +436,10 @@ class Client:
     def add_member_to_thread(self, thread_id: str, user_id: str):
         self._request("put", f"/channels/{thread_id}/thread-members/{user_id}")
 
+    def add_member_to_channel(self, channel_id: str, user_id: str):
+        vc = self.get_voice_channel(channel_id)
+        vc.add_visibility([user_id])
+        self.save_channel(vc)
+
     def pin_message(self, channel_id: str, message_id: str):
         self._request("put", f"/channels/{channel_id}/pins/{message_id}")

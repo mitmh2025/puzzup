@@ -117,16 +117,16 @@ def get_channel(c: Client, p: m.Puzzle) -> TextChannel | None:
         return None
 
 
-def get_thread(c: Client, s: m.TestsolveSession) -> Thread | None:
-    """Get the thread for a testsolving session, or None if hasn't got one.
-    If the session has a discord_thread_id set, but no thread has that id,
-    this will also return None (this indicates that someone deleted the thread
+def get_voice_channel(c: Client, s: m.TestsolveSession) -> VoiceChannel | None:
+    """Get the voice channel for a testsolving session, or None if hasn't got one.
+    If the session has a discord_thread_id set, but no channel has that id,
+    this will also return None (this indicates that someone deleted the channel
     from the discord side)
     """
     if not s.discord_thread_id:
         return None
     try:
-        return c.get_thread(s.discord_thread_id)
+        return c.get_voice_channel(s.discord_thread_id)
     except requests.HTTPError as e:
         if e.response.status_code != 404:
             raise
@@ -193,12 +193,11 @@ def save_channel(client: Client, tc: TextChannel, category: str) -> TextChannel:
     return client.save_channel_to_cat(tc, category)
 
 
-def build_testsolve_thread(session: m.TestsolveSession, guild_id: str):
-    return Thread(
+def build_testsolve_channel(session: m.TestsolveSession, guild_id: str):
+    return VoiceChannel(
         id="",
-        name=f"Testsolve Session ({session.id}) - {session.puzzle.name}",
+        name=f"test-{session.id}-{session.puzzle.codename}",
         guild_id=guild_id,
-        parent_id=settings.DISCORD_TESTSOLVE_CHANNEL_ID,
     )
 
 
