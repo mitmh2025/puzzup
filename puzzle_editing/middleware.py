@@ -9,7 +9,7 @@ class TimezoneMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        tzname = request.session.get("django_timezone")
+        tzname = request.user.timezone if request.user.is_authenticated else None
         if tzname:
             timezone.activate(zoneinfo.ZoneInfo(tzname))
         else:

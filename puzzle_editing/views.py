@@ -71,6 +71,7 @@ from puzzle_editing.forms import (
     TestsolveParticipationForm,
     TestsolveSessionNotesForm,
     UserMultipleChoiceField,
+    UserTimezoneForm,
 )
 from puzzle_editing.graph import curr_puzzle_graph_b64
 from puzzle_editing.models import (
@@ -269,50 +270,25 @@ def account(request):
         return render(request, "account.html", {"form": form, "success": None})
 
 
-# List of timezones that should cover all common use cases
-common_timezones = [
-    ("Midway Atoll (UTC-11)", "Pacific/Midway"),
-    ("US/Hawaii (UTC-10)", "US/Hawaii"),
-    ("US/Alaska (UTC-9)", "US/Alaska"),
-    ("US/Pacific (UTC-8)", "US/Pacific"),
-    ("US/Mountain (UTC-7)", "US/Mountain"),
-    ("US/Central (UTC-6)", "US/Central"),
-    ("US/Eastern (UTC-5)", "US/Eastern"),
-    ("America/Puerto_Rico (UTC-4)", "America/Puerto_Rico"),
-    ("America/Argentina/Buenos_Aires (UTC-3)", "America/Argentina/Buenos_Aires"),
-    ("Atlantic/Cape_Verde (UTC-1)", "Atlantic/Cape_Verde"),
-    ("Europe/London (UTC+0)", "Europe/London"),
-    ("Europe/Paris (UTC+1)", "Europe/Paris"),
-    ("Asia/Jerusalem (UTC+2)", "Asia/Jerusalem"),
-    ("Africa/Addis_Ababa (UTC+3)", "Africa/Addis_Ababa"),
-    ("Asia/Dubai (UTC+4)", "Asia/Dubai"),
-    ("Asia/Karachi (UTC+5)", "Asia/Karachi"),
-    ("India Standard Time (UTC+5.5)", "Asia/Kolkata"),
-    ("Asia/Dhaka (UTC+6)", "Asia/Dhaka"),
-    ("Asia/Bangkok (UTC+7)", "Asia/Bangkok"),
-    ("Asia/Singapore (UTC+8)", "Asia/Singapore"),
-    ("Asia/Tokyo (UTC+9)", "Asia/Tokyo"),
-    ("Australia/Adelaide (UTC+9.5)", "Australia/Adelaide"),
-    ("Australia/Sydney (UTC+10)", "Australia/Sydney"),
-    ("Vanuatu (UTC+11)", "Pacific/Efate"),
-    ("New Zealand (UTC+12)", "Pacific/Auckland"),
-]
-
-
 @login_required
 def set_timezone(request):
     if request.method == "POST":
-        request.session["django_timezone"] = request.POST["timezone"]
-        return redirect("/account")
-    else:
-        return render(
-            request,
-            "timezone.html",
-            {
-                "timezones": common_timezones,
-                "current": request.session.get("django_timezone", "UTC"),
-            },
-        )
+        form = UserTimezoneForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect("/account")
+
+    form = UserTimezoneForm(instance=request.user)
+    return render(
+        request,
+        "timezone.html",
+        {
+            "current_timezone": request.user.timezone
+            if request.user.timezone
+            else settings.TIME_ZONE,
+            "form": form,
+        },
+    )
 
 
 def format_discord_username(user: JsonDict) -> str:

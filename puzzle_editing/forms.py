@@ -1,4 +1,6 @@
+import datetime
 import re
+import zoneinfo
 from functools import partial
 from types import MappingProxyType
 
@@ -207,6 +209,55 @@ class LogisticsInfoForm(forms.ModelForm):
                 "logistics_testsolve_length": forms.TextInput(attrs={"class": "input"}),
                 "logistics_testsolve_skills": forms.TextInput(attrs={"class": "input"}),
                 "logistics_specialized_type": RadioSelect(),
+            }
+        )
+
+
+# List of timezones that should cover all common use cases
+common_timezones = [
+    "Pacific/Midway",
+    "US/Hawaii",
+    "US/Alaska",
+    "US/Pacific",
+    "US/Mountain",
+    "US/Central",
+    "US/Eastern",
+    "America/Puerto_Rico",
+    "America/Argentina/Buenos_Aires",
+    "Atlantic/Cape_Verde",
+    "Europe/London",
+    "Europe/Paris",
+    "Asia/Jerusalem",
+    "Africa/Addis_Ababa",
+    "Asia/Dubai",
+    "Asia/Karachi",
+    "Asia/Kolkata",
+    "Asia/Dhaka",
+    "Asia/Bangkok",
+    "Asia/Singapore",
+    "Asia/Tokyo",
+    "Australia/Adelaide",
+    "Australia/Sydney",
+    "Pacific/Efate",
+    "Pacific/Auckland",
+]
+
+
+class UserTimezoneForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ("timezone",)
+        widgets = MappingProxyType(
+            {
+                "timezone": forms.Select(
+                    choices=[
+                        (
+                            tz,
+                            f"{tz} (UTC{datetime.datetime.now(tz=zoneinfo.ZoneInfo(tz)).strftime("%:z")})",
+                        )
+                        for tz in common_timezones
+                    ],
+                ),
             }
         )
 

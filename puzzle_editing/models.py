@@ -67,6 +67,12 @@ class User(AbstractUser):
         ),
     )
 
+    timezone = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Your timezone, e.g. US/Eastern",
+    )
+
     @property
     def is_eic(self):
         return any(g.name == "EIC" for g in self.groups.all())

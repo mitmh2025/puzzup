@@ -41,6 +41,7 @@ class UserAdmin(BaseUserAdmin):
                     "avatar_url",
                     "credits_name",
                     "bio",
+                    "timezone",
                 )
             },
         ),
