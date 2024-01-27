@@ -40,6 +40,7 @@ from django.views.decorators.http import require_POST
 import puzzle_editing.discord_integration as discord
 from puzzle_editing import messaging, status, utils
 from puzzle_editing import models as m
+from puzzle_editing.discord.client import JsonDict
 from puzzle_editing.forms import (
     AccountForm,
     AnswerForm,
@@ -314,6 +315,12 @@ def set_timezone(request):
         )
 
 
+def format_discord_username(user: JsonDict) -> str:
+    if user["discriminator"] != "0":
+        return "{}#{}".format(user["username"], user["discriminator"])
+    return user["username"]
+
+
 @login_required
 def oauth2_link_discord(request):
     user = request.user
@@ -328,12 +335,7 @@ def oauth2_link_discord(request):
         elif "refresh-discord" in request.POST:
             member = discord.get_client().get_member_by_id(user.discord_user_id)
             if member:
-                if member["user"]["discriminator"] != "0":
-                    user.discord_username = "{}#{}".format(
-                        member["user"]["username"], member["user"]["discriminator"]
-                    )
-                else:
-                    user.discord_username = member["user"]["username"]
+                user.discord_username = format_discord_username(member["user"])
                 user.discord_nickname = member["nick"] or ""
                 user.save()
                 user.avatar_url = user.get_avatar_url_via_discord(
@@ -378,24 +380,19 @@ def oauth2_link_discord(request):
             user_data = user_info.json()
 
             user.discord_user_id = user_data["id"]
-
-            if user_data["discriminator"] != "0":
-                user.discord_username = "{}#{}".format(
-                    user_data["username"], user_data["discriminator"]
-                )
-            else:
-                user.discord_username = user_data["username"]
+            user.discord_username = format_discord_username(user_data)
             if discord.enabled():
                 c = discord.get_client()
                 discord.init_perms(c, user)
                 member = c.get_member_by_id(user.discord_user_id)
                 if member:
                     user.discord_nickname = member["nick"] or ""
+                    user.avatar_url = (
+                        user.get_avatar_url_via_discord(member["user"]["avatar"] or "")
+                        or ""
+                    )
 
             user.save()
-            user.avatar_url = (
-                user.get_avatar_url_via_discord(member["user"]["avatar"] or "") or ""
-            )
             user.save()
 
         return redirect("/account")

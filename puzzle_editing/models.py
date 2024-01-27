@@ -168,31 +168,19 @@ class User(AbstractUser):
 
         cdn_base_url = "https://cdn.discordapp.com"
 
-        if not self.discord_user_id:
+        if not self.discord_user_id or not discord_avatar_hash:
             # we'll only "trust" information given to us by the discord API; users who haven't linked that way won't have any avatar
-            return "a"
+            return ""
 
-        if self.discord_username and not discord_avatar_hash:
-            # This is a user with no avatar hash; accordingly, we will give them the default avatar
-            try:
-                discriminator = self.discord_username.split("#")[1]
-            except IndexError:
-                return "b"
+        if size > 0:
+            size = size - (size % 2)
+            size = 16 if size < 16 else size
+            size = 4096 if size > 4096 else size
 
-            return f"{cdn_base_url}/embed/avatars/{discriminator}.png"
-
-        if discord_avatar_hash and self.discord_user_id:
-            if size > 0:
-                size = size - (size % 2)
-                size = 16 if size < 16 else size
-                size = 4096 if size > 4096 else size
-
-            return (
-                f"{cdn_base_url}/avatars/{self.discord_user_id}/{discord_avatar_hash}.png"
-                + (f"?size={size}" if size > 0 else "")
-            )
-
-        return "d"
+        return (
+            f"{cdn_base_url}/avatars/{self.discord_user_id}/{discord_avatar_hash}.png"
+            + (f"?size={size}" if size > 0 else "")
+        )
 
     def __str__(self):
         return (
