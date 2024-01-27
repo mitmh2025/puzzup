@@ -54,7 +54,7 @@ Testsolving occurs on the [Testsolve page](/testsolve). Testsolving is organized
 
 To start a session, go to [Testsolving](/testsolve) and click **Start new session** next to a puzzle under **Puzzles you can testsolve**. This includes all puzzles with the status READY TO BE TESTSOLVED. PuzzUp even allows you to testsolve puzzles you're spoiled on.
 
-You can also join an ongoing session under **Testsolving sessions you can join**. To make a given session *joinable*, click the "Allow others to join" button. This flag indicates whether a session is looking for new participants, and it can be turned off after the testsolve group has gotten big enough or made enough progress that a separate testsolve would be deemed more useful. 
+You can also join an ongoing session under **Testsolving sessions you can join**. To make a given session *joinable*, click the "Allow others to join" button. This flag indicates whether a session is looking for new participants, and it can be turned off after the testsolve group has gotten big enough or made enough progress that a separate testsolve would be deemed more useful.
 
 (Note: anybody can join a testsolving session if they have the URL. So, if you have a group of people you want to testsolve a puzzle with, create a session and send them the link, and they will be able to join without anyone touching the *joinable* switch.)
 
@@ -72,6 +72,6 @@ Hints were a fairly late addition to PuzzUp in 2021. The numbers and keywords do
 
 ## Discord
 
-Every new puzzle that's created on PuzzUp gets a channel created on our Discord. As the puzzle moves through statuses, it moves to a new category on Discord for that status. Most importantly, the only people who can see a channel (after it moves past **Initial Idea**), are those who are spoiled on the puzzle here on PuzzUp. 
+Every new puzzle that's created on PuzzUp gets a channel created on our Discord. As the puzzle moves through statuses, it moves to a new category on Discord for that status. Most importantly, the only people who can see a channel (after it moves past **Initial Idea**), are those who are spoiled on the puzzle here on PuzzUp.
 
-If you've already created a channel in discord, you (or anyone else) may type the `/up create` command in that channel, and it will create a PuzzUp record for that channel. 
+If you've already created a channel in discord, you (or anyone else) may type the `/up create` command in that channel, and it will create a PuzzUp record for that channel.
