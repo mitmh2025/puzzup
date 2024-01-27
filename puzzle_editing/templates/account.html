@@ -44,7 +44,7 @@
             <div class="box">
                 <h3>Discord</h3>
                 {% if user.discord_user_id %}
-                    <form method="POST" action="/account/oauth2">
+                    <form method="POST" action="/account/oauth2/discord">
                         {% csrf_token %}
                         You're linked to our team Discord. Your username is <code>@{{ user.discord_username }}</code>.<br>
                         <input class="button is-small" type="submit" name="unlink-discord" value="Click to unlink">
@@ -52,7 +52,7 @@
                 {% else %}
                     <p class="warning">You haven't completely linked your Discord information, which means you may lose access to Discord channels for puzzles.</p>
 
-                    <a class="btn is-info" href="/account/oauth2">Link your Discord account</a>.
+                    <a class="btn is-info" href="/account/oauth2/discord">Link your Discord account</a>.
                 {% endif %}
             </div>
 

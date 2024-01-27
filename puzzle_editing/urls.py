@@ -103,7 +103,10 @@ urlpatterns = [
     path("users_statuses", views.users_statuses, name="users_statuses"),
     path("user/<str:username>", views.user, name="user"),
     path("account", views.account, name="account"),
-    path("account/oauth2", views.oauth2_link, name="oauth2_link"),
+    path("account/oauth2", RedirectView.as_view(pattern_name="account"), name="oauth2"),
+    path(
+        "account/oauth2/discord", views.oauth2_link_discord, name="oauth2_link_discord"
+    ),
     path("settimezone", views.set_timezone, name="set_timezone"),
     path("tags", views.tags, name="tags"),
     path("spoiled", views.spoiled, name="spoiled"),

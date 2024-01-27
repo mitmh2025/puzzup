@@ -204,7 +204,7 @@ Puzzup integrates a fair bit with Discord, allowing for channels to be managed. 
 You will need to create a [Discord application here](https://discord.com/developers/applications).
 
 - Set this application's **Interactions endpoint URL** to `https://your-puzzup-url/slashcommands`
-- Under the OAuth2 section of your application, add this redirect url `http://your-puzzup-url/account/oauth2`
+- Under the OAuth2 section of your application, add this redirect url `http://your-puzzup-url/account/oauth2/discord`
 - Enable a bot for your application.
 - Enable the Privileged Gateway Intents for your bot. This gives the bot certain permissions such as viewing the list of all members in the server.
 

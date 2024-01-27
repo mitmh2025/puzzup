@@ -315,7 +315,7 @@ def set_timezone(request):
 
 
 @login_required
-def oauth2_link(request):
+def oauth2_link_discord(request):
     user = request.user
     if request.method == "POST":
         if "unlink-discord" in request.POST:
@@ -355,7 +355,9 @@ def oauth2_link(request):
                 "client_secret": settings.DISCORD_CLIENT_SECRET,
                 "grant_type": "authorization_code",
                 "code": request.GET["code"],
-                "redirect_uri": request.build_absolute_uri(urls.reverse("oauth2_link")),
+                "redirect_uri": request.build_absolute_uri(
+                    urls.reverse("oauth2_link_discord")
+                ),
                 "scope": settings.DISCORD_OAUTH_SCOPES,
             }
 
@@ -409,7 +411,9 @@ def oauth2_link(request):
             "client_id": settings.DISCORD_CLIENT_ID,
             "state": state,
             "scope": settings.DISCORD_OAUTH_SCOPES,
-            "redirect_uri": request.build_absolute_uri(urls.reverse("oauth2_link")),
+            "redirect_uri": request.build_absolute_uri(
+                urls.reverse("oauth2_link_discord")
+            ),
         }
 
         oauth_url = "https://discord.com/api/oauth2/authorize?" + urlencode(params)
