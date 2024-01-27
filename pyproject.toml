@@ -8,7 +8,7 @@ authors = ["betaveros", "mitchgu", "jakob223", "dvorak42", "fortenforge", "Sandy
 [tool.poetry.dependencies]
 python = "==3.9.*"
 beautifulsoup4 = "==4.10.0"
-bleach = "==3.1.5"
+bleach = "6.0.0"
 discord-interactions = "==0.2.0"
 dj-database-url = "==0.5.0"
 django = ">=3.2,<4.0"
