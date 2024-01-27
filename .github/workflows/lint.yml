@@ -30,7 +30,7 @@ jobs:
         run: poetry install --no-interaction --no-root
       - name: Install project
         run: poetry install --no-interaction
-      - run: poetry run ruff check .
+      - run: poetry run ruff check --output-format=github .
       - run: poetry run ruff format --check .
       - run: poetry run djhtml --check .
       - run: poetry run djcss --check .
