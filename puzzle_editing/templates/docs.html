@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load markdown %}
 
 {% block title %}Docs{% endblock %}
 
@@ -25,21 +26,21 @@
         <div class="column">
 
             <div id="for-everyone" class="box">
-                {% include "docs/user.html" %}
+                {% include_markdown "docs/user.md" %}
             </div>
             <h2 id="for-editors">How to be an Editor</h2>
             <div class="box">
-                {% include "docs/editor.html" %}
+                {% include_markdown "docs/editor.md" %}
             </div>
             {% if user.is_staff %}
                 <h2 id="for-admins">How to be a superuser</h2>
                 <div class="box">
-                    {% include "docs/admin.html" %}
+                    {% include_markdown "docs/admin.md" %}
                 </div>
             {% endif %}
             <h2 id="whats-new">What's New?</h2>
             <div class="box">
-                {% include "docs/whats_new.html" %}
+                {% include_markdown "docs/whats_new.md" %}
             </div>
         </div>
 

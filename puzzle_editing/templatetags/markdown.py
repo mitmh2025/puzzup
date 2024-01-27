@@ -1,8 +1,10 @@
 from bleach import Cleaner
 from bleach.linkifier import LinkifyFilter
 from django import template
+from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from markdown import markdown as convert_markdown
+from pymdownx import emoji
 
 register = template.Library()
 
@@ -59,6 +61,28 @@ SAFE_TAGS = [
 cleaner = Cleaner(tags=SAFE_TAGS, filters=[LinkifyFilter])
 
 
+@register.simple_tag(takes_context=False)
+def include_markdown(template_name):
+    template = render_to_string(template_name, {})
+    return mark_safe(convert_markdown(template, extensions=["extra", "nl2br"]))
+
+
 @register.filter
 def markdown(text):
-    return mark_safe(cleaner.clean(convert_markdown(text, extensions=["extra"])))
+    if text is None:
+        return text
+    return mark_safe(
+        cleaner.clean(
+            convert_markdown(
+                text,
+                extensions=["extra", "nl2br", "pymdownx.emoji"],
+                extension_configs={
+                    "pymdownx.emoji": {
+                        "emoji_index": emoji.gemoji,
+                        "emoji_generator": emoji.to_alt,
+                        "alt": "unicode",
+                    },
+                },
+            )
+        )
+    )
