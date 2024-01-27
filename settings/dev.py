@@ -1,9 +1,5 @@
 # flake8: noqa
-from decouple import config
-
 from settings.base import *
-
-HUNT_REPO = config("HUNT_REPO", "")
 
 DEBUG = True
 
