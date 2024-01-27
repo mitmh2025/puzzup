@@ -213,7 +213,9 @@ class Client:
             self._thread_cache.set(thread.id, thread)
         return thread.copy(deep=True)
 
-    def save_channel_to_cat(self, tc: TextChannel, catname: str) -> TextChannel:
+    def save_channel_to_cat(
+        self, tc: TextChannel, catname: str, cats: dict[str, Category] | None
+    ) -> TextChannel:
         """Just like save_channel, but specifying a category by name.
 
         This will attempt to put the channel in the category `catname`,
@@ -222,7 +224,7 @@ class Client:
         has space.
         """
         name_re = re.compile(r"^" + re.escape(catname) + r"(-\d+)?$", re.I)
-        cats = self.get_all_cats()
+        cats = cats or self.get_all_cats()
         parent = cats.get(tc.parent_id)
         if parent and name_re.match(parent.name):
             # We're already in a matching channel
@@ -299,6 +301,14 @@ class Client:
         newtc = TextChannel.parse_obj(rawch)
         self._cache_tc(newtc)
         return newtc
+
+    def save_category(self, cat: Category) -> Category:
+        if cat.id is None:
+            rawcat = self.create_category(cat.name)
+            cat.id = rawcat.id
+        rawcat = self._request("patch", f"/channels/{cat.id}", cat.dict(exclude={"id"}))
+        newcat = Category.parse_obj(rawcat)
+        return newcat
 
     def save_thread(self, thread: Thread) -> Thread:
         if thread.id is None:

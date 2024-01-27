@@ -13,6 +13,7 @@ class Channel(BaseModel):
     type: int
     guild_id: str = None
     permission_overwrites: Overwrites = Field(default_factory=Overwrites)
+    position: int | None = None
 
     @validator("permission_overwrites", pre=True)
     def unpack_overwrites(cls, v):
