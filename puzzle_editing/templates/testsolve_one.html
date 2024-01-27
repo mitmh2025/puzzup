@@ -72,7 +72,21 @@
 
                 {% if participation %}
                     <div class="box">
-                        <p><a href="{% url 'testsolve_finish' session.id %}" class="testsolve-finish{% if session.has_correct_guess and not participation.ended %} testsolve-finish-correct{% endif %}">Done with the puzzle?</a> You can confirm and leave feedback after clicking the link.</p>
+                        <p>
+                            <a href="{% url 'testsolve_finish' session.id %}"
+                               class="testsolve-finish{% if session.has_correct_guess and not participation.ended %} testsolve-finish-correct{% endif %}">
+                                {% if participation.ended %}
+                                    Have more feedback?
+                                {% else %}
+                                    Done with the puzzle?
+                                {% endif %}
+                            </a>
+                            {% if participation.ended %}
+                                You can leave additional feedback by clicking the link again.
+                            {% else %}
+                                You can confirm and leave feedback after clicking the link.
+                            {% endif %}
+                        </p>
                     </div>
                 {% endif %}
             </div>
