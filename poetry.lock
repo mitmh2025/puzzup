@@ -339,6 +339,20 @@ Django = ">=2.2"
 sqlparse = ">=0.2.0"
 
 [[package]]
+name = "django-filter"
+version = "2.4.0"
+description = "Django-filter is a reusable Django application for allowing users to filter querysets dynamically."
+optional = false
+python-versions = ">=3.5"
+files = [
+    {file = "django-filter-2.4.0.tar.gz", hash = "sha256:84e9d5bb93f237e451db814ed422a3a625751cbc9968b484ecc74964a8696b06"},
+    {file = "django_filter-2.4.0-py3-none-any.whl", hash = "sha256:e00d32cebdb3d54273c48f4f878f898dced8d5dfaad009438fe61ebdf535ace1"},
+]
+
+[package.dependencies]
+Django = ">=2.2"
+
+[[package]]
 name = "django-import-export"
 version = "2.7.1"
 description = "Django application and library for importing and exporting data with included admin integration."
@@ -373,6 +387,20 @@ pytz = ">=2016.10"
 [package.extras]
 bounce = ["cryptography (>=36.0.2)", "requests (>=2.27.1)"]
 events = ["cryptography (>=36.0.2)", "requests (>=2.27.1)"]
+
+[[package]]
+name = "djangorestframework"
+version = "3.12.2"
+description = "Web APIs for Django, made easy."
+optional = false
+python-versions = ">=3.5"
+files = [
+    {file = "djangorestframework-3.12.2-py3-none-any.whl", hash = "sha256:0209bafcb7b5010fdfec784034f059d512256424de2a0f084cb82b096d6dd6a7"},
+    {file = "djangorestframework-3.12.2.tar.gz", hash = "sha256:0898182b4737a7b584a2c73735d89816343369f259fea932d90dc78e35d8ac33"},
+]
+
+[package.dependencies]
+django = ">=2.2"
 
 [[package]]
 name = "djhtml"
@@ -1649,6 +1677,20 @@ files = [
 ]
 
 [[package]]
+name = "whitenoise"
+version = "5.3.0"
+description = "Radically simplified static file serving for WSGI applications"
+optional = false
+python-versions = ">=3.5, <4"
+files = [
+    {file = "whitenoise-5.3.0-py2.py3-none-any.whl", hash = "sha256:d963ef25639d1417e8a247be36e6aedd8c7c6f0a08adcb5a89146980a96b577c"},
+    {file = "whitenoise-5.3.0.tar.gz", hash = "sha256:d234b871b52271ae7ed6d9da47ffe857c76568f11dd30e28e18c5869dbd11e12"},
+]
+
+[package.extras]
+brotli = ["Brotli"]
+
+[[package]]
 name = "xlrd"
 version = "2.0.1"
 description = "Library for developers to extract data from Microsoft Excel (tm) .xls spreadsheet files"
@@ -1678,4 +1720,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "==3.9.*"
-content-hash = "2fc985e63dc34935b4d9cd30db0129355a13d5d374e1914d5c293d434643dff1"
+content-hash = "9f3ff8c68b5d5754928949136a8e1bf0d3a73eaa09c4247428a0b091ee91dbe1"
