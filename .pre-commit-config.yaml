@@ -23,7 +23,7 @@ repos:
     hooks:
       - id: pre-commit-django-migrations
         name: Check django migrations
-        entry: python manage.py makemigrations --check --dry-run --no-input
+        entry: poetry run python manage.py makemigrations --check --dry-run --no-input
         language: system
         types: [python]
         pass_filenames: false
