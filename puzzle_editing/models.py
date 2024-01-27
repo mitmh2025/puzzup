@@ -782,7 +782,7 @@ class PuzzleCredit(models.Model):
     text = models.TextField(blank=True)
 
     credit_type = models.CharField(
-        max_length=3, choices=[ART, TECH, OTHER], default=ART
+        max_length=3, choices=[ART, TECH, OTHER], default=ART[0]
     )
 
     class Meta:
