@@ -58,7 +58,7 @@ COPY --chmod=755 <<'EOF' /usr/src/app/start.sh
 set -eux
 set -o pipefail
 
-aws ssm get-parameter --output text --query Parameter.Value --with-decryption --name puzzup${PUZZUP_ENVIRONMENT}-env > .env
+aws ssm get-parameter --output text --query Parameter.Value --with-decryption --name puzzup${PUZZUP_ENVIRONMENT:-}-env > .env
 mkdir -p credentials
 aws ssm get-parameter --output text --query Parameter.Value --with-decryption --name puzzup-drive-credentials > credentials/drive-credentials.json
 python manage.py migrate
