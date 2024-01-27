@@ -223,11 +223,13 @@ By default, `DISCORD_OAUTH_SCOPES` is set to `identify` only, since that is all 
 You'll need to add a bot to your server with the following permissions - the below link will do this for you, just add your client ID:
 
 ```
-https://discord.com/api/oauth2/authorize?client_id=YOUR_CLIENT_ID&permissions=268438544&scope=applications.commands%20bot
+https://discord.com/api/oauth2/authorize?client_id=YOUR_CLIENT_ID&permissions=363193183280&scope=applications.commands%20bot
 ```
 
 - Manage channels - needed to rename, create and reorganise channels
 - Manage roles - needed to override visibility for users and roles on puzzle channels
+- Manage messages - needed to pin messages
+- Manage threads - needed to see private threads
 - Commands - needed for your users to be able to invoke the below slash commands
 
 Finally, make a `POST` request to `https://discord.com/api/v9/applications/YOUR_APPLICATION_CLIENT_ID/guilds/YOUR_GUILD_ID/commands` with the below JSON payload, authorised with your bot token (Authorization: Bot BOT_TOKEN)
