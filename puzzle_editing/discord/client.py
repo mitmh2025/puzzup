@@ -214,7 +214,7 @@ class Client:
         return thread.copy(deep=True)
 
     def save_channel_to_cat(
-        self, tc: TextChannel, catname: str, cats: dict[str, Category] | None
+        self, tc: TextChannel, catname: str, cats: dict[str, Category] | None = None
     ) -> TextChannel:
         """Just like save_channel, but specifying a category by name.
 
