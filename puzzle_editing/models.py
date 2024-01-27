@@ -190,6 +190,9 @@ class User(AbstractUser):
             or self.username
         )
 
+    def get_absolute_url(self):
+        return urls.reverse("user", kwargs={"username": self.username})
+
 
 class Round(models.Model):
     """A round of answers feeding into the same metapuzzle or set of metapuzzles."""
@@ -217,6 +220,9 @@ class Round(models.Model):
     def __str__(self):  # pylint: disable=invalid-str-returned
         return self.name
 
+    def get_absolute_url(self):
+        return urls.reverse("round", kwargs={"id": self.id})
+
 
 class PuzzleAnswer(models.Model):
     """An answer. Can be assigned to zero, one, or more puzzles."""
@@ -239,6 +245,9 @@ class PuzzleAnswer(models.Model):
 
     def __str__(self):  # pylint: disable=invalid-str-returned
         return self.answer
+
+    def get_absolute_url(self):
+        return urls.reverse("edit_answer", kwargs={"id": self.id})
 
     def to_json(self):
         return {
@@ -285,6 +294,9 @@ class PuzzleTag(models.Model):
 
     def __str__(self):
         return f"Tag: {self.name}"
+
+    def get_absolute_url(self):
+        return urls.reverse("single_tag", kwargs={"id": self.id})
 
 
 def generate_codename():
@@ -451,6 +463,9 @@ class Puzzle(models.Model):
             if not getattr(self, "factcheck", None):
                 # Create a factcheck object the first time state changes to NEEDS_FACTCHECK
                 PuzzleFactcheck(puzzle=self).save()
+
+    def get_absolute_url(self):
+        return urls.reverse("puzzle_w_slug", kwargs={"id": self.id, "slug": self.slug})
 
     def spoiler_free_name(self):
         if self.codename:
@@ -731,6 +746,9 @@ class PseudoAnswer(models.Model):
     def __str__(self):
         return f'"{self.puzzle.name}" ({self.answer})'
 
+    def get_absolute_url(self):
+        return urls.reverse("edit_pseudo_answer", kwargs={"id": self.id})
+
     def get_yaml_data(self):
         return {
             "model": "spoilr_core.pseudoanswer",
@@ -784,6 +802,12 @@ class PuzzleCredit(models.Model):
                 ", ".join([u.credits_name for u in self.users.all()]),
             )
             or "--"
+        )
+
+    def get_absolute_url(self):
+        return urls.reverse(
+            "puzzle_other_credit_update",
+            kwargs={"puzzle_id": self.puzzle_id, "id": self.id},
         )
 
 
@@ -860,6 +884,11 @@ class SupportRequest(models.Model):
 
     def __str__(self):
         return f'{self.get_team_display()} request for "{self.puzzle.name}"'
+
+    def get_absolute_url(self):
+        return urls.reverse(
+            "support_by_puzzle_id", kwargs={"id": self.puzzle_id, "team": self.team}
+        )
 
     def get_emails(self):
         emails = {
@@ -990,6 +1019,9 @@ class TestsolveSession(models.Model):
             self.discord_thread_id = discord_thread_id
             self.google_sheets_id = google_sheets_id
             super().save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return urls.reverse("testsolve_one", kwargs={"id": self.id})
 
     @property
     def time_since_started(self):
@@ -1146,6 +1178,9 @@ class PuzzleComment(models.Model):
 
     def __str__(self):
         return f"Comment #{self.id} on {self.puzzle}"
+
+    def get_absolute_url(self):
+        return f"{self.puzzle.get_absolute_url()}#comment-{self.id}"
 
 
 class CommentReaction(models.Model):
@@ -1413,6 +1448,9 @@ class Hint(models.Model):
 
     def __str__(self):
         return f"Hint #{self.order} for {self.puzzle}"
+
+    def get_absolute_url(self):
+        return urls.reverse("edit_hint", kwargs={"id": self.id})
 
     def get_keywords(self):
         return self.keywords.split(",")

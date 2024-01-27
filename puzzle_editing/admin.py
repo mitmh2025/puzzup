@@ -47,6 +47,24 @@ class UserAdmin(BaseUserAdmin):
     )
 
 
+class PuzzleAdmin(admin.ModelAdmin):
+    search_fields = (
+        "name",
+        "codename",
+        "summary",
+        "description",
+        "editor_notes",
+        "notes",
+        "flavor",
+        "tags__name",
+        "content",
+        "solution",
+        "comments__content",
+        "answers__answer",
+        "pseudo_answers__answer",
+    )
+
+
 class TestsolveParticipationAdmin(ImportExportModelAdmin):
     model = TestsolveParticipation
 
@@ -54,7 +72,7 @@ class TestsolveParticipationAdmin(ImportExportModelAdmin):
 admin.site.register(User, UserAdmin)
 admin.site.register(Round)
 admin.site.register(PseudoAnswer)
-admin.site.register(Puzzle)
+admin.site.register(Puzzle, PuzzleAdmin)
 admin.site.register(PuzzleAnswer)
 admin.site.register(PuzzleTag)
 admin.site.register(PuzzleFactcheck)
