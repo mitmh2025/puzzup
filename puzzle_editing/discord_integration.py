@@ -7,11 +7,19 @@ import requests
 from django.conf import settings
 from django.db.models import Q
 
-from . import models as m
-from .discord import Client, DiscordError, TextChannel, Thread, TimedCache
+import puzzle_editing.models as m
+from puzzle_editing.discord import (
+    Client,
+    DiscordError,
+    TextChannel,
+    Thread,
+    TimedCache,
+    VoiceChannel,
+)
 
 # Global channel cache with a 10m timeout
-_global_cache: TimedCache[str, TextChannel] = TimedCache(timeout=600)
+_global_text_cache: TimedCache[str, TextChannel] = TimedCache(timeout=600)
+_global_voice_cache: TimedCache[str, VoiceChannel] = TimedCache(timeout=600)
 # Global thread cache with a 10m timeout
 _global_thread_cache: TimedCache[str, Thread] = TimedCache(timeout=600)
 
@@ -34,7 +42,8 @@ def get_client() -> Client:
     return Client(
         settings.DISCORD_BOT_TOKEN,
         settings.DISCORD_GUILD_ID,
-        _global_cache,
+        _global_text_cache,
+        _global_voice_cache,
         _global_thread_cache,
     )
 
@@ -65,7 +74,11 @@ def get_dids(users: Iterable[m.User]) -> Iterable[str]:
 
 def tag_id(discord_id: str) -> str:
     """Formats a discord id as a tag for a message."""
-    return f"<@!{discord_id}>"
+    return f"<@{discord_id}>"
+
+
+def channel_tag(discord_id: str) -> str:
+    return f"<#{discord_id}>"
 
 
 def get_tags(users: Iterable[m.User], skip_missing: bool = True) -> list[str]:
@@ -79,7 +92,7 @@ def get_tags(users: Iterable[m.User], skip_missing: bool = True) -> list[str]:
         if user.discord_user_id:
             items.append(tag_id(user.discord_user_id))
         elif not skip_missing:
-            items.append(str(user))
+            items.append(user.credits_name)
     return items
 
 
@@ -104,9 +117,8 @@ def get_channel(c: Client, p: m.Puzzle) -> TextChannel | None:
         return None
 
 
-def get_thread(c: Client, s: m.TestsolvingSession) -> Thread | None:
+def get_thread(c: Client, s: m.TestsolveSession) -> Thread | None:
     """Get the thread for a testsolving session, or None if hasn't got one.
-
     If the session has a discord_thread_id set, but no thread has that id,
     this will also return None (this indicates that someone deleted the thread
     from the discord side)
@@ -121,9 +133,7 @@ def get_thread(c: Client, s: m.TestsolvingSession) -> Thread | None:
         return None
 
 
-def get_client_and_channel(
-    p: m.Puzzle,
-) -> tuple[Client | None, TextChannel | None]:
+def get_client_and_channel(p: m.Puzzle) -> tuple[Client | None, TextChannel | None]:
     """Shorthand for get_client followed by get_channel.
 
     Returns (client, channel); both will be None if discord is disabled, and
@@ -137,10 +147,7 @@ def get_client_and_channel(
 
 
 def sync_puzzle_channel(
-    puzzle: m.Puzzle,
-    tc: TextChannel,
-    url: str | None = None,
-    sync_users: bool = True,
+    puzzle: m.Puzzle, tc: TextChannel, url: str | None = None, sync_users: bool = True
 ) -> TextChannel:
     """Syncs data from a puzzle to its TextChannel.
 
@@ -188,7 +195,7 @@ def save_channel(client: Client, tc: TextChannel, category: str) -> TextChannel:
 
 def build_testsolve_thread(session: m.TestsolveSession, guild_id: str):
     return Thread(
-        id=None,
+        id="",
         name=f"Testsolve Session ({session.id}) - {session.puzzle.name}",
         guild_id=guild_id,
         parent_id=settings.DISCORD_TESTSOLVE_CHANNEL_ID,
@@ -196,10 +203,7 @@ def build_testsolve_thread(session: m.TestsolveSession, guild_id: str):
 
 
 def build_puzzle_channel(
-    url: str,
-    puzzle: m.Puzzle,
-    guild_id: str,
-    private: bool = True,
+    url: str, puzzle: m.Puzzle, guild_id: str, private: bool = True
 ) -> TextChannel:
     """Builds a new TextChannel for a puzzle.
 
@@ -214,7 +218,7 @@ def build_puzzle_channel(
     themselves. It also ONLY adds the authors and editors - if there are other
     users you want to have permission, you should add them yourself.
     """
-    tc = TextChannel(id=None, name=puzzle.codename, guild_id=guild_id)
+    tc = TextChannel(id="", name=puzzle.name, guild_id=guild_id)
     sync_puzzle_channel(puzzle, tc, url=url)
     if private:
         tc.make_private()

@@ -8,10 +8,11 @@ from .perm import Overwrite, Overwrites, Permission
 class Channel(BaseModel):
     """Base discord channel."""
 
-    id: str = None
-    name: str = None
+    id: str = ""
+    name: str = ""
     type: int
-    guild_id: str = None
+    guild_id: str = ""
+    position: int | None = None
     permission_overwrites: Overwrites = Field(default_factory=Overwrites)
 
     @validator("permission_overwrites", pre=True)
@@ -56,17 +57,34 @@ class Channel(BaseModel):
         for uid in uids:
             self.perms.update_user(uid, allow="VIEW_CHANNEL")
 
+    def add_visibility_roles(self, uids: t.Collection[str]):
+        for uid in uids:
+            self.perms.update_role(uid, allow="VIEW_CHANNEL")
+
     def rm_visibility(self, uids: t.Collection[str]):
         for uid in uids:
             self.perms.update_user(uid, ignore="VIEW_CHANNEL")
 
+    def rm_visibility_roles(self, uids: t.Collection[str]):
+        for uid in uids:
+            self.perms.update_role(uid, ignore="VIEW_CHANNEL")
 
-class TextChannel(Channel):
+
+class ChildChannel(Channel):
+    parent_id: str | None = None
+
+
+class TextChannel(ChildChannel):
     """A Text Channel."""
 
     type: t.Literal[0] = 0
-    parent_id: str = None
-    topic: str = None
+    topic: str | None = None
+
+
+class VoiceChannel(ChildChannel):
+    """A Voice Channel."""
+
+    type: t.Literal[2] = 2
 
 
 class Category(Channel):
@@ -79,14 +97,13 @@ class Thread(BaseModel):
     """A private Thread in a Text Channel."""
 
     type: int = 12
-    id: str = None
-    name: str = None
-    guild_id: str = None
-    parent_id: str = None
+    id: str = ""
+    name: str = ""
+    guild_id: str = ""
+    parent_id: str = ""
 
     class Config:
         """This tells pydantic to keep any extra attrs it finds.
-
         This is why we can parse a whole Channel structure and not lose the
         fields that aren't coded up here."""
 
