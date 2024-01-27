@@ -1,3 +1,7 @@
+[project]
+name = "puzzup-2025"
+requires-python = ">=3.12"
+
 [tool]
 [tool.poetry]
 name = "puzzup-2025"

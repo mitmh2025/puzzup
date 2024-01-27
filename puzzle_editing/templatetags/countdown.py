@@ -19,7 +19,7 @@ def display_timedelta(delta):
 
 @register.inclusion_tag("tags/countdown.html")
 def countdown():
-    delta = settings.HUNT_TIME - datetime.datetime.now(datetime.timezone.utc)
+    delta = settings.HUNT_TIME - datetime.datetime.now(datetime.UTC)
     is_down = delta >= datetime.timedelta(0)
     return {
         "countdown": is_down,

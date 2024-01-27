@@ -116,7 +116,7 @@ def get_credits_name(user):
 
 
 def get_logistics_info(puzzle):
-    def get_display_value(field: str, value) -> t.Union[str, None]:
+    def get_display_value(field: str, value) -> str | None:
         if value is None:
             return None
 
@@ -1311,9 +1311,9 @@ def puzzle(request: HttpRequest, id, slug=None):
             raise PermissionDenied
 
     if request.method == "POST":
-        form: t.Union[forms.Form, forms.ModelForm] = None
-        c: t.Optional[discord.Client] = None
-        ch: t.Optional[TextChannel] = None
+        form: forms.Form | forms.ModelForm | None = None
+        c: discord.Client | None = None
+        ch: TextChannel | None = None
         our_d_id: str = user.discord_user_id
         disc_ops = {
             "subscribe-me",
@@ -3739,7 +3739,7 @@ def support_by_puzzle_id(request, id, team):
                 team_notes_form.save()
                 support.team_notes_updater = request.user
                 support.team_notes_mtime = datetime.datetime.now(
-                    datetime.timezone.utc
+                    datetime.UTC
                 ).astimezone()
                 support.save()
                 new_notes = support.team_notes
@@ -3766,7 +3766,7 @@ def support_by_puzzle_id(request, id, team):
                 author_notes_form.save()
                 support.author_notes_updater = request.user
                 support.author_notes_mtime = datetime.datetime.now(
-                    datetime.timezone.utc
+                    datetime.UTC
                 ).astimezone()
                 if support.status in ["APP", "COMP"]:
                     support.outdated = True

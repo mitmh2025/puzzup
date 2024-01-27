@@ -214,7 +214,7 @@ HUNT_TIME = datetime.datetime(
     minute=0,
     second=0,
     microsecond=0,
-    tzinfo=datetime.timezone.utc,
+    tzinfo=datetime.UTC,
 )
 
 DRIVE_SETTINGS = {}

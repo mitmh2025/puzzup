@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import itertools
-from typing import Iterable
+from collections.abc import Iterable
 
 import requests
 from django.conf import settings
@@ -137,7 +137,10 @@ def get_client_and_channel(
 
 
 def sync_puzzle_channel(
-    puzzle: m.Puzzle, tc: TextChannel, url: str | None = None, sync_users: bool = True
+    puzzle: m.Puzzle,
+    tc: TextChannel,
+    url: str | None = None,
+    sync_users: bool = True,
 ) -> TextChannel:
     """Syncs data from a puzzle to its TextChannel.
 
@@ -157,7 +160,9 @@ def sync_puzzle_channel(
     # every author/editor MUST see the channel
     # this discord bot MUST see the channel
     autheds = itertools.chain(
-        puzzle.authors.all(), puzzle.editors.all(), puzzle.factcheckers.all()
+        puzzle.authors.all(),
+        puzzle.editors.all(),
+        puzzle.factcheckers.all(),
     )
     must_see = set(get_dids(autheds)) | {settings.DISCORD_CLIENT_ID}
     # anyone who is spoiled CAN see the channel
@@ -191,7 +196,10 @@ def build_testsolve_thread(session: m.TestsolveSession, guild_id: str):
 
 
 def build_puzzle_channel(
-    url: str, puzzle: m.Puzzle, guild_id: str, private: bool = True
+    url: str,
+    puzzle: m.Puzzle,
+    guild_id: str,
+    private: bool = True,
 ) -> TextChannel:
     """Builds a new TextChannel for a puzzle.
 

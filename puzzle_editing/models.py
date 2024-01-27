@@ -1005,7 +1005,7 @@ class TestsolveSession(models.Model):
 
     @property
     def time_since_started(self):
-        td = datetime.datetime.now(tz=datetime.timezone.utc) - self.started
+        td = datetime.datetime.now(tz=datetime.UTC) - self.started
         minutes = td.seconds / 60
         hours, minutes = divmod(minutes, 60)
         days, hours = divmod(hours, 24)

@@ -1,6 +1,6 @@
 import logging
 import re
-from typing import Any, Optional, Union
+from typing import Any
 
 import pydantic
 import requests
@@ -15,7 +15,7 @@ JsonDict = dict[str, Any]
 
 # A message payload can be a structure or just a string - strings will be
 # treated like dict(content=payload)
-MsgPayload = Union[str, JsonDict]
+MsgPayload = str | JsonDict
 
 
 class DiscordError(Exception):
@@ -321,7 +321,7 @@ class Client:
         """Get the first 1000 members in the guild."""
         return self._request("get", f"/guilds/{self.guild_id}/members?limit=1000")
 
-    def get_member_by_id(self, discord_id: str) -> Optional[JsonDict]:
+    def get_member_by_id(self, discord_id: str) -> JsonDict | None:
         """Find a member by discord id."""
         members = self.get_members_in_guild()
         for member in members:
