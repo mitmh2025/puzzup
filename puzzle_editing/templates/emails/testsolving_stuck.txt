@@ -12,8 +12,6 @@ Testsolve started: {{ session.started | naturaltime }}
 ---
 Logistics Info
 
-Act: {{ puzzle.act_name | default:"(No act assigned)" }}
-
 Testsolving: {% if logistics_info.logistics_difficulty_testsolve %}{{ logistics_info.logistics_difficulty_testsolve }}{% else %}(not rated){% endif %}
 
 Number of Testsolvers: {% if logistics_info.logistics_number_testsolvers %}{{ logistics_info.logistics_number_testsolvers }}{% else %}(not rated){% endif %}

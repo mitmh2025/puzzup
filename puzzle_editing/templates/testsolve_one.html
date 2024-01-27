@@ -17,8 +17,6 @@
             {{ session.puzzle }}
         {% endif %}</p>
     </h1>
-    <h6>{{ session.puzzle.act_name | default:"(No act assigned)" }}</h6>
-
 
     {% if user_is_hidden_from_list %}
         <p class="block warning">You are in this testsolve session, but you do not appear in the list above because you are an editor or author.</p>

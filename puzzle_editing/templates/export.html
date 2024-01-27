@@ -6,19 +6,11 @@
       {{ output }}
     </p>
   {% else %}
-    <p>Click this button to export all puzzles in a given act. This will create a new branch in your git repo.</p>
+    <p>Click this button to export all puzzles. This will create a new branch in your git repo.</p>
   {% endif %}
   <form method="post" action="">
     {% csrf_token %}
     <p>
-      <select name="act">
-        <option value="Act 1">Act 1</option>
-        <option value="Act 2">Act 2</option>
-        <option value="Act 3">Act 3</option>
-        <option value="">All</option>
-      </select>
-      <br/>
-      <br/>
       <input class="button is-info" type="submit" name="export" value="Export all">
     </p>
   </form>

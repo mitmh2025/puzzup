@@ -238,7 +238,6 @@ FACTCHECKING_FOLDER_ID = os.environ.get("FACTCHECKING_FOLDER_ID")
 FACTCHECKING_TEMPLATE_ID = os.environ.get("FACTCHECKING_TEMPLATE_ID")
 
 POSTPROD_BRANCH_URL = os.environ.get("POSTPROD_BRANCH_URL", "")
-POSTPROD_FACTORY_URL = os.environ.get("POSTPROD_FACTORY_URL", "")
 POSTPROD_URL = os.environ.get("POSTPROD_URL", "")
 PROD_URL = os.environ.get("PROD_URL", "")
 PUZZUP_URL = os.environ.get("PUZZUP_URL", "")

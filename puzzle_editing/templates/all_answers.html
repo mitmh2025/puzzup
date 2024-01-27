@@ -34,7 +34,6 @@
                                     <th>Answer</th>
                                     <th>Requested by…</th>
                                     <th>Flexible?</th>
-                                    <th>Act</th>
                                     <th>Notes</th>
                                 </tr>
                                 {% for answer in round.answers %}
@@ -49,9 +48,6 @@
                                         </td>
                                         <td class="small-md">
                                             {% if answer.flexible %}✔ Yes{% else %}❌ No{% endif %}
-                                        </td>
-                                        <td class="small-md">
-                                            {% if round.act %}{{ round.act }}{% endif %}
                                         </td>
                                         <td class="small-md">
                                             {% if answer.notes %}{{ answer.notes|markdown }}{% endif %}

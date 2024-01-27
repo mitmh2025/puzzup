@@ -203,16 +203,6 @@ class User(AbstractUser):
         )
 
 
-class Act(models.Model):
-    """An act of rounds representing different stages of the hunt."""
-
-    name = models.CharField(max_length=500)
-    description = models.TextField(blank=True)
-
-    def __str__(self):  # pylint: disable=invalid-str-returned
-        return self.name
-
-
 class Round(models.Model):
     """A round of answers feeding into the same metapuzzle or set of metapuzzles."""
 
@@ -225,9 +215,6 @@ class Round(models.Model):
         help_text="Users spoiled on the round's answers.",
     )
     editors = models.ManyToManyField(User, related_name="editors", blank=True)
-    act = models.ForeignKey(
-        Act, on_delete=models.PROTECT, related_name="rounds", blank=True, null=True
-    )
     puzzle_template = models.CharField(
         max_length=500,
         help_text="Path to puzzle template in the hunt repo for autopostprod",
@@ -618,12 +605,6 @@ class Puzzle(models.Model):
         return next(iter(a.round.name for a in self.answers.all()), None)
 
     @property
-    def act_name(self):
-        return next(
-            iter(a.round.act and a.round.act.name for a in self.answers.all()), None
-        )
-
-    @property
     def metadata(self):
         editors = [u.credits_name for u in self.editors.all()]
         editors.sort(key=lambda u: u.upper())
@@ -926,12 +907,7 @@ class PuzzlePostprod(models.Model):
         return f"<Postprod {self.slug}>"
 
     def get_url(self, is_solution=False):
-        act = next(iter(a.round.act_id for a in self.puzzle.answers.all()), 1)
-
-        if self.host_url:
-            host = f"{self.host_url}:8082" if act > 1 else self.host_url
-        else:
-            host = settings.POSTPROD_FACTORY_URL if act > 1 else settings.POSTPROD_URL
+        host = self.host_url if self.host_url else settings.POSTPROD_URL
         subpath = "solutions" if is_solution else "puzzles"
         return f"{host}/{subpath}/{self.slug}"
 

@@ -10,7 +10,7 @@ from django.core.management.base import CommandError
 from PIL import Image, UnidentifiedImageError
 
 from puzzle_editing.git import GitRepo
-from puzzle_editing.models import Puzzle, PuzzlePostprod, Round
+from puzzle_editing.models import Puzzle, PuzzlePostprod
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ DEFAULT_PUZZLE_TEMPLATE = "client/templates/puzzle.template.tsx"
 DEFAULT_SOLUTION_TEMPLATE = "client/templates/solution.template.tsx"
 
 
-def export_all(act=None):
+def export_all():
     try:
         repo = GitRepo()
     except Exception:
@@ -28,12 +28,8 @@ def export_all(act=None):
     branch_name = f"export-{int(time.time())}"
     repo.checkout_branch(branch_name)
 
-    # Export all puzzles by act with an assigned answer.
-    if act:
-        rounds = Round.objects.filter(act__name=act).values_list("id")
-        puzzles = Puzzle.objects.filter(answers__round__in=rounds).distinct()
-    else:
-        puzzles = Puzzle.objects.filter(answers__isnull=False).distinct()
+    # Export all puzzles with an assigned answer.
+    puzzles = Puzzle.objects.filter(answers__isnull=False).distinct()
 
     fixture_path = repo.fixture_path()
     for puzzle in puzzles:

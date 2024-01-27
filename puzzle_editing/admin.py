@@ -3,7 +3,6 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from import_export.admin import ImportExportModelAdmin
 
 from .models import (
-    Act,
     CommentReaction,
     Hint,
     PseudoAnswer,
@@ -53,7 +52,6 @@ class TestsolveParticipationAdmin(ImportExportModelAdmin):
 
 
 admin.site.register(User, UserAdmin)
-admin.site.register(Act)
 admin.site.register(Round)
 admin.site.register(PseudoAnswer)
 admin.site.register(Puzzle)

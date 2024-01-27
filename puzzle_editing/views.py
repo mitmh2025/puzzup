@@ -731,7 +731,6 @@ def all_answers(request):
             "id": round.id,
             "name": round.name,
             "description": round.description,
-            "act": round.act,
             "spoiled": user in round.spoiled.all(),
             "answers": [
                 answer.to_json()
@@ -745,7 +744,6 @@ def all_answers(request):
             ),
         }
         for round in Round.objects.all()
-        .select_related("act")
         .prefetch_related("editors", "answers__puzzles", "spoiled")
         .order_by(Lower("name"))
     ]
@@ -2035,8 +2033,7 @@ def puzzle_yaml(request, id):
 def export(request):
     output = ""
     if request.method == "POST" and "export" in request.POST:
-        act = request.POST["act"] or None
-        branch_name = utils.export_all(act)
+        branch_name = utils.export_all()
         output = (
             f"Successfully exported all metadata to {settings.HUNT_REPO_URL} ({branch_name})"
             if branch_name
@@ -3466,7 +3463,7 @@ class RoundForm(forms.ModelForm):
 
     class Meta:
         model = Round
-        fields = ("name", "description", "editors", "act")
+        fields = ("name", "description", "editors")
         widgets = MappingProxyType(
             {
                 "description": MarkdownTextarea(),
@@ -3486,7 +3483,7 @@ def byround(request, id=None, eic_view=False):
         round_objs = round_objs.filter(pk=id)
     round_objs = (
         round_objs.order_by(Lower("name"))
-        .prefetch_related("editors", "act")
+        .prefetch_related("editors")
         .prefetch_related("answers__puzzles__authors")
         .prefetch_related("answers__puzzles__postprod")
     )

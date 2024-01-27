@@ -174,7 +174,8 @@
                 {% with puzzle.answers.all as answers %}
                     {% for answer in answers %}
                         {% formatted_answer answer %}
-                        [in {% if user.is_editor %}<a href="{% url "round" answer.round.id %}">{{ answer.round }}</a>{% else %}{{ answer.round }}{% endif %}, {% if answer.round.act %}{{ answer.round.act }}{% else %}no Act assigned{% endif %}]
+                        [in {% if user.is_editor %}<a href="{% url " round" answer.round.id %}">{{ answer.round }}</a>{% else %}{{ answer.round
+                            }}{% endif %}]
                     {% empty %}
                         <span class="empty">(None assigned yet)</span>
                     {% endfor %}
@@ -359,9 +360,6 @@
                         {{ difficulty_form.logistics_specialized_type }}
                         <input type="submit" class="button is-info" name="edit_logistics" value="Submit">
                     </form>
-                </div>
-                <div>
-                    Act: {{ puzzle.act_name | default:"(No act assigned)" }}
                 </div>
                 <div>
                     Testsolving:
