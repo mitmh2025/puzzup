@@ -37,13 +37,13 @@ Some goals and consequences of PuzzUp's design:
 
 ## Requirements
 
-- Python 3.10
+- Python 3.12
 - poetry
 - Postgres
 
 ## Local setup
 
-Make sure you have **Python 3.10** and [**poetry**](https://python-poetry.org/docs/)
+Make sure you have **Python 3.12** and [**poetry**](https://python-poetry.org/docs/)
 installed.
 
 `cd` into the root of this repo

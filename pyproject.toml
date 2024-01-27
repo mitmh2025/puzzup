@@ -6,7 +6,7 @@ description = "Puzzle development webapp"
 authors = ["betaveros", "mitchgu", "jakob223", "dvorak42", "fortenforge", "Sandy Weisz", "James Sugrono", "teammate", "deathandmayhem"]
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.11"
+python = ">=3.12,<3.13"
 beautifulsoup4 = "^4.12.3"
 bleach = "^6.1.0"
 discord-interactions = "^0.4.0"
