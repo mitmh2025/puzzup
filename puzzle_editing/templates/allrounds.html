@@ -10,32 +10,20 @@
     {% if not single_round %}
         <h1>All answers & puzzles, by round</h1>
         <p>🚨 <strong>SPOILERS BELOW</strong></p>
-
-        {% if eic_view %}
-            <div class="tabs is-centered">
-                <ul class="eic-selector">
-                    <li class="is-active eic-select" data-id="all"><a href="#">All</a></li>
-                    {% for eic in eics %}
-                        <li class="eic-select" data-id="{{ eic.id }}"><a href="#">{{ eic.display_name|default:"No EIC" }}</a></li>
-                    {% endfor %}
-                </ul>
-            </div>
-        {% endif %}
-
     {% else %}
         <div class="block">
             <a href="{% url "rounds" %}">Back to all rounds</a>
         </div>
     {% endif %}
 
-    <input id="show-answer-{{ random_id }}" type="checkbox" class="show-answer" {% if eic_view %}checked{% endif %}>
+    <input id="show-answer-{{ random_id }}" type="checkbox" class="show-answer">
     <label for="show-answer-{{ random_id }}">Show answers</label>
     <p></p> {# add empty p for padding #}
 
     {% for round in rounds %}
-        <div class="columns round-row {% if eic_view %}eic{{ round.editor.id }}{% endif %}">
+        <div class="columns round-row">
             <div class="column is-2">
-                {% if eic_view %}
+                {% if perms.puzzle_editing.change_round %}
                     <h2>
                         <a class="round-link" href="{% url "round" round.id %}">{{ round.name }}</a>
                     </h2>
@@ -58,9 +46,6 @@
                             <th width="20%">Answer</th>
                             <th width="20%">Authors</th>
                             <th width="20%">Staging link</th>
-                            {% if eic_view %}
-                                <th width="20%">Mechanics</th>
-                            {% endif %}
                             <th width="20%">Status</th>
                         </tr>
                         {% for answer in round.answers %}
@@ -85,11 +70,6 @@
                                             <span class="empty">--</span>
                                         {% endif %}
                                     </td>
-                                    {% if eic_view %}
-                                        <td class="mechanics">
-                                            {% if puzzle.editor_notes %}{{ puzzle.editor_notes }}{% endif %}
-                                        </td>
-                                    {% endif %}
                                     <td>
                                         <span class="tag is-small">{{ puzzle.get_status_emoji }} {{ puzzle.get_status_display }}</span>
                                     </td>
@@ -106,7 +86,7 @@
                             {% endfor %}
                         {% endfor %}
                     </table>
-                    {% if not eic_view and round.num_unspoiled %}
+                    {% if round.num_unspoiled %}
                         <div class="empty">(+{{ round.num_unspoiled }} unspoiled)</div>
                     {% endif %}
                 </div>

@@ -13,7 +13,6 @@ urlpatterns = [
     path("all", views.all_puzzles, name="all"),
     path("bystatus", views.bystatus, name="bystatus"),
     path("byround", views.byround, name="byround"),
-    path("byround/eic", views.byround_eic, name="byround_eic"),
     path("export", views.export, name="export"),
     path("check", views.check_metadata, name="check_metadata"),
     path("puzzle/new", views.puzzle_new, name="puzzle_new"),

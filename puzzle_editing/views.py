@@ -2588,13 +2588,8 @@ def needs_editor(request):
     return render(request, "needs_editor.html", context)
 
 
-@group_required("EIC")
-def byround_eic(request, id=None):
-    return byround(request, id, eic_view=True)
-
-
 @permission_required("puzzle_editing.list_puzzle", raise_exception=True)
-def byround(request, id=None, eic_view=False):
+def byround(request, id=None):
     round_objs = Round.objects.all()
     if id:
         round_objs = round_objs.filter(pk=id)
@@ -2627,7 +2622,7 @@ def byround(request, id=None, eic_view=False):
                 "answers": [
                     answer.to_json()
                     for answer in answers
-                    if eic_view or answer.id in spoiled_answer_ids
+                    if answer.id in spoiled_answer_ids
                 ],
                 "editor": next(iter(round.editors.all()), None),
             }
@@ -2645,7 +2640,6 @@ def byround(request, id=None, eic_view=False):
         {
             "rounds": rounds,
             "eics": eics,
-            "eic_view": eic_view,
             "single_round": rounds[0] if id else None,
         },
     )
