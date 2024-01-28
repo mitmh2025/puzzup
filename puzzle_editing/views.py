@@ -2193,6 +2193,7 @@ def testsolve_one(request, id):
         "testsolve_adder_form": testsolve_adder_form,
         "true_participants": true_participants,
         "user_is_hidden_from_list": user_is_participant,
+        "discord_guild_id": settings.DISCORD_GUILD_ID,
     }
 
     return render(request, "testsolve_one.html", context)

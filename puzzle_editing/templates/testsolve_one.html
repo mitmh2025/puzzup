@@ -64,9 +64,18 @@
 
                     <hr/>
                     {% if session.google_sheets_id %}
-                        <a href="https://docs.google.com/spreadsheets/d/{{ session.google_sheets_id }}">
-                            Link to Spreadsheet
-                        </a>
+                        <div>
+                            <a href="https://docs.google.com/spreadsheets/d/{{ session.google_sheets_id }}">
+                                Link to Spreadsheet
+                            </a>
+                        </div>
+                    {% endif %}
+                    {% if session.discord_thread_id %}
+                        <div>
+                            <a href="https://discord.com/channels/{{ discord_guild_id }}/{{ session.discord_thread_id }}">
+                                Link to Discord Thread
+                            </a>
+                        </div>
                     {% endif %}
                 </div>
 
