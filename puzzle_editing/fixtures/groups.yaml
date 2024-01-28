@@ -28,6 +28,9 @@
     - - change_testsolvesession
       - puzzle_editing
       - testsolvesession
+    - - change_puzzlepostprod
+      - puzzle_editing
+      - puzzlepostprod
 - model: auth.group
   fields:
     name: Testsolve Coordinators
