@@ -22,15 +22,15 @@
     - - unspoil_puzzle
       - puzzle_editing
       - puzzle
+    - - change_puzzlepostprod
+      - puzzle_editing
+      - puzzlepostprod
     - - view_statussubscription
       - puzzle_editing
       - statussubscription
     - - change_testsolvesession
       - puzzle_editing
       - testsolvesession
-    - - change_puzzlepostprod
-      - puzzle_editing
-      - puzzlepostprod
 - model: auth.group
   fields:
     name: Testsolve Coordinators
@@ -65,6 +65,13 @@
 - model: auth.group
   fields:
     name: Postprodder
+    permissions:
+    - - change_puzzlepostprod
+      - puzzle_editing
+      - puzzlepostprod
+- model: auth.group
+  fields:
+    name: Postprod Lead
     permissions:
     - - change_puzzlepostprod
       - puzzle_editing
