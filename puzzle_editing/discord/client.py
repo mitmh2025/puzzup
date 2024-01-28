@@ -4,6 +4,7 @@ from typing import Any
 
 import pydantic
 import requests
+from django.conf import settings
 
 from .cache import TimedCache
 from .channel import Category, Channel, TextChannel, Thread
@@ -213,9 +214,7 @@ class Client:
             self._thread_cache.set(thread.id, thread)
         return thread.copy(deep=True)
 
-    def save_channel_to_cat(
-        self, tc: TextChannel, catname: str, cats: dict[str, Category] | None = None
-    ) -> TextChannel:
+    def save_channel_to_cat(self, tc: TextChannel, catname: str) -> TextChannel:
         """Just like save_channel, but specifying a category by name.
 
         This will attempt to put the channel in the category `catname`,
@@ -223,8 +222,10 @@ class Client:
         will try `catname`-1, then `catname`-2, etc. until it finds one that
         has space.
         """
+        if settings.DISCORD_CATEGORY_PREFIX is not None:
+            catname = f"{settings.DISCORD_CATEGORY_PREFIX}{catname}"
         name_re = re.compile(r"^" + re.escape(catname) + r"(-\d+)?$", re.I)
-        cats = cats or self.get_all_cats()
+        cats = self.get_all_cats()
         parent = cats.get(tc.parent_id)
         if parent and name_re.match(parent.name):
             # We're already in a matching channel

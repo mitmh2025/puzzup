@@ -181,8 +181,6 @@ def sync_puzzle_channel(
 
 
 def save_channel(client: Client, tc: TextChannel, category: str) -> TextChannel:
-    if settings.DISCORD_CATEGORY_PREFIX:
-        category = settings.DISCORD_CATEGORY_PREFIX + category
     return client.save_channel_to_cat(tc, category)
 
 

@@ -3,6 +3,7 @@ import re
 from collections import Counter
 from operator import attrgetter, itemgetter
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from puzzle_editing import discord_integration as discord
@@ -11,10 +12,20 @@ from puzzle_editing.discord import Category
 from puzzle_editing.discord.channel import TextChannel
 from puzzle_editing.models import Puzzle
 
-_stats = "|".join([re.escape(status.get_display(s)) for s in status.STATUSES])
+
+def get_status_category(s):
+    display = status.get_display(s)
+    if settings.DISCORD_CATEGORY_PREFIX:
+        display = settings.DISCORD_CATEGORY_PREFIX + display
+    return display
+
+
+_stats = "|".join([re.escape(get_status_category(s)) for s in status.STATUSES])
 _cat_re = re.compile(rf"^(?P<status>{_stats})(-(?P<num>\d+))?$")
 
-_stat_order = {status.get_display(s): status.STATUSES.index(s) for s in status.STATUSES}
+_stat_order = {
+    get_status_category(s): status.STATUSES.index(s) for s in status.STATUSES
+}
 
 
 class DryRunError(Exception):
@@ -57,13 +68,11 @@ class DryRunClient:
             return c
         return self._client.save_category(c)
 
-    def save_channel_to_cat(
-        self, c: TextChannel, catname: str, cats: dict[str, Category] | None = None
-    ) -> TextChannel:
+    def save_channel_to_cat(self, c: TextChannel, catname: str) -> TextChannel:
         self._debug(f"Saving channel {c.name} to category {catname}")
         if self.dry_run:
             return c
-        return self._client.save_channel_to_cat(c, catname, cats)
+        return self._client.save_channel_to_cat(c, catname)
 
     def delete_channel(self, channel_id: str) -> dict:
         """Delete a channel"""
@@ -138,7 +147,7 @@ class Command(BaseCommand):
 
             ch = discord.sync_puzzle_channel(p, ch.copy(deep=True))
             cat = p.get_status_display()
-            self.d.save_channel_to_cat(ch, cat, cats=self.d.cats)
+            self.d.save_channel_to_cat(ch, cat)
 
     def organize_categories(self, delete_empty: bool, sort_cats: bool):
         """Organize the status categories.
