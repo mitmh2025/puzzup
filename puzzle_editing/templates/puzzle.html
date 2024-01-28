@@ -178,7 +178,7 @@
                 {% with puzzle.answers.all as answers %}
                     {% for answer in answers %}
                         {% formatted_answer answer %}
-                        [in {% if user.is_editor %}<a href="{% url "round" answer.round.id %}">{{ answer.round }}</a>{% else %}{{ answer.round }}{% endif %}]
+                        [in {% if perms.puzzle_editing.change_round %}<a href="{% url "round" answer.round.id %}">{{ answer.round }}</a>{% else %}{{ answer.round }}{% endif %}]
                     {% empty %}
                         <span class="empty">(None assigned yet)</span>
                     {% endfor %}
