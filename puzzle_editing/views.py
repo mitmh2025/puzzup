@@ -2620,6 +2620,7 @@ def byround(request):
                 "id": round.id,
                 "name": round.name,
                 "description": round.description,
+                "spoiled": round.spoiled.contains(request.user),
                 "num_unspoiled": num_unspoiled,
                 "answers": [
                     answer.to_json()

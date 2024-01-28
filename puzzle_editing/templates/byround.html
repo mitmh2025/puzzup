@@ -29,7 +29,9 @@
                             </span>
                         </div>
                     {% endif %}
-                    {{ round.description|markdown }}
+                    {% if round.spoiled %}
+                        {{ round.description|markdown }}
+                    {% endif %}
                 {% else %}
                     <h2>
                         {{ round.name }}

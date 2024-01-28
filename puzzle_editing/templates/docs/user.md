@@ -1,6 +1,6 @@
 This page tries to give a broad overview of PuzzUp and all the features accessible by every user (which is most of them).
 
-There are a few permission-gated features and pages for editors and superusers covered separately, but editors and admins should read this guide first too.
+There are a few permission-gated features and pages for editors, postprodders, factcheckers, and superusers covered separately, but everyone should read this guide first too.
 
 ## Overview
 
@@ -52,7 +52,7 @@ You can then discuss the puzzle idea with editors, and either of you might chang
 
 Testsolving occurs on the [Testsolve page](/testsolve). Testsolving is organized into "testsolving sessions". A session represents one attempt by a person or a group of people to solve a particular puzzle.
 
-To start a session, go to [Testsolving](/testsolve) and click **Start new session** next to a puzzle under **Puzzles you can testsolve**. This includes all puzzles with the status READY TO BE TESTSOLVED. PuzzUp even allows you to testsolve puzzles you're spoiled on.
+To start a session, go to [Testsolving](/testsolve) and click **Start new session** next to a puzzle under **Puzzles you can testsolve**. This includes all puzzles with the status READY TO BE TESTSOLVED. PuzzUp even allows you to testsolve puzzles you're spoiled on (though you probably shouldn't).
 
 You can also join an ongoing session under **Testsolving sessions you can join**. To make a given session *joinable*, click the "Allow others to join" button. This flag indicates whether a session is looking for new participants, and it can be turned off after the testsolve group has gotten big enough or made enough progress that a separate testsolve would be deemed more useful.
 
