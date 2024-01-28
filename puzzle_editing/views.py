@@ -1544,6 +1544,8 @@ def puzzle_people(request, id):
             added = {}
             if form.changed_data:
                 for key in ["authors", "editors"]:
+                    if key not in form.cleaned_data:
+                        continue
                     old[key] = set(getattr(puzzle, key).all())
                     new = set(form.cleaned_data[key])
                     added[key] = new - old[key]
