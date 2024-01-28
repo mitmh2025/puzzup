@@ -447,42 +447,6 @@ def puzzle_new(request):
         return render(request, "new.html", {"form": form})
 
 
-@permission_required("puzzle_editing.change_round", raise_exception=True)
-def all_answers(request):
-    user = request.user
-    if request.method == "POST":
-        if "spoil_on" in request.POST:
-            get_object_or_404(Round, id=request.POST["spoil_on"]).spoiled.add(user)
-        return redirect(urls.reverse("all_answers"))
-    rounds = [
-        {
-            "id": round.id,
-            "name": round.name,
-            "description": round.description,
-            "spoiled": user in round.spoiled.all(),
-            "answers": [
-                answer.to_json()
-                for answer in sorted(
-                    round.answers.all(), key=lambda a: a.answer.lower()
-                )
-            ],
-            "form": AnswerForm(round),
-            "editors": sorted(
-                round.editors.all(), key=lambda u: u.display_name.lower()
-            ),
-        }
-        for round in Round.objects.all()
-        .prefetch_related("editors", "answers__puzzles", "spoiled")
-        .order_by(Lower("name"))
-    ]
-
-    return render(
-        request,
-        "all_answers.html",
-        {"rounds": rounds},
-    )
-
-
 # TODO: "authored" is now a misnomer
 @login_required
 def authored(request):
