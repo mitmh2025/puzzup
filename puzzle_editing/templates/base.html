@@ -97,8 +97,10 @@
                 {% if perms.puzzle_editing.list_puzzle %}
                   {% nav_link current_path 'all_hints' '🪙 Hint report' %}
                 {% endif %}
-                <hr class="navbar-divider">
-                {% nav_link current_path 'all_support' '⛑ Support' %}
+                {% if request.user|has_group:"EIC" or request.user|has_group:"Art Lead" or request.user|has_group:"Accessibility Lead" or request.user|has_group:"Tech Lead" %}
+                  <hr class="navbar-divider">
+                  {% nav_link current_path 'all_support' '⛑ Support' %}
+                {% endif %}
                 <hr class="navbar-divider">
                 {% nav_link current_path 'docs' 'How to use PuzzUp' %}
                 <hr class="navbar-divider">
