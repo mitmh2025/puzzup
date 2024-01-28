@@ -39,6 +39,7 @@ def slashCommandHandler(request):
                     return puzzleLinkHandler(request, payload)
                 else:
                     return genericHandler(payload)
+    raise NotImplementedError
 
 
 def pingHandler():
@@ -49,7 +50,7 @@ def genericHandler(payload):
     return JsonResponse({"type": 4, "data": {"content": json.dumps(payload)}})
 
 
-def createPuzzleHandler(request: HttpRequest, payload: dict) -> HttpResponse:
+def createPuzzleHandler(request: HttpRequest, payload: dict):
     ch_id = payload["channel_id"]
     msg = create_puzzle_for_channel(request, ch_id)
     if isinstance(msg, str):
