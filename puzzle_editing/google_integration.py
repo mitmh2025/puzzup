@@ -41,7 +41,7 @@ class GoogleManager:
         # file_id is allowed to be a folder
         existing_parents = ",".join(
             self.drive.files()
-            .get(fileId=file_id, fields="parents")
+            .get(fileId=file_id, fields="parents", supportsAllDrives=True)
             .execute()["parents"]
         )
         self.drive.files().update(
