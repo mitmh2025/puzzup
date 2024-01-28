@@ -2635,7 +2635,7 @@ def byround(request):
 
     return render(
         request,
-        "allrounds.html",
+        "byround.html",
         {
             "rounds": rounds,
             "unassigned": unassigned,
