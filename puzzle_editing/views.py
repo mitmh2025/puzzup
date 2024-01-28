@@ -947,11 +947,11 @@ def puzzle(request: HttpRequest, id, slug=None):
             puzzle.factcheckers.remove(user)
             add_system_comment_here("Removed factchecker " + str(user))
         elif "add_postprodder" in request.POST:
-            check_permission("puzzle_editing.change_round")
+            check_permission("puzzle_editing.change_puzzlepostprod")
             puzzle.postprodders.add(user)
             add_system_comment_here("Added postprodder " + str(user))
         elif "remove_postprodder" in request.POST:
-            check_permission("puzzle_editing.change_round")
+            check_permission("puzzle_editing.change_puzzlepostprod")
             puzzle.postprodders.remove(user)
             add_system_comment_here("Removed postprodder " + str(user))
         elif "edit_logistics" in request.POST:
@@ -1529,7 +1529,9 @@ def puzzle_people(request, id):
     if not user.has_perm("puzzle_editing.unspoil_puzzle"):
         exclude.append("spoiled")
     if not user.has_perm("puzzle_editing.change_round"):
-        exclude.extend(["editors", "factcheckers", "postprodders"])
+        exclude.extend(["editors", "factcheckers"])
+    if not user.has_perm("puzzle_editing.change_puzzlepostprod"):
+        exclude.append("postprodders")
     PeopleForm = forms.modelform_factory(
         Puzzle,
         form=PuzzlePeopleForm,
