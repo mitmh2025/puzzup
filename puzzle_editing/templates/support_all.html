@@ -35,7 +35,7 @@
                     {% for request in open_requests %}
                         <tr>
                             <td><a class='button is-small is-info' href="{% url 'support_by_puzzle_id' request.puzzle.id request.team %}">View</a></td>
-                            <td><a href="{% url 'puzzle' request.puzzle.id %}">{{ request.puzzle.name }}</a></td>
+                            <td>{{ request.puzzle.html_link_no_tags }}</td>
                             <td>{{ request.get_team_display }}</td>
                             <td>{{ request.get_status_display }}</td>
                             <td>{% user_list request.assignees linkify=True %}</td>
@@ -66,7 +66,7 @@
                     {% for request in closed_requests %}
                         <tr>
                             <td><a class='button is-small is-info' href="{% url 'support_by_puzzle_id' request.puzzle.id request.team %}">View</a></td>
-                            <td>{{ request.puzzle.name }}</td>
+                            <td>{{ request.puzzle.html_link_no_tags }}</td>
                             <td>{{ request.get_team_display }}</td>
                             <td>{{ request.get_status_display }}</td>
                             <td>{% user_list request.assignees linkify=True %}</td>
