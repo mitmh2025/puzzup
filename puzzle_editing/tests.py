@@ -100,11 +100,11 @@ class Misc(TestCase):
             response.context["inbox_puzzles"].order_by("id"), [repr(self.puzzle3)]
         )
 
-    def test_authored(self):
+    def test_mine(self):
         c = Client()
         c.login(username="b", password="password")
 
-        response = c.get(urls.reverse("authored"))
+        response = c.get(urls.reverse("mine"))
         self.assertEqual(response.status_code, 200)
         self.assertQuerysetEqual(response.context["puzzles"], [repr(self.puzzle2)])
         self.assertQuerysetEqual(

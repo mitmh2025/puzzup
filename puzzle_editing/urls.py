@@ -9,7 +9,7 @@ urlpatterns = [
     path("", views.index, name="index"),
     path("accounts/", include("django.contrib.auth.urls")),
     path("register", views.register, name="register"),
-    path("authored", views.authored, name="authored"),
+    path("mine", views.mine, name="mine"),
     path("all", views.all_puzzles, name="all"),
     path("bystatus", views.bystatus, name="bystatus"),
     path("byround", views.byround, name="byround"),

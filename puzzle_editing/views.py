@@ -439,7 +439,7 @@ def puzzle_new(request):
                 status_change="II",
             )
 
-            return redirect(urls.reverse("authored"))
+            return redirect(urls.reverse("mine"))
         else:
             return render(request, "new.html", {"form": form})
     else:
@@ -447,14 +447,13 @@ def puzzle_new(request):
         return render(request, "new.html", {"form": form})
 
 
-# TODO: "authored" is now a misnomer
 @login_required
-def authored(request):
+def mine(request):
     puzzles = Puzzle.objects.filter(authors=request.user)
     editing_puzzles = Puzzle.objects.filter(editors=request.user)
     return render(
         request,
-        "authored.html",
+        "mine.html",
         {
             "puzzles": puzzles,
             "editing_puzzles": editing_puzzles,
@@ -618,7 +617,7 @@ def all_hints(request: HttpRequest):
 @login_required
 def puzzle_hints(request: HttpRequest, id):
     puzzle: Puzzle = get_object_or_404(Puzzle, id=id)
-    if request.method == "POST" and "add_hint" in request.POST:
+    if request.method == "POST":
         form = PuzzleHintForm(request.POST)
         if form.is_valid():
             form.save()
