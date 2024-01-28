@@ -2589,10 +2589,8 @@ def needs_editor(request):
 
 
 @permission_required("puzzle_editing.list_puzzle", raise_exception=True)
-def byround(request, id=None):
+def byround(request):
     round_objs = Round.objects.all()
-    if id:
-        round_objs = round_objs.filter(pk=id)
     round_objs = (
         round_objs.order_by(Lower("name"))
         .prefetch_related("editors")
@@ -2639,8 +2637,6 @@ def byround(request, id=None):
         "allrounds.html",
         {
             "rounds": rounds,
-            "eics": eics,
-            "single_round": rounds[0] if id else None,
         },
     )
 

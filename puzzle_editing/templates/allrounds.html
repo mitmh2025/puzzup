@@ -7,14 +7,8 @@
 {% block bodyclass %}byround{% endblock %}
 
 {% block main %}
-    {% if not single_round %}
-        <h1>All answers & puzzles, by round</h1>
-        <p>🚨 <strong>SPOILERS BELOW</strong></p>
-    {% else %}
-        <div class="block">
-            <a href="{% url "rounds" %}">Back to all rounds</a>
-        </div>
-    {% endif %}
+    <h1>All answers & puzzles, by round</h1>
+    <p>🚨 <strong>SPOILERS BELOW</strong></p>
 
     <input id="show-answer-{{ random_id }}" type="checkbox" class="show-answer">
     <label for="show-answer-{{ random_id }}">Show answers</label>
