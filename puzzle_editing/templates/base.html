@@ -124,13 +124,19 @@
                 </div>
                 {{ request.user.discord_user_id|yesno:",⚠️ " }}
                 <a href="{% url 'account' %}">{{ user.hat }} {{ request.user|display_name }}</a>
-              {% else %}
+              {% elif SITE_PASSWORD_SET %}
                 <div class="buttons">
                   <a class="button is-info" href="{% url 'login' %}">
                     <strong>Login</strong>
                   </a>
                   <a class="button is-info" href="{% url 'register' %}">
                     <strong>Sign up</strong>
+                  </a>
+                </div>
+              {% else %}
+                <div class="buttons">
+                  <a class="button is-info" href="{% url 'oauth2_link_discord' %}">
+                    <strong>Sign in with Discord</strong>
                   </a>
                 </div>
               {% endif %}

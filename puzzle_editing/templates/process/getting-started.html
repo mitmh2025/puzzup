@@ -1,9 +1,13 @@
 <h2 id="getting-started">Getting started on PuzzUp… (yay)</h2>
 
 <ol type="1">
-    <li>Create a PuzzUp account. You'll need a site password (ask your tech lead).</li>
-    <li>Go to your <a href="/account">profile</a> and link your Discord account. This is required for you to be added to channels for puzzles that you author.
-    </li>
+    {% if SITE_PASSWORD_SET %}
+        <li>Create a PuzzUp account. You'll need a site password (ask your tech lead).</li>
+        <li>Go to your <a href="/account">profile</a> and link your Discord account. This is required for you to be added to channels for puzzles that you author.
+        </li>
+    {% else %}
+        <li>Sign in with Discord.</li>
+    {% endif %}
     <li>If you have never previously used Puzzlord, read this <a href="/docs">documentation</a>. If you have used Puzzlord previously but want to see what new features exist, check out this <a href="/docs#whats-new">section</a>.
     </li>
     <li>Read the other guides on writing, testsolving, and more. Let's write a 🔥🔥🔥 hunt!</li>

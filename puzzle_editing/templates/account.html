@@ -44,22 +44,26 @@
             <div class="box">
                 <h3>Discord</h3>
                 {% if user.discord_user_id %}
-                    <form method="POST" action="/account/oauth2/discord">
-                        {% csrf_token %}
-                        You're linked to our team Discord. Your username is <code>@{{ user.discord_username }}</code>.<br>
-                        <input class="button is-small" type="submit" name="unlink-discord" value="Click to unlink">
-                    </form>
+                    You're linked to our team Discord. Your username is <code>@{{ user.discord_username }}</code>.<br>
+                    {% if SITE_PASSWORD_SET and user.has_usable_password %}
+                        <form method="POST" action="{% url 'oauth2_unlink_discord' %}">
+                            {% csrf_token %}
+                            <input class="button is-small" type="submit" value="Click to unlink">
+                        </form>
+                    {% endif %}
                 {% else %}
                     <p class="warning">You haven't completely linked your Discord information, which means you may lose access to Discord channels for puzzles.</p>
 
-                    <a class="btn is-info" href="/account/oauth2/discord">Link your Discord account</a>.
+                    <a class="btn is-info" href="{% url 'oauth2_link_discord' %}">Link your Discord account</a>.
                 {% endif %}
             </div>
 
             <div class="box">
                 Other stuff<br>
                 <a href="{% url 'account_timezone' %}">Change your timezone</a><br>
-                <a href="{% url 'password_change' %}">Change your password</a><br>
+                {% if SITE_PASSWORD_SET and user.has_usable_password %}
+                    <a href="{% url 'password_change' %}">Change your password</a><br>
+                {% endif %}
                 <a href="{% url 'logout' %}">Logout</a>
             </div>
 

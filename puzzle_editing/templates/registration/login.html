@@ -10,6 +10,10 @@
         </div>
     {% endif %}
 
+    <div class="block">
+        <a class="button is-info" href="{% url 'oauth2_link_discord' %}">Sign in with Discord</a>
+    </div>
+
     <form id="login" action='.' method="post">
         {% csrf_token %}
         {{ form.non_field_errors }}

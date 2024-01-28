@@ -71,6 +71,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "puzzle_editing.context_processors.auto_postprodding_enabled",
                 "puzzle_editing.context_processors.testsolving_allowed",
+                "puzzle_editing.context_processors.site_password_set",
             ],
         },
     },
@@ -205,6 +206,9 @@ HUNT_REPO = (
 HUNT_REPO_BRANCH = os.environ.get("HUNT_REPO_BRANCH", "main")
 HUNT_REPO_CLIENT = HUNT_REPO / "client" if HUNT_REPO else None
 SSH_KEY = os.environ.get("SSH_KEY_PATH", "~/.ssh/id_rsa")
+POSTPROD_BRANCH_URL = os.environ.get("POSTPROD_BRANCH_URL", "")
+POSTPROD_URL = os.environ.get("POSTPROD_URL", "")
+PROD_URL = os.environ.get("PROD_URL", "")
 
 HUNT_TIME = datetime.datetime(
     year=2025,
@@ -217,11 +221,16 @@ HUNT_TIME = datetime.datetime(
     tzinfo=datetime.UTC,
 )
 
+# Google Drive settings
 DRIVE_SETTINGS = {}
 credentials_file = BASE_DIR / "credentials/drive-credentials.json"
 if credentials_file.is_file():
     with credentials_file.open() as f:
         DRIVE_SETTINGS["credentials"] = json.load(f)
+TESTSOLVING_FOLDER_ID = os.environ.get("TESTSOLVING_FOLDER_ID")
+PUZZLE_DRAFT_FOLDER_ID = os.environ.get("PUZZLE_DRAFT_FOLDER_ID")
+FACTCHECKING_FOLDER_ID = os.environ.get("FACTCHECKING_FOLDER_ID")
+FACTCHECKING_TEMPLATE_ID = os.environ.get("FACTCHECKING_TEMPLATE_ID")
 
 # Discord integration
 DISCORD_GUILD_ID = os.environ.get("DISCORD_GUILD_ID")
@@ -229,15 +238,8 @@ DISCORD_BOT_TOKEN = os.environ.get("DISCORD_BOT_TOKEN")
 DISCORD_APP_PUBLIC_KEY = os.environ.get("DISCORD_APP_PUBLIC_KEY")
 DISCORD_CLIENT_ID = os.environ.get("DISCORD_CLIENT_ID")
 DISCORD_CLIENT_SECRET = os.environ.get("DISCORD_CLIENT_SECRET")
-DISCORD_OAUTH_SCOPES = "identify"
+DISCORD_OAUTH_SCOPES = "identify email"
 DISCORD_TESTSOLVE_CHANNEL_ID = os.environ.get("DISCORD_TESTSOLVE_CHANNEL_ID")
 DISCORD_CATEGORY_PREFIX = "🧩⏫🤖 "
-TESTSOLVING_FOLDER_ID = os.environ.get("TESTSOLVING_FOLDER_ID")
-PUZZLE_DRAFT_FOLDER_ID = os.environ.get("PUZZLE_DRAFT_FOLDER_ID")
-FACTCHECKING_FOLDER_ID = os.environ.get("FACTCHECKING_FOLDER_ID")
-FACTCHECKING_TEMPLATE_ID = os.environ.get("FACTCHECKING_TEMPLATE_ID")
 
-POSTPROD_BRANCH_URL = os.environ.get("POSTPROD_BRANCH_URL", "")
-POSTPROD_URL = os.environ.get("POSTPROD_URL", "")
-PROD_URL = os.environ.get("PROD_URL", "")
 PUZZUP_URL = os.environ.get("PUZZUP_URL", "")

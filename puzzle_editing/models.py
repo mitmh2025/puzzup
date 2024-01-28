@@ -9,6 +9,7 @@ import yaml
 from django import urls
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, UserManager
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.validators import (
     MaxValueValidator,
     RegexValidator,
@@ -20,6 +21,7 @@ from django.utils import timezone
 from django.utils.html import format_html, format_html_join
 from django.utils.safestring import mark_safe
 from django.utils.text import slugify
+from django.utils.translation import gettext_lazy as _
 
 import puzzle_editing.discord_integration as discord
 import puzzle_editing.google_integration as google
@@ -34,12 +36,40 @@ class PuzzupUserManager(UserManager):
         return super().get_queryset(*args, **kwargs).prefetch_related("groups")
 
 
+class CustomUsernameValidator(UnicodeUsernameValidator):
+    """Allows # (from discord)."""
+
+    regex = r"^[\w.@#+-\\ ]+$"
+    message = _(
+        "Enter a valid username. This value may contain only letters, "
+        "numbers, spaces, and \\/@/#/./+/-/_ characters."
+    )
+
+
 class User(AbstractUser):
     class Meta:
         # make Django always use the objects manager (so that we prefetch)
         base_manager_name = "objects"
+        indexes = (
+            models.Index(fields=["email"]),
+            models.Index(fields=["discord_user_id"]),
+        )
 
     objects = PuzzupUserManager()
+
+    username = models.CharField(
+        _("username"),
+        max_length=150,
+        unique=True,
+        help_text=_(
+            "Required. 150 characters or fewer. Letters, digits and @/./#/+/-/_ only."
+        ),
+        validators=[CustomUsernameValidator()],
+        error_messages={
+            "unique": _("A user with that username already exists."),
+        },
+    )
+    email = models.EmailField(_("email address"), blank=True, unique=True)
 
     # All of these are populated by the discord sync.
     discord_username = models.CharField(max_length=500, blank=True)

@@ -2,7 +2,11 @@
 {% block main %}
   <h1 class="title">Welcome to PuzzUp!</h1>
 
-  <a class="button" href="{% url 'login' %}">Log in</a>
-  <a class="button" href="{% url 'register' %}">Sign up</a>
+  {% if SITE_PASSWORD_SET %}
+    <a class="button" href="{% url 'login' %}">Log in</a>
+    <a class="button" href="{% url 'register' %}">Sign up</a>
+  {% else %}
+    <a class="button is-info" href="{% url 'oauth2_link_discord' %}">Sign in with Discord</a>
+  {% endif %}
   {% include "process_not_logged_in.html" %}
 {% endblock %}

@@ -4,6 +4,10 @@ from django.http import HttpRequest
 from .models import SiteSetting
 
 
+def site_password_set(request: HttpRequest):
+    return {"SITE_PASSWORD_SET": bool(settings.SITE_PASSWORD)}
+
+
 def auto_postprodding_enabled(_request):
     return {"AUTO_POSTPRODDING_ENABLED": settings.HUNT_REPO_URL != ""}
 

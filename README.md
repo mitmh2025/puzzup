@@ -115,9 +115,9 @@ The local IP and port should be printed to stdout, and it should helpfully tell 
 
 You only need to do this once, after you clone the repo and are setting it up for your team.
 
-**Set the site password**
+**Optional: Set the site password**
 
-`SITE_PASSWORD` as an environment variable. (This is what you will give out to users to let them register accounts)
+`SITE_PASSWORD` as an environment variable. (This is what you will give out to users to let them register accounts). If unset, users must login with Discord. (But using a site password can be useful especially in development if you want multiple users)
 
 **Define the sender and reply-to email**
 

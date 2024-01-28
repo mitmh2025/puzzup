@@ -3,6 +3,7 @@ import datetime
 import json
 import operator
 import os
+import secrets
 import traceback
 import typing as t
 from collections import defaultdict
@@ -13,6 +14,7 @@ import requests
 from django import forms, urls
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.models import Permission
 from django.core.exceptions import PermissionDenied
@@ -35,7 +37,7 @@ from django.template.loader import render_to_string
 from django.utils.http import urlencode
 from django.utils.text import slugify
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
 
 import puzzle_editing.discord_integration as discord
 from puzzle_editing import messaging, status, utils
@@ -99,6 +101,7 @@ from puzzle_editing.models import (
     is_postprodder_on,
     is_spoiled_on,
 )
+from settings.base import SITE_PASSWORD
 
 from .discord import Permission as DiscordPermission
 from .discord import TextChannel
@@ -297,100 +300,137 @@ def format_discord_username(user: JsonDict) -> str:
     return user["username"]
 
 
-@login_required
+# This endpoint handles both linking a Discord account to an existing user and
+# logging in (or creating a new user) via Discord.
+@require_GET
 def oauth2_link_discord(request):
-    user = request.user
-    if request.method == "POST":
-        if "unlink-discord" in request.POST:
-            if user.discord_user_id or user.discord_username:
-                if user.avatar_url.startswith("https://cdn.discordapp.com/"):
-                    user.avatar_url = ""
-                user.discord_user_id = ""
-                user.discord_username = ""
-                user.save()
-        elif "refresh-discord" in request.POST:
-            member = discord.get_client().get_member_by_id(user.discord_user_id)
-            if member:
-                user.discord_username = format_discord_username(member["user"])
-                user.discord_nickname = member["nick"] or ""
-                user.save()
-                user.avatar_url = user.get_avatar_url_via_discord(
-                    member["user"]["avatar"]
-                )
-                user.save()
-
+    if "error" in request.GET:
+        messages.error(request, "Discord login failed: " + request.GET["error"])
         return redirect("/account")
 
-    if "code" in request.GET or "error" in request.GET:
-        # if 'state' in request.GET and 'session' in request.session and request.GET['state'] == request.session['discord_state']:
-        # handles the discord oauth_callback
+    if "code" in request.GET:
+        if (
+            "state" not in request.GET
+            or "discord_state" not in request.session
+            or request.GET["state"] != request.session["discord_state"]
+        ):
+            messages.error(request, "Discord login failed: state mismatch")
+            return redirect("/account")
         del request.session["discord_state"]
-        if "error" in request.GET:
-            return render(request, "account.html")
-        elif "code" in request.GET:
-            post_payload = {
-                "client_id": settings.DISCORD_CLIENT_ID,
-                "client_secret": settings.DISCORD_CLIENT_SECRET,
-                "grant_type": "authorization_code",
-                "code": request.GET["code"],
-                "redirect_uri": request.build_absolute_uri(
-                    urls.reverse("oauth2_link_discord")
-                ),
-                "scope": settings.DISCORD_OAUTH_SCOPES,
-            }
 
-            heads = {"Content-Type": "application/x-www-form-urlencoded"}
-
-            r = requests.post(
-                "https://discord.com/api/oauth2/token", data=post_payload, headers=heads
-            )
-
-            response = r.json()
-            user_headers = {
-                "Authorization": "Bearer {}".format(response["access_token"])
-            }
-            user_info = requests.get(
-                "https://discord.com/api/v9/users/@me", headers=user_headers
-            )
-
-            user_data = user_info.json()
-
-            user.discord_user_id = user_data["id"]
-            user.discord_username = format_discord_username(user_data)
-            if discord.enabled():
-                c = discord.get_client()
-                discord.init_perms(c, user)
-                member = c.get_member_by_id(user.discord_user_id)
-                if member:
-                    user.discord_nickname = member["nick"] or ""
-                    user.avatar_url = (
-                        user.get_avatar_url_via_discord(member["user"]["avatar"] or "")
-                        or ""
-                    )
-
-            user.save()
-            user.save()
-
-        return redirect("/account")
-
-    if user.discord_user_id:
-        return redirect("/account")
-    else:
-        state = abs(hash(datetime.datetime.utcnow().isoformat()))
-        request.session["discord_state"] = state
-
-        params = {
-            "response_type": "code",
+        payload = {
             "client_id": settings.DISCORD_CLIENT_ID,
-            "state": state,
-            "scope": settings.DISCORD_OAUTH_SCOPES,
+            "client_secret": settings.DISCORD_CLIENT_SECRET,
+            "grant_type": "authorization_code",
+            "code": request.GET["code"],
             "redirect_uri": request.build_absolute_uri(
                 urls.reverse("oauth2_link_discord")
             ),
+            "scope": settings.DISCORD_OAUTH_SCOPES,
         }
 
-        oauth_url = "https://discord.com/api/oauth2/authorize?" + urlencode(params)
-        return redirect(oauth_url)
+        headers = {"Content-Type": "application/x-www-form-urlencoded"}
+
+        response = requests.post(
+            "https://discord.com/api/oauth2/token", data=payload, headers=headers
+        )
+        response.raise_for_status()
+        oauth_data = response.json()
+
+        response = requests.get(
+            "https://discord.com/api/v10/users/@me",
+            headers={"Authorization": "Bearer {}".format(oauth_data["access_token"])},
+        )
+        response.raise_for_status()
+        user_data = response.json()
+
+        if not user_data["verified"]:
+            messages.error(
+                request,
+                "Discord login failed: you must have a verified email address to link your account.",
+            )
+            return redirect("/account")
+
+        # Make sure the user is in the server
+        response = requests.get(
+            f"https://discord.com/api/v10/guilds/{settings.DISCORD_GUILD_ID}/members/{user_data["id"]}",
+            headers={"Authorization": f"Bot {settings.DISCORD_BOT_TOKEN}"},
+        )
+        if response.status_code != 200:
+            messages.error(
+                request,
+                "Discord login failed: you must be in our Discord server to link your account.",
+            )
+            return redirect("/account")
+
+        user = request.user
+        if not user.is_authenticated:
+            try:
+                # first see if there's an existing user
+                user = User.objects.get(discord_user_id=user_data["id"])
+            except User.DoesNotExist:
+                # if not create a new user
+                user = User(
+                    username=format_discord_username(user_data),
+                    email=user_data["email"],
+                )
+                user.set_unusable_password()
+                user.save()
+
+            # Either way, log them in
+            login(request, user)
+
+        # Finally, capture Discord profile info on the user
+        user.discord_user_id = user_data["id"]
+        user.discord_username = format_discord_username(user_data)
+        user.avatar_url = user.get_avatar_url_via_discord(user_data["avatar"] or "")
+        if discord.enabled():
+            c = discord.get_client()
+            discord.init_perms(c, user)
+            member = c.get_member_by_id(user.discord_user_id)
+            if member:
+                user.discord_nickname = member["nick"] or ""
+                user.avatar_url = user.get_avatar_url_via_discord(
+                    member["user"]["avatar"] or ""
+                )
+        user.save()
+
+        return redirect("/account")
+
+    state = secrets.token_urlsafe()
+    request.session["discord_state"] = state
+
+    params = {
+        "response_type": "code",
+        "client_id": settings.DISCORD_CLIENT_ID,
+        "state": state,
+        "scope": settings.DISCORD_OAUTH_SCOPES,
+        "redirect_uri": request.build_absolute_uri(urls.reverse("oauth2_link_discord")),
+        "prompt": "none",
+    }
+
+    oauth_url = "https://discord.com/api/oauth2/authorize?" + urlencode(params)
+    return redirect(oauth_url)
+
+
+@login_required
+@require_POST
+def oauth2_unlink_discord(request):
+    user = request.user
+    if not SITE_PASSWORD:
+        messages.error(
+            request,
+            "Discord link is required for all users.",
+        )
+        return redirect("/account")
+    if user.discord_user_id or user.discord_username:
+        if user.avatar_url.startswith("https://cdn.discordapp.com/"):
+            user.avatar_url = ""
+        user.discord_user_id = ""
+        user.discord_username = ""
+        user.save()
+
+    return redirect("/account")
 
 
 @login_required
