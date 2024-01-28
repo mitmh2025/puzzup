@@ -45,11 +45,11 @@ class MarkdownTextarea(forms.Textarea):
 
 
 class UserMultipleChoiceField(forms.ModelMultipleChoiceField):
-    def __init__(self, *args, editors_only=False, **kwargs):
+    def __init__(self, *args, only_group=None, **kwargs):
         orderings = [Lower("display_name")]
-        if editors_only:
+        if only_group:
             kwargs["queryset"] = User.objects.filter(
-                groups__name__in=["Editor"]
+                groups__name__in=[only_group]
             ).order_by(*orderings)
         if "queryset" not in kwargs:
             kwargs["queryset"] = User.objects.all().order_by(*orderings)
@@ -70,11 +70,11 @@ class UserCheckboxSelect(RadioSelect):
 
 
 class UserChoiceField(forms.ModelChoiceField):
-    def __init__(self, *args, editors_only=False, **kwargs):
+    def __init__(self, *args, only_group=None, **kwargs):
         orderings = [Lower("display_name")]
-        if editors_only:
+        if only_group:
             kwargs["queryset"] = User.objects.filter(
-                groups__name__in=["Editor"]
+                groups__name__in=[only_group]
             ).order_by(*orderings)
         if "queryset" not in kwargs:
             kwargs["queryset"] = User.objects.all().order_by(*orderings)
@@ -776,9 +776,11 @@ class PuzzlePeopleForm(forms.ModelForm):
             {
                 "lead_author": UserChoiceField,
                 "authors": UserMultipleChoiceField,
-                "editors": partial(UserMultipleChoiceField, editors_only=True),
+                "editors": partial(UserMultipleChoiceField, only_group="Editor"),
                 "factcheckers": UserMultipleChoiceField,
-                "postprodders": UserMultipleChoiceField,
+                "postprodders": partial(
+                    UserMultipleChoiceField, only_group="Postprodder"
+                ),
                 "spoiled": UserMultipleChoiceField,
             }
         )
@@ -921,7 +923,7 @@ class RoundForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["editors"] = UserMultipleChoiceField(
-            required=False, editors_only=True
+            required=False, only_group="Editor"
         )
 
     class Meta:
