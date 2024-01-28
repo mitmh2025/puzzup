@@ -117,7 +117,9 @@ class User(AbstractUser):
     @staticmethod
     def html_user_display_of_flat(username, display_name, linkify):
         if display_name:
-            ret = format_html('<span title="{}">{}</span>', username, display_name)
+            ret = format_html(
+                '<span data-tippy-content="{}">{}</span>', username, display_name
+            )
         else:
             ret = username
 
