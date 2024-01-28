@@ -2603,6 +2603,11 @@ def byround(request):
             "answers", flat=True
         )
     )
+    spoiled_answer_ids.update(
+        request.user.spoiled_rounds.filter(answers__isnull=False).values_list(
+            "answers", flat=True
+        )
+    )
 
     rounds = []
     for round in round_objs:
@@ -2622,21 +2627,18 @@ def byround(request):
                     for answer in answers
                     if answer.id in spoiled_answer_ids
                 ],
-                "editor": next(iter(round.editors.all()), None),
+                "editors": list(round.editors.all()),
             }
         )
 
-    eics = set()
-    for round in round_objs:
-        eic = next(iter(round.editors.all()), None)
-        if eic is not None:
-            eics.add(eic)
+    unassigned = Puzzle.objects.filter(answers__isnull=True).order_by("name")
 
     return render(
         request,
         "allrounds.html",
         {
             "rounds": rounds,
+            "unassigned": unassigned,
         },
     )
 

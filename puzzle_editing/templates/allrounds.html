@@ -7,7 +7,7 @@
 {% block bodyclass %}byround{% endblock %}
 
 {% block main %}
-    <h1>All answers & puzzles, by round</h1>
+    <h1>All Puzzles by Round</h1>
     <p>🚨 <strong>SPOILERS BELOW</strong></p>
 
     <input id="show-answer-{{ random_id }}" type="checkbox" class="show-answer">
@@ -21,9 +21,14 @@
                     <h2>
                         <a class="round-link" href="{% url "round" round.id %}">{{ round.name }}</a>
                     </h2>
-                    <div class="tags are-medium">
-                        <span class="tag is-white is-outlined">🎩 {{ round.editor.display_name }}</span>
-                    </div>
+                    {% if round.editors %}
+                        <div class="tags are-medium">
+                            <span class="tag is-white is-outlined">
+                                🎩
+                                {% for editor in round.editors %}{{ editor }}{{ forloop.last|yesno:",&#44; "|safe }}{% endfor %}
+                            </span>
+                        </div>
+                    {% endif %}
                     {{ round.description|markdown }}
                 {% else %}
                     <h2>
@@ -72,7 +77,7 @@
                                 <tr>
                                     <td class="empty">(none)</td>
                                     <td class="answer">
-                                        <a href="{% url 'edit_answer' answer.id %}">{{ answer.answer }}</a>{% if answer.flexible %} (Flex){% endif %}
+                                        <a href="{% url 'edit_answer' answer.id %}">{% formatted_answer answer %}</a>{% if answer.flexible %} (Flex){% endif %}
                                     </td>
                                     <td class="answer-hidden empty">(hidden)</td>
                                     <td colspan="6"></td>
@@ -81,31 +86,43 @@
                         {% endfor %}
                     </table>
                     {% if round.num_unspoiled %}
-                        <div class="empty">(+{{ round.num_unspoiled }} unspoiled)</div>
+                        <div class="empty">(+{{ round.num_unspoiled }} unspoiled or unassigned)</div>
                     {% endif %}
                 </div>
             </div>
         </div>
     {% endfor %}
 
-{% endblock %}
+    {% if unassigned %}
+        <div class="columns round-row">
+            <div class="column is-2">
+                <h2>Unassigned</h2>
+            </div>
 
-{% block extrajs %}
-    <script type="text/javascript">
-        $(document).ready(function() {
-            $('.eic-select a').click(function(e) {
-                e.preventDefault();
-                var li = $(this).parent('li');
-                var id = li.data('id');
-                $('.round-row').hide();
-                $('.eic-selector li').removeClass('is-active');
-                $(li).addClass('is-active')
-                if (id == "all") {
-                    $('.round-row').show();
-                } else {
-                    $('.round-row.eic' + id).show();
-                }
-            });
-        });
-    </script>
+            <div class="column">
+                <div class="box">
+                    <table class="table is-narrow">
+                        <tr align="left">
+                            <th width="20%">Puzzle</th>
+                            <th width="20%">Authors</th>
+                            <th width="20%">Status</th>
+                        </tr>
+                        {% for puzzle in unassigned %}
+                            <tr class="{{ puzzle.is_meta|yesno:"meta," }}">
+                                <td>
+                                    <a href="{% url "puzzle" puzzle.id %}">{{ puzzle.name }}</a>
+                                </td>
+                                <td class="authors">
+                                    {% for author in puzzle.authors.all %}{{ author }}{{ forloop.last|yesno:",&#44; "|safe }}{% endfor %}
+                                </td>
+                                <td>
+                                    <span class="tag is-small">{{ puzzle.get_status_emoji }} {{ puzzle.get_status_display }}</span>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% endif %}
 {% endblock %}
