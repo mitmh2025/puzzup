@@ -184,7 +184,16 @@ It'll automatically get added to the **pyproject.toml** and update **poetry.lock
 ## How do I use `manage.py`?
 
 - You can always run `python manage.py --help` to get a list of subcommands
-- To create a superuser (so you can access the `/admin` page locally) run `python manage.py createsuperuser`
+- To create a superuser (so you can access the `/admin` page locally) run `python manage.py createsuperuser`. Note that if you're using Discord-only logins (i.e. with no SITE_PASSWORD), you may need to login first and then grant yourself privileges:
+
+  ```
+  python manage.py shell
+  from puzzle_editing.models import User
+  u = User.objects.get(username="mydiscordusername")
+  u.is_superuser = True
+  u.is_staff = True
+  u.save()
+  ```
 - If you get a warning (red text) about making migrations run `python manage.py migrate`
 
 ## Where are things?

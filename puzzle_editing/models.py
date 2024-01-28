@@ -69,7 +69,6 @@ class User(AbstractUser):
             "unique": _("A user with that username already exists."),
         },
     )
-    email = models.EmailField(_("email address"), blank=True, unique=True)
 
     # All of these are populated by the discord sync.
     discord_username = models.CharField(max_length=500, blank=True)
