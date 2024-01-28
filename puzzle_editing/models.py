@@ -73,7 +73,9 @@ class User(AbstractUser):
     # All of these are populated by the discord sync.
     discord_username = models.CharField(max_length=500, blank=True)
     discord_nickname = models.CharField(max_length=500, blank=True)
-    discord_user_id = models.CharField(max_length=500, blank=True, unique=True)
+    discord_user_id = models.CharField(
+        max_length=500, null=True, blank=True, unique=True
+    )
     avatar_url = models.CharField(max_length=500, blank=True)
 
     display_name = models.CharField(
@@ -101,6 +103,12 @@ class User(AbstractUser):
         blank=True,
         help_text="Your timezone, e.g. US/Eastern",
     )
+
+    def save(self, *args, **kwargs):
+        # Empty string is not unique, but uniqueness isn't enforced on null
+        if self.discord_user_id == "":
+            self.discord_user_id = None
+        super().save(*args, **kwargs)
 
     @property
     def is_eic(self):

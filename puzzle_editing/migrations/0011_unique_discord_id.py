@@ -3,6 +3,16 @@
 from django.db import migrations, models
 
 
+def set_nulls(apps, schema_editor):
+    User = apps.get_model("puzzle_editing", "User")
+    User.objects.filter(discord_user_id="").update(discord_user_id=None)
+
+
+def unset_nulls(apps, schema_editor):
+    User = apps.get_model("puzzle_editing", "User")
+    User.objects.filter(discord_user_id=None).update(discord_user_id="")
+
+
 class Migration(migrations.Migration):
     dependencies = [
         ("puzzle_editing", "0010_non_unique_emails"),
@@ -12,6 +22,12 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="user",
             name="discord_user_id",
-            field=models.CharField(blank=True, max_length=500, unique=True),
+            field=models.CharField(blank=True, max_length=500, null=True),
+        ),
+        migrations.RunPython(set_nulls, unset_nulls),
+        migrations.AlterField(
+            model_name="user",
+            name="discord_user_id",
+            field=models.CharField(blank=True, max_length=500, null=True, unique=True),
         ),
     ]
