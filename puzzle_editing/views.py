@@ -1272,8 +1272,9 @@ def puzzle_tags(request, id):
     )
 
 
-@auto_postprodding_required
 @login_required
+@auto_postprodding_required
+@permission_required("puzzle_editing.change_puzzlepostprod", raise_exception=True)
 def puzzle_postprod(request, id):
     puzzle = get_object_or_404(Puzzle, id=id)
     user = request.user
@@ -1356,8 +1357,9 @@ def puzzle_postprod(request, id):
     )
 
 
-@auto_postprodding_required
 @login_required
+@auto_postprodding_required
+@permission_required("puzzle_editing.change_puzzlepostprod", raise_exception=True)
 def puzzle_postprod_metadata(request, id):
     puzzle = get_object_or_404(Puzzle, id=id)
     authors = [get_credits_name(u) for u in puzzle.authors.all()]
@@ -1370,15 +1372,19 @@ def puzzle_postprod_metadata(request, id):
     return metadata
 
 
-@auto_postprodding_required
 @login_required
+@auto_postprodding_required
+@permission_required("puzzle_editing.change_puzzlepostprod", raise_exception=True)
 def puzzle_yaml(request, id):
     puzzle = get_object_or_404(Puzzle, id=id)
     return HttpResponse(puzzle.get_yaml_fixture(), content_type="text/plain")
 
 
 @auto_postprodding_required
-@permission_required("puzzle_editing.change_round", raise_exception=True)
+@permission_required(
+    ["puzzle_editing.change_puzzlepostprod", "puzzle_editing.change_round"],
+    raise_exception=True,
+)
 def export(request):
     output = ""
     if request.method == "POST" and "export" in request.POST:
@@ -1392,8 +1398,9 @@ def export(request):
     return render(request, "export.html", {"output": output})
 
 
-@auto_postprodding_required
 @login_required
+@auto_postprodding_required
+@permission_required("puzzle_editing.change_puzzlepostprod", raise_exception=True)
 def check_metadata(request):
     puzzleFolder = settings.HUNT_REPO / "hunt/data/puzzle"
     mismatches = []
@@ -2384,6 +2391,7 @@ def testsolve_finish(request, id):
 
 
 @login_required
+@permission_required("puzzle_editing.change_puzzlepostprod", raise_exception=True)
 def postprod(request):
     postprodding = Puzzle.objects.filter(
         status__in=[

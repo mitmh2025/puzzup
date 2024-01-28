@@ -564,7 +564,7 @@
                     </details>
                 </div>
 
-                {% if AUTO_POSTPRODDING_ENABLED %}
+                {% if AUTO_POSTPRODDING_ENABLED and perms.puzzle_editing.change_puzzlepostprod %}
                     <div class="box">
                         <h3>Postprod</h3>
                         <div class="columns">

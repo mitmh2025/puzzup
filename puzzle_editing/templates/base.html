@@ -72,18 +72,20 @@
             {% endif %}
             {% nav_link current_path 'puzzle_new' '➕ Add' %}
             {% nav_link current_path 'process' "❓ How To" %}
-            <div class="navbar-item has-dropdown is-hoverable">
-              <a class="navbar-link">
-                🪵 Postprod
-              </a>
-              <div class="navbar-dropdown">
-                {% nav_link current_path 'postprod' '🪵 Dashboard' %}
-                {% nav_link current_path 'postprod_all' '🏠 Pipeline' %}
-                {% if AUTO_POSTPRODDING_ENABLED %}
-                  {% nav_link current_path 'export' '📥 Export all metadata' %}
-                {% endif %}
+            {% if perms.puzzle_editing.change_puzzlepostprod %}
+              <div class="navbar-item has-dropdown is-hoverable">
+                <a class="navbar-link">
+                  🪵 Postprod
+                </a>
+                <div class="navbar-dropdown">
+                  {% nav_link current_path 'postprod' '🪵 Dashboard' %}
+                  {% nav_link current_path 'postprod_all' '🏠 Pipeline' %}
+                  {% if AUTO_POSTPRODDING_ENABLED %}
+                    {% nav_link current_path 'export' '📥 Export all metadata' %}
+                  {% endif %}
+                </div>
               </div>
-            </div>
+            {% endif %}
 
             {% nav_link current_path 'factcheck' '📋 Factcheck' %}
 

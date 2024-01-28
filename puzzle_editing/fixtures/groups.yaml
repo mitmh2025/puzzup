@@ -1,47 +1,71 @@
--   model: auth.group
-    pk: 1
-    fields:
-        name: Editor
-        permissions:
-        - 34
--   model: auth.group
-    pk: 2
-    fields:
-        name: EIC
-        permissions:
-        - 34
--   model: auth.group
-    pk: 3
-    fields:
-        name: Testsolve Coordinators
-        permissions: []
--   model: auth.group
-    pk: 4
-    fields:
-        name: Art
-        permissions: []
--   model: auth.group
-    pk: 5
-    fields:
-        name: Accessibility
-        permissions: []
--   model: auth.group
-    pk: 6
-    fields:
-        name: Tech
-        permissions: []
--   model: auth.group
-    pk: 7
-    fields:
-        name: Art Lead
-        permissions: []
--   model: auth.group
-    pk: 8
-    fields:
-        name: Accessibility Lead
-        permissions: []
--   model: auth.group
-    pk: 9
-    fields:
-        name: Tech Lead
-        permissions: []
+# Generated with python manage.py dumpdata --format=yaml auth --natural-foreign --natural-primary -e auth.Permission
+- model: auth.group
+  fields:
+    name: Editor
+    permissions:
+    - - list_puzzle
+      - puzzle_editing
+      - puzzle
+    - - change_round
+      - puzzle_editing
+      - round
+    - - change_testsolvesession
+      - puzzle_editing
+      - testsolvesession
+- model: auth.group
+  fields:
+    name: EIC
+    permissions:
+    - - list_puzzle
+      - puzzle_editing
+      - puzzle
+    - - unspoil_puzzle
+      - puzzle_editing
+      - puzzle
+    - - view_statussubscription
+      - puzzle_editing
+      - statussubscription
+    - - change_testsolvesession
+      - puzzle_editing
+      - testsolvesession
+- model: auth.group
+  fields:
+    name: Testsolve Coordinators
+    permissions:
+    - - change_testsolvesession
+      - puzzle_editing
+      - testsolvesession
+- model: auth.group
+  fields:
+    name: Art
+    permissions: []
+- model: auth.group
+  fields:
+    name: Accessibility
+    permissions: []
+- model: auth.group
+  fields:
+    name: Tech
+    permissions: []
+- model: auth.group
+  fields:
+    name: Art Lead
+    permissions: []
+- model: auth.group
+  fields:
+    name: Accessibility Lead
+    permissions: []
+- model: auth.group
+  fields:
+    name: Tech Lead
+    permissions: []
+- model: auth.group
+  fields:
+    name: Postprodder
+    permissions:
+    - - change_puzzlepostprod
+      - puzzle_editing
+      - puzzlepostprod
+    - - change_round
+      - puzzle_editing
+      - round
