@@ -271,7 +271,7 @@ def account(request):
 
 
 @login_required
-def set_timezone(request):
+def account_timezone(request):
     if request.method == "POST":
         form = UserTimezoneForm(request.POST, instance=request.user)
         if form.is_valid():

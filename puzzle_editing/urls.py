@@ -105,7 +105,7 @@ urlpatterns = [
     path(
         "account/oauth2/discord", views.oauth2_link_discord, name="oauth2_link_discord"
     ),
-    path("settimezone", views.set_timezone, name="set_timezone"),
+    path("account/timezone", views.account_timezone, name="account_timezone"),
     path("tags", views.tags, name="tags"),
     path("spoiled", views.spoiled, name="spoiled"),
     path("statistics", views.statistics, name="statistics"),
