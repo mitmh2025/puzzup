@@ -14,6 +14,7 @@ class Migration(migrations.Migration):
             name="discord_emoji",
             field=models.CharField(
                 default=":question:",
+                max_length=100,
                 help_text=(
                     "The emoji that'll be used in Discord notifications. Please leave"
                     " in string form, e.g. `:question:`. You can use multiple emojis if"
