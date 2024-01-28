@@ -73,7 +73,7 @@ class User(AbstractUser):
     # All of these are populated by the discord sync.
     discord_username = models.CharField(max_length=500, blank=True)
     discord_nickname = models.CharField(max_length=500, blank=True)
-    discord_user_id = models.CharField(max_length=500, blank=True)
+    discord_user_id = models.CharField(max_length=500, blank=True, unique=True)
     avatar_url = models.CharField(max_length=500, blank=True)
 
     display_name = models.CharField(
