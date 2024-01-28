@@ -59,11 +59,11 @@
                     {% elif puzzle.is_editing %}
                         <td sorttable_customkey="2" data-tippy-content="You are an editor">💬</td>
                     {% elif puzzle.is_factchecking %}
-                        <td sorttable_customkey="3" data-tippy-content="You are a factchecker>🛂</td>
-                                                                    {% elif puzzle.is_postprodding %}
-                                                                        <td sorttable_customkey="4" data-tippy-content="You are a factchecker">🖼️</td>
-                                                                                                                                                                      {% elif puzzle.is_spoiled %}
-                                                                                                                                                                          <td sorttable_customkey="98" data-tippy-content="You are spoiled</td>
+                        <td sorttable_customkey="3" data-tippy-content="You are a factchecker">🛂</td>
+                    {% elif puzzle.is_postprodding %}
+                        <td sorttable_customkey="4" data-tippy-content="You are a factchecker">🖼️</td>
+                    {% elif puzzle.is_spoiled %}
+                        <td sorttable_customkey="98" data-tippy-content="You are spoiled">👀</td>
                     {% else %}
                         <td sorttable_customkey="99" data-tippy-content="You are not spoiled">❓</td>
                     {% endif %}
