@@ -786,7 +786,8 @@ class PuzzlePeopleForm(forms.ModelForm):
         )
         help_texts = MappingProxyType(
             {
-                "spoiled": "Note that lead author, authors, and editors will always be marked as spoiled, even if you de-select them here."
+                "postprodders": "Postprodders must be part of the Postprodder group. If you need someone added to the group, contact one of the Tech Leads.",
+                "spoiled": "Note that lead author, authors, and editors will always be marked as spoiled, even if you de-select them here.",
             }
         )
 
