@@ -25,7 +25,7 @@
             <div class="column is-2">
                 <h2>
                     <a class="round-link" href="{% url "round" round.id %}">{{ round.name }}</a>
-                    <a class="edit-link" href="{% url 'edit_round' round.id %}">edit</a>
+                    {% if round.spoiled %}<a class="edit-link" href="{% url 'edit_round' round.id %}">edit</a>{% endif %}
                 </h2>
                 <div class="tags are-medium">
                     <span class="tag is-white is-outlined">🎩 {{ round.editors|name_list }}</span>
