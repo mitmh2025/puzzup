@@ -935,7 +935,7 @@ def puzzle(request: HttpRequest, id, slug=None):
             puzzle.editors.remove(user)
             add_system_comment_here("Removed editor " + str(user))
         elif "add_factchecker" in request.POST:
-            check_permission("puzzle_editing.change_round")
+            check_permission("puzzle_editing.change_puzzlefactcheck")
             puzzle.factcheckers.add(user)
             if c and ch:
                 discord.sync_puzzle_channel(puzzle, ch)
@@ -943,7 +943,7 @@ def puzzle(request: HttpRequest, id, slug=None):
                 discord.announce_ppl(c, ch, factcheckers=[user])
             add_system_comment_here("Added factchecker " + str(user))
         elif "remove_factchecker" in request.POST:
-            check_permission("puzzle_editing.change_round")
+            check_permission("puzzle_editing.change_puzzlefactcheck")
             puzzle.factcheckers.remove(user)
             add_system_comment_here("Removed factchecker " + str(user))
         elif "add_postprodder" in request.POST:
@@ -1529,7 +1529,9 @@ def puzzle_people(request, id):
     if not user.has_perm("puzzle_editing.unspoil_puzzle"):
         exclude.append("spoiled")
     if not user.has_perm("puzzle_editing.change_round"):
-        exclude.extend(["editors", "factcheckers"])
+        exclude.append("editors")
+    if not user.has_perm("puzzle_editing.change_puzzlefactcheck"):
+        exclude.append("factcheckers")
     if not user.has_perm("puzzle_editing.change_puzzlepostprod"):
         exclude.append("postprodders")
     PeopleForm = forms.modelform_factory(
@@ -2451,6 +2453,7 @@ def postprod_all(request):
 
 
 @login_required
+@permission_required("puzzle_editing.change_puzzlefactcheck", raise_exception=True)
 def factcheck(request):
     factchecking = Puzzle.objects.filter(
         status__in=(

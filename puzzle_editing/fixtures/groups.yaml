@@ -22,6 +22,9 @@
     - - unspoil_puzzle
       - puzzle_editing
       - puzzle
+    - - change_puzzlefactcheck
+      - puzzle_editing
+      - puzzlefactcheck
     - - change_puzzlepostprod
       - puzzle_editing
       - puzzlepostprod
@@ -76,6 +79,23 @@
     - - change_puzzlepostprod
       - puzzle_editing
       - puzzlepostprod
+    - - change_round
+      - puzzle_editing
+      - round
+- model: auth.group
+  fields:
+    name: Factchecker
+    permissions:
+    - - change_puzzlefactcheck
+      - puzzle_editing
+      - puzzlefactcheck
+- model: auth.group
+  fields:
+    name: Factcheck Lead
+    permissions:
+    - - change_puzzlefactcheck
+      - puzzle_editing
+      - puzzlefactcheck
     - - change_round
       - puzzle_editing
       - round

@@ -87,7 +87,9 @@
               </div>
             {% endif %}
 
-            {% nav_link current_path 'factcheck' '📋 Factcheck' %}
+            {% if perms.puzzle_editing.change_puzzlefactcheck %}
+              {% nav_link current_path 'factcheck' '📋 Factcheck' %}
+            {% endif %}
 
             <div class="navbar-item has-dropdown is-hoverable">
               <a class="navbar-link">

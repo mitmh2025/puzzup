@@ -86,6 +86,8 @@
                                     <input type="submit" name="add_editor" value="Add me as editor" class="button is-small is-light">
                                 {% endif %}
                             </div>
+                        {% endif %}
+                        {% if perms.puzzle_editing.change_puzzlefactcheck %}
                             <div>
                                 {% if is_factchecker %}
                                     <input type="submit" name="remove_factchecker" value="Remove me as factchecker" class="button is-small is-white">

@@ -777,7 +777,9 @@ class PuzzlePeopleForm(forms.ModelForm):
                 "lead_author": UserChoiceField,
                 "authors": UserMultipleChoiceField,
                 "editors": partial(UserMultipleChoiceField, only_group="Editor"),
-                "factcheckers": UserMultipleChoiceField,
+                "factcheckers": partial(
+                    UserMultipleChoiceField, only_group="Factchecker"
+                ),
                 "postprodders": partial(
                     UserMultipleChoiceField, only_group="Postprodder"
                 ),
@@ -786,6 +788,7 @@ class PuzzlePeopleForm(forms.ModelForm):
         )
         help_texts = MappingProxyType(
             {
+                "factcheckers": "Factcheckers must be part of the Factchecker group. If you need someone added to the group, contact one of the Tech Leads.",
                 "postprodders": "Postprodders must be part of the Postprodder group. If you need someone added to the group, contact one of the Tech Leads.",
                 "spoiled": "Note that lead author, authors, and editors will always be marked as spoiled, even if you de-select them here.",
             }
