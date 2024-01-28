@@ -10,9 +10,19 @@ Now you have access to Django's `/admin/` site. You can edit most aspects of the
 
 ## Assigning editors
 
-To make a user an **editor**, find them under "Users" and give them the "**Can change round**" permission.
+To make a user an **editor**, find them under "Users" and them to the "Editor" group. There's also an "EIC" role, which is basically a superuser on the main site (though not the admin site). In addition to everything an editor, postprodder, factchecker, and testsolve coordinator can do, they also have a short set of dashboards that are restricted to them.
+
+Additionally, there are groups for "Postprodder", "Factchecker", and the various support organizations (art, accessibility, and tech).
 
 (There is no UI to do this outside of /admin, but you have to do this so few times that it's not high priority.)
+
+We generally try to avoid using group names for authorization checks, and instead use specific permission checks. Mostly, we use the auto-generated Django permissions, even though the actual action is not connected to what is allowed in the admin site:
+
+* `puzzle_editing.change_round`: This is generally the editor permission, and allows viewing the list of rounds and answers and choosing to spoil yourself on both (ordinary users can spoil themselves on individual puzzles, but not rounds)
+* `puzzle_editing.list_puzzle`: By default, we don't surface lists of all puzzles, but users with this permission can see that list.
+* `puzzle_editing.change_testsolvesession`: Users with this permission can access testsolving, even if testsolving has been turned off for the site with a site setting.
+* `puzzle_editing.unspoil_puzzle`: By default, once you've been spoiled on a puzzle, you're stuck that way, but a few privileged users can un-spoil someone.
+* `puzzle_editing.change_puzzlepostprod` and `puzzle_editing.change_puzzlefactcheck`: These privileges correspond to postprodders and factcheckers. Some elements of those steps are visible to users without these permissions, but generally only users with these permissions can make forward progress on those steps.
 
 ## Defining statuses
 

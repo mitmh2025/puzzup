@@ -18,11 +18,11 @@ To assign an answer to a puzzle, go to the puzzle and click "edit" in to "**Answ
 
 By default, only answers that have not been assigned to other puzzles will be visible; uncheck the "Hide answers assigned to other puzzles" checkbox at the top to show all answers. PuzzUp will also warn you if you try to assign multiple answers to one puzzle. However, it absolutely allows you to have unusual many-to-many relationships between puzzles and answers if you really want to.
 
-There is no way to assign an answer that's not part of a round, but you should feel free to create a "Dummy round", put answers in it, and assign those answers to puzzles in case you ever need the testsolving answer checker to accept partial/intermediate answers or instructions.
+There is no way to assign an answer that's not part of a round, but you should feel free to create a "Dummy round", put answers in it, and assign those answers to puzzles. For partial or intermediate answers or instructions, you or the author can add partial answers on the puzzle page.
 
 ## Tags
 
-The list of tags are only visible to editors. You can assign tags to puzzles and then view a list of all puzzles with a particular tag. Authors can also assign tags to their own puzzles.
+You can assign tags to puzzles and then view a list of all puzzles with a particular tag. Authors can see which tags exist and assign tags to their own puzzles, but they can't see the list of which puzzles are assigned a tag.
 
 Some ways tags can be useful:
 
