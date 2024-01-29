@@ -10,16 +10,6 @@ HEROKU_MANAGE = f"heroku run --app={HUNT_SLUG} python manage.py"
 
 
 @task
-def lint(c):
-    c.run("pylint --disable=R,C,W0511 $(git ls-files '*.py')")
-
-
-@task
-def pytype(c):
-    c.run("pytype $(git ls-files '*.py')")
-
-
-@task
 def run(c):
     c.run("./manage.py runserver 4004")
 

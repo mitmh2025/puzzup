@@ -11,7 +11,7 @@ class TimedCache(t.Generic[KT, VT]):
     """Simple cache where entries expire after some amount of time."""
 
     timeout: Seconds
-    _cache: dict[KT, tuple[VT, float]]  # pytype: disable=not-supported-yet
+    _cache: dict[KT, tuple[VT, float]]
 
     def __init__(self, timeout: Seconds = 600):
         self.timeout = timeout
