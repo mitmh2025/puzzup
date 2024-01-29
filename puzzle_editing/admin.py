@@ -38,7 +38,6 @@ class UserAdmin(BaseUserAdmin):
                     "discord_username",
                     "discord_nickname",
                     "discord_user_id",
-                    "avatar_url",
                     "credits_name",
                     "bio",
                     "timezone",

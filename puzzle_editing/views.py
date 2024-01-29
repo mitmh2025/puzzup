@@ -383,16 +383,12 @@ def oauth2_link_discord(request):
         # Finally, capture Discord profile info on the user
         user.discord_user_id = user_data["id"]
         user.discord_username = format_discord_username(user_data)
-        user.avatar_url = user.get_avatar_url_via_discord(user_data["avatar"] or "")
         if discord.enabled():
             c = discord.get_client()
             discord.init_perms(c, user)
             member = c.get_member_by_id(user.discord_user_id)
             if member:
                 user.discord_nickname = member["nick"] or ""
-                user.avatar_url = user.get_avatar_url_via_discord(
-                    member["user"]["avatar"] or ""
-                )
         user.save()
 
         return redirect("/account")
@@ -424,8 +420,6 @@ def oauth2_unlink_discord(request):
         )
         return redirect("/account")
     if user.discord_user_id or user.discord_username:
-        if user.avatar_url.startswith("https://cdn.discordapp.com/"):
-            user.avatar_url = ""
         user.discord_user_id = ""
         user.discord_username = ""
         user.save()

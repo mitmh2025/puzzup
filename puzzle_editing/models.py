@@ -76,7 +76,6 @@ class User(AbstractUser):
     discord_user_id = models.CharField(
         max_length=500, null=True, blank=True, unique=True
     )
-    avatar_url = models.CharField(max_length=500, blank=True)
 
     display_name = models.CharField(
         max_length=500,
@@ -191,41 +190,8 @@ class User(AbstractUser):
         )
 
     @staticmethod
-    def html_avatar_list_of(users, linkify):
-        def fmt_user(u):
-            img = "<img src='{}' width='40' height='40'/>"
-            if linkify:
-                url = urls.reverse("user", args=[u.username])
-                return format_html('<a href="{}">' + img + "</a>", url, u.avatar_url)
-            return format_html(img, u.avatar_url)
-
-        s = format_html_join(" ", "{}", ((fmt_user(u),) for u in users))
-        return s or mark_safe('<span class="empty">--</span>')
-
-    @staticmethod
     def get_testsolve_coordinators():
         return User.objects.filter(groups__name="Testsolve Coordinators")
-
-    def get_avatar_url_via_discord(self, discord_avatar_hash, size: int = 0) -> str:
-        """Generates and returns the discord avatar url if possible
-        Accepts an optional argument that defines the size of the avatar returned, between 16 and 4096 (in powers of 2),
-        though this can be set when hotlinked."""
-
-        cdn_base_url = "https://cdn.discordapp.com"
-
-        if not self.discord_user_id or not discord_avatar_hash:
-            # we'll only "trust" information given to us by the discord API; users who haven't linked that way won't have any avatar
-            return ""
-
-        if size > 0:
-            size = size - (size % 2)
-            size = 16 if size < 16 else size
-            size = 4096 if size > 4096 else size
-
-        return (
-            f"{cdn_base_url}/avatars/{self.discord_user_id}/{discord_avatar_hash}.png"
-            + (f"?size={size}" if size > 0 else "")
-        )
 
     def __str__(self):
         return (
