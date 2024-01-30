@@ -63,7 +63,7 @@ mkdir -p credentials
 aws ssm get-parameter --output text --query Parameter.Value --with-decryption --name puzzup-drive-credentials > credentials/drive-credentials.json
 python manage.py migrate
 nginx
-exec gunicorn -w "$(nproc)" puzzup.wsgi:application
+exec gunicorn -k gevent -w "$(nproc)" puzzup.wsgi:application
 EOF
 
 EXPOSE 80

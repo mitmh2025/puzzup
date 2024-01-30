@@ -20,7 +20,7 @@ django-import-export = "^3.3.6"
 django-ses = "^3.5.2"
 gitpython = "^3.1.41"
 google-api-python-client = "2.115.0"
-gunicorn = "^21.2.0"
+gunicorn = {extras = ["gevent"], version = "^21.2.0"}
 invoke = "^2.2.0"
 ipython = "^8.20.0"
 markdown = "^3.5.2"
