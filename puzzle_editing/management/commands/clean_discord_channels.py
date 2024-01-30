@@ -2,6 +2,7 @@ import logging
 import re
 from collections import Counter
 from operator import attrgetter, itemgetter
+from typing import TypedDict
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
@@ -119,7 +120,7 @@ class Command(BaseCommand):
             "--all", action="store_true", help="Shorthand for setting all the modes"
         )
 
-    def organize_puzzles(self):
+    def organize_puzzles(self) -> None:
         """Fix up puzzle channels in discord.
 
         If sync is True, fix each puzzle channel's name and permissions, and
@@ -162,25 +163,33 @@ class Command(BaseCommand):
         for Awaiting Editor, etc.
         """
         # Get categories and parents of channels
-        cat_count = Counter()
+        cat_count = Counter[str]()
         status_cat_ids = set()
-        cats = []
+
+        class ProcessedCat(TypedDict):
+            puzzup_status: str
+            status_sort_key: tuple[int, int]
+            og_cat: Category
+
+        cats: list[ProcessedCat] = []
         for c in self.d.channels.values():
             if c.parent_id:
                 cat_count[c.parent_id] += 1
-        for cat in self.d.cats.values():
-            match = _cat_re.match(cat.name)
+        for cached_cat in self.d.cats.values():
+            match = _cat_re.match(cached_cat.name)
             # This is a status category
             if match:
-                cat_info = cat.dict()
                 stat = match.group("status")
                 num = match.group("num") or 0
                 num = int(num)
-                cat_info["puzzup_status"] = match.group("status")
-                cat_info["status_sort_key"] = (_stat_order[stat], num)
-                cat_info["og_cat"] = cat
-                cats.append(cat_info)
-                status_cat_ids.add(cat.id)
+                cats.append(
+                    {
+                        "puzzup_status": match.group("status"),
+                        "status_sort_key": (_stat_order[stat], num),
+                        "og_cat": cached_cat,
+                    }
+                )
+                status_cat_ids.add(cached_cat.id)
 
         if delete_empty:
             self.logger.info(f"Checking {len(cats)} categories for emptiness.")
@@ -188,20 +197,20 @@ class Command(BaseCommand):
                 if cat["status_sort_key"][1] == 0:
                     # Don't delete the base 'Initial Idea', etc.
                     continue
-                if not cat_count[cat["id"]]:
-                    self.logger.info(f"Deleting empty category {cat['name']}")
-                    self.d.delete_channel(cat["id"])
+                if not cat_count[cat["og_cat"].id]:
+                    self.logger.info(f"Deleting empty category {cat["og_cat"].name}")
+                    self.d.delete_channel(cat["og_cat"].id)
                     cats.remove(cat)
 
         if sort_cats:
             cats.sort(key=itemgetter("status_sort_key"))
-            minpos = min(c["position"] for c in cats)
+            minpos = min(cat["og_cat"].position or 0 for c in cats)
 
             # cats among or after status cats, but not status cats (hopefully empty)
             others = [
                 c
                 for c in self.d.cats.values()
-                if c.position >= minpos and c.id not in status_cat_ids
+                if (c.position or 0) >= minpos and c.id not in status_cat_ids
             ]
             others.sort(key=attrgetter("position"))
             self.logger.info(
@@ -209,9 +218,9 @@ class Command(BaseCommand):
                 f" {len(others)} post-status categories."
             )
 
-            for i, cat in enumerate(others):
-                cat.position = minpos + i
-                self.d.save_category(cat)
+            for i, other_cat in enumerate(others):
+                other_cat.position = minpos + i
+                self.d.save_category(other_cat)
             minpos += len(others)
             for i, cat in enumerate(cats):
                 og_cat: Category = cat["og_cat"]
@@ -231,9 +240,13 @@ class Command(BaseCommand):
             3: logging.DEBUG,
         }
         self.logger.setLevel(levels.get(vb, logging.DEBUG))
+        client = discord.get_client()
+        if not client:
+            self.logger.error("No discord client found. Exiting.")
+            return
         # Set up our client as the default
         self.d = DryRunClient(
-            discord.get_client(),
+            client,
             dry_run=self.dry_run,
             logger=self.logger,
         )

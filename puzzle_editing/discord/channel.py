@@ -5,13 +5,18 @@ from pydantic import BaseModel, Field, validator
 from .perm import Overwrite, Overwrites, Permission
 
 
-class Channel(BaseModel):
+class Object(BaseModel):
+    """Base discord object."""
+
+    id: str = ""
+    name: str = ""
+
+
+class Channel(Object):
     """Base discord channel."""
 
-    id: str = None
-    name: str = None
     type: int
-    guild_id: str = None
+    guild_id: str = ""
     permission_overwrites: Overwrites = Field(default_factory=Overwrites)
     position: int | None = None
 
@@ -48,7 +53,7 @@ class Channel(BaseModel):
         """
         self.perms.update_role(self.guild_id, ignore="VIEW_CHANNEL")
 
-    def is_public(self):
+    def is_public(self) -> bool:
         p: Overwrite = self.perms.get_role(self.guild_id)
         return Permission.VIEW_CHANNEL not in p.deny
 
@@ -66,8 +71,8 @@ class TextChannel(Channel):
     """A Text Channel."""
 
     type: t.Literal[0] = 0
-    parent_id: str = None
-    topic: str = None
+    parent_id: str = ""
+    topic: str = ""
 
 
 class Category(Channel):
@@ -76,14 +81,12 @@ class Category(Channel):
     type: t.Literal[4] = 4
 
 
-class Thread(BaseModel):
+class Thread(Object):
     """A private Thread in a Text Channel."""
 
     type: int = 12
-    id: str = None
-    name: str = None
-    guild_id: str = None
-    parent_id: str = None
+    guild_id: str = ""
+    parent_id: str = ""
 
     class Config:
         """This tells pydantic to keep any extra attrs it finds.

@@ -23,6 +23,9 @@ class GitRepo:
 
     @classmethod
     def hunt_dir(cls, directory: str):
+        if not settings.HUNT_REPO:
+            msg = "HUNT_REPO is not set"
+            raise ValueError(msg)
         return cls.make_dir(settings.HUNT_REPO / directory)
 
     @classmethod
@@ -94,6 +97,9 @@ class GitRepo:
 
     def pre_commit(self) -> bool:
         """Runs pre-commit and returns true if it fails."""
+        if not settings.HUNT_REPO:
+            msg = "HUNT_REPO is not set"
+            raise ValueError(msg)
         if not (settings.HUNT_REPO / ".git/hooks/pre-commit").is_file():
             logger.warning("Pre-commit skipped because hooks not installed.")
         try:

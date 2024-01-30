@@ -1,7 +1,7 @@
 import datetime
 import json
 
-from discord_interactions import verify_key
+from discord_interactions import verify_key  # type: ignore
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -59,7 +59,8 @@ def createPuzzleHandler(request: HttpRequest, payload: dict):
 
 
 def create_puzzle_for_channel(request: HttpRequest, ch_id: str) -> MsgPayload:
-    if not discord.enabled():
+    c = discord.get_client()
+    if not c:
         return ":warning: Discord has been disabled."
     # Check for duplicates
     puzzles = list(Puzzle.objects.filter(discord_channel_id=ch_id))
@@ -69,7 +70,6 @@ def create_puzzle_for_channel(request: HttpRequest, ch_id: str) -> MsgPayload:
             url = external_puzzle_url(request, p)
             r.append(f" • <{url}>: {p.codename or 'NO CODENAME'} ||{p.name}||")
         return "\n".join(r)
-    c = discord.get_client()
     tc = c.get_text_channel(ch_id)
     puzzle = Puzzle(
         name=tc.name.title().replace("-", " "),
@@ -103,6 +103,9 @@ def create_puzzle_for_channel(request: HttpRequest, ch_id: str) -> MsgPayload:
 
 
 def archiveChannelHandler(request, payload):
+    c = discord.get_client()
+    if not c:
+        return ":warning: Discord has been disabled."
     puzzle = Puzzle.objects.filter(discord_channel_id=payload["channel_id"])
     responseJson = {"type": 4}
     puzzles = [
@@ -132,7 +135,6 @@ def archiveChannelHandler(request, payload):
         )
         responseJson["data"] = {"content": responsetext}
     else:
-        c = discord.get_client()
         ch = c.get_text_channel(payload["channel_id"])
         discord.save_channel(c, ch, "Archive")
         responsetext = "**This channel has been archived**"

@@ -3,7 +3,7 @@ from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from markdown import markdown as convert_markdown
 from nh3 import clean
-from pymdownx import emoji
+from pymdownx import emoji  # type: ignore
 
 register = template.Library()
 

@@ -131,7 +131,7 @@ class CustomModelChoiceField(forms.ModelMultipleChoiceField):
             return self._choices
         return CustomModelChoiceIterator(self)
 
-    choices = property(_get_choices, MultipleChoiceField._set_choices)
+    choices = property(_get_choices, MultipleChoiceField._set_choices)  # type: ignore
 
 
 class TagMultipleChoiceField(CustomModelChoiceField):

@@ -1,13 +1,13 @@
 import logging
 import re
-from typing import Any
+from typing import Any, TypeVar
 
 import pydantic
 import requests
 from django.conf import settings
 
 from .cache import TimedCache
-from .channel import Category, Channel, TextChannel, Thread
+from .channel import Category, Channel, Object, TextChannel, Thread
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +63,10 @@ def sanitize_channel_name(name: str) -> str:
     return name
 
 
-def delta(old: TextChannel, new: TextChannel) -> JsonDict:
+C = TypeVar("C", bound=Object)
+
+
+def delta(old: C, new: C) -> JsonDict:
     """Returns a dict of changed fields only.
 
     Specifically, the return value will only contain "id" plus the value of
@@ -316,8 +319,12 @@ class Client:
             pth = f"/channels/{thread.parent_id}/threads"
             rawch = self._request("post", pth, thread.dict(exclude={"id"}))
         else:
-            # TODO
-            pass
+            old = self.get_thread(thread.id)
+            diff = delta(old, thread)
+            if list(diff.keys()) == ["id"]:
+                # Nothing changed -> no-op
+                return thread
+            rawch = self._request("patch", f"/channels/{thread.id}", diff)
         newThread = Thread.parse_obj(rawch)
         self._cache_thread(newThread)
         return newThread
@@ -348,7 +355,7 @@ class Client:
         Retrieves the last `message_limit` messages; if message_limit is large,
         (usually >500) discord will rate limit us, and we'll just stop there.
         """
-        message_list = []
+        message_list: list[Any] = []
         last_message = False
         while len(message_list) < message_limit:
             url = f"/channels/{channel_id}/messages?limit={message_limit}"

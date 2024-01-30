@@ -38,11 +38,20 @@ sentry-sdk = "^1.39.2"
 whitenoise = "^6.6.0"
 
 [tool.poetry.group.dev.dependencies]
+django-stubs = {extras = ["compatible-mypy"], version = "^4.2.7"}
 djhtml = "^3.0.6"
+google-api-python-client-stubs = "^1.23.0"
+google-auth-stubs = "^0.2.0"
+mypy = "<1.8.0"
 pre-commit = "^3.6.0"
 pylint = "^3.0.3"
 pylint-django = "^2.5.5"
+pylsp-mypy = "^0.6.8"
 ruff = "^0.1.14"
+types-beautifulsoup4 = "^4.12.0.20240106"
+types-markdown = "^3.5.0.20240129"
+types-pillow = "^10.2.0.20240125"
+types-requests = "^2.31.0.20240125"
 
 [tool.ruff]
 fix = true
@@ -74,3 +83,9 @@ ignore = [
     "DJ006",
 ]
 allowed-confusables = ["–"]
+
+[tool.mypy]
+plugins = ["mypy_django_plugin.main"]
+
+[tool.django-stubs]
+django_settings_module = "settings.prod"

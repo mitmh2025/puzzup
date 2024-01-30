@@ -1,4 +1,5 @@
 # flake8: noqa
+from settings.base import SITE_PASSWORD
 from settings.base import *
 
 DEBUG = True
@@ -21,6 +22,6 @@ ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
 # Allow for local (per-user) override
 try:
-    from settings_local import *
+    from settings_local import *  # type: ignore
 except ImportError:
     pass

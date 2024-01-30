@@ -55,7 +55,7 @@ class User(AbstractUser):
             models.Index(fields=["discord_user_id"]),
         )
 
-    objects = PuzzupUserManager()
+    objects = PuzzupUserManager()  # type: ignore
 
     username = models.CharField(
         _("username"),
@@ -1111,10 +1111,10 @@ class TestsolveSession(models.Model):
 
 
 def create_testsolve_thread(instance: TestsolveSession):
-    if discord.enabled():
+    c = discord.get_client()
+    if c:
         try:
             puzzle = instance.puzzle
-            c = discord.get_client()
 
             thread = discord.build_testsolve_thread(instance, c.guild_id)
             thread = c.save_thread(thread)
@@ -1359,9 +1359,9 @@ def add_testsolver_to_thread(
 ):
     if not created:
         return
-    if discord.enabled():
+    c = discord.get_client()
+    if c:
         session = instance.session
-        c = discord.get_client()
         thread = discord.get_thread(c, session)
         if not thread:
             return

@@ -107,7 +107,11 @@ def export_puzzle(
     return ""
 
 
-def download_images(html: str, assets_path: str, max_image_width: int):
+def download_images(html: str, assets_path: Path, max_image_width: int):
+    if not settings.HUNT_REPO_CLIENT:
+        msg = "HUNT_REPO is not set"
+        raise ValueError(msg)
+
     # Search for all images in HTML
     images = re.findall(r'src="([^"]+)"', html)
     new_images = []
@@ -115,7 +119,7 @@ def download_images(html: str, assets_path: str, max_image_width: int):
 
     for i, src in enumerate(images):
         full_assets_path = assets_path / f"{i}.png"
-        relative_path = full_assets_path.split(settings.HUNT_REPO_CLIENT + "/")[-1]
+        relative_path = full_assets_path.relative_to(settings.HUNT_REPO_CLIENT)
 
         # Download the image and save it to the hunt repo
         try:
@@ -134,7 +138,7 @@ def download_images(html: str, assets_path: str, max_image_width: int):
         except (urllib.error.URLError, UnidentifiedImageError):
             logger.exception("Failed to download asset from %s", src)
             new_images.append(
-                ("FAILED/TO/DOWNLOAD/PLS/IMPORT/MANUALLY.png", f"image{i}")
+                (Path("FAILED/TO/DOWNLOAD/PLS/IMPORT/MANUALLY.png"), f"image{i}")
             )
 
         # Save the relative path to the image_map

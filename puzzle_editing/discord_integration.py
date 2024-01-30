@@ -8,7 +8,7 @@ from django.conf import settings
 from django.db.models import Q
 
 from . import models as m
-from .discord import Client, DiscordError, TextChannel, Thread, TimedCache
+from .discord import Client, TextChannel, Thread, TimedCache
 
 # Global channel cache with a 10m timeout
 _global_cache: TimedCache[str, TextChannel] = TimedCache(timeout=600)
@@ -16,24 +16,15 @@ _global_cache: TimedCache[str, TextChannel] = TimedCache(timeout=600)
 _global_thread_cache: TimedCache[str, Thread] = TimedCache(timeout=600)
 
 
-def enabled():
-    """Returns true if the django settings enable discord."""
-    return (
-        settings.DISCORD_BOT_TOKEN is not None and settings.DISCORD_GUILD_ID is not None
-    )
-
-
-def get_client() -> Client:
+def get_client() -> Client | None:
     """Gets a discord client, or raises and error if discord isn't enabled."""
-    if not enabled():
-        msg = (
-            "Discord is not enabled. Make sure settings.DISCORD_BOT_TOKEN "
-            "and settings.DISCORD_GUILD_ID are set."
-        )
-        raise DiscordError(msg)
+    discord_bot_token = settings.DISCORD_BOT_TOKEN
+    discord_guild_id = settings.DISCORD_GUILD_ID
+    if discord_bot_token is None or discord_guild_id is None:
+        return None
     return Client(
-        settings.DISCORD_BOT_TOKEN,
-        settings.DISCORD_GUILD_ID,
+        discord_bot_token,
+        discord_guild_id,
         _global_cache,
         _global_thread_cache,
     )
@@ -104,7 +95,7 @@ def get_channel(c: Client, p: m.Puzzle) -> TextChannel | None:
         return None
 
 
-def get_thread(c: Client, s: m.TestsolvingSession) -> Thread | None:
+def get_thread(c: Client, s: m.TestsolveSession) -> Thread | None:
     """Get the thread for a testsolving session, or None if hasn't got one.
 
     If the session has a discord_thread_id set, but no thread has that id,
@@ -129,9 +120,9 @@ def get_client_and_channel(
     Returns (client, channel); both will be None if discord is disabled, and
     channel will be None if the puzzle doesn't have one.
     """
-    if not enabled():
-        return None, None
     c = get_client()
+    if not c:
+        return None, None
     ch = get_channel(c, p)
     return c, ch
 
@@ -164,7 +155,9 @@ def sync_puzzle_channel(
         puzzle.editors.all(),
         puzzle.factcheckers.all(),
     )
-    must_see = set(get_dids(autheds)) | {settings.DISCORD_CLIENT_ID}
+    must_see = set(get_dids(autheds))
+    if settings.DISCORD_CLIENT_ID:
+        must_see.add(settings.DISCORD_CLIENT_ID)
     # anyone who is spoiled CAN see the channel
     can_see = set(get_dids(puzzle.spoiled.all()))
     # Loop over all users who must see and all who currently have overwrites;

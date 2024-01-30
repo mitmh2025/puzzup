@@ -1,5 +1,6 @@
 import re
 import urllib.parse
+from typing import Self
 
 from bs4 import BeautifulSoup
 from django.conf import settings
@@ -18,7 +19,7 @@ def enabled():
 
 
 class GoogleManager:
-    __instance = None
+    __instance: Self | None = None
 
     @classmethod
     def instance(cls):

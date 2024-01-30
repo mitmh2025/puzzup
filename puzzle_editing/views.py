@@ -112,12 +112,9 @@ from .view_helpers import (
     require_testsolving_enabled,
 )
 
-# This file is so full of redefined-outer-name issues it swamps real problems.
-# It has them because e.g. there's a fn called user() and also lots of fns with
-# vars called 'user'.
 
-# pylint: disable=redefined-outer-name
-# pylint: disable=redefined-builtin
+class AuthenticatedHttpRequest(HttpRequest):
+    user: User
 
 
 def get_sessions_with_joined_and_current(user):
@@ -383,8 +380,8 @@ def oauth2_link_discord(request):
         # Finally, capture Discord profile info on the user
         user.discord_user_id = user_data["id"]
         user.discord_username = format_discord_username(user_data)
-        if discord.enabled():
-            c = discord.get_client()
+        c = discord.get_client()
+        if c:
             discord.init_perms(c, user)
             member = c.get_member_by_id(user.discord_user_id)
             if member:
@@ -428,7 +425,7 @@ def oauth2_unlink_discord(request):
 
 
 @login_required
-def puzzle_new(request):
+def puzzle_new(request) -> HttpResponse:
     user = request.user
 
     if request.method == "POST":
@@ -438,8 +435,8 @@ def puzzle_new(request):
             puzzle.status_mtime = datetime.datetime.now()
             puzzle.save()
             form.save_m2m()
-            if discord.enabled():
-                c = discord.get_client()
+            c = discord.get_client()
+            if c:
                 url = external_puzzle_url(request, puzzle)
                 tc = None
                 if puzzle.discord_channel_id:
@@ -581,7 +578,7 @@ def add_comment(
             emails,
         )
 
-    if send_discord and content and discord.enabled():
+    if send_discord and content:
         c, ch = discord.get_client_and_channel(puzzle)
         if c is not None and ch is not None:
             name = author.display_name or author.credits_name
@@ -596,13 +593,13 @@ class DiscordData(pydantic.BaseModel):
     # Whether discord is enabled, disabled, or supposedly enabled but we
     # couldn't fetch data
     status: t.Literal["enabled", "disabled", "broken"]
-    guild_id: str = None  # For URL generation
-    channel_id: str = None
-    name: str = None
-    public: bool = None
-    nvis: int = None  # Number of people with explicit view permission
-    i_can_see: bool = None  # Whether the current user has view permission
-    error: str = None
+    guild_id: str = ""  # For URL generation
+    channel_id: str = ""
+    name: str = ""
+    public: bool = False
+    nvis: int = 0  # Number of people with explicit view permission
+    i_can_see: bool = False  # Whether the current user has view permission
+    error: str = ""
 
     @property
     def exists(self):
@@ -713,7 +710,7 @@ def puzzle_other_credit_update(request: HttpRequest, id, puzzle_id):
 
 
 @login_required
-def puzzle(request: HttpRequest, id, slug=None):
+def puzzle(request: AuthenticatedHttpRequest, id, slug=None):
     puzzle: Puzzle = get_object_or_404(
         (
             Puzzle.objects.select_related("lead_author")
@@ -764,7 +761,7 @@ def puzzle(request: HttpRequest, id, slug=None):
         form: forms.Form | forms.ModelForm | None = None
         c: discord.Client | None = None
         ch: TextChannel | None = None
-        our_d_id: str = user.discord_user_id
+        our_d_id: str | None = user.discord_user_id
         disc_ops = {
             "subscribe-me",
             "unsubscribe-me",
@@ -772,10 +769,10 @@ def puzzle(request: HttpRequest, id, slug=None):
             "discord-private",
             "resync-discord",
         }
-        if discord.enabled():
-            # Preload the discord client and current channel data.
-            c, ch = discord.get_client_and_channel(puzzle)
-            if c and puzzle.discord_channel_id and not ch:
+        # Preload the discord client and current channel data.
+        c, ch = discord.get_client_and_channel(puzzle)
+        if c:
+            if puzzle.discord_channel_id and not ch:
                 # If the puzzle has a channel_id but it doesn't exist, clear it
                 # here to save time in the future.
                 puzzle.discord_channel_id = ""
@@ -1053,9 +1050,9 @@ def puzzle(request: HttpRequest, id, slug=None):
 
     if is_spoiled_on(user, puzzle):
         discdata = DiscordData(status="disabled")
-        if discord.enabled():
+        c = discord.get_client()
+        if c:
             discdata.status = "enabled"
-            c = discord.get_client()
             try:
                 ch = discord.get_channel(c, puzzle)
                 if ch:
@@ -1143,7 +1140,7 @@ def puzzle(request: HttpRequest, id, slug=None):
             },
         )
     else:
-        testsolve_sessions = (
+        unspoiled_testsolve_sessions = (
             TestsolveSession.objects.filter(puzzle=puzzle)
             .order_by("started")
             .annotate(
@@ -1172,7 +1169,7 @@ def puzzle(request: HttpRequest, id, slug=None):
                 "role": get_user_role(user, puzzle),
                 "comments": comments,
                 "comment_form": PuzzleCommentForm(),
-                "testsolve_sessions": testsolve_sessions,
+                "testsolve_sessions": unspoiled_testsolve_sessions,
                 "is_in_testsolving": puzzle.status == status.TESTSOLVING,
                 "status": status.get_display(puzzle.status),
                 "unspoiled": unspoiled,
@@ -1590,14 +1587,14 @@ def puzzle_people(request, id):
 
 
 @permission_required("puzzle_editing.unspoil_puzzle", raise_exception=True)
-def puzzle_escape(request, id):
+def puzzle_escape(request, id) -> HttpResponse:
     puzzle: Puzzle = get_object_or_404(Puzzle, id=id)
     user: User = request.user
 
     if request.method == "POST":
         if "unspoil" in request.POST:
             puzzle.spoiled.remove(user)
-            if user.discord_user_id and discord.enabled():
+            if user.discord_user_id:
                 c, ch = discord.get_client_and_channel(puzzle)
                 if c and ch:
                     ch.rm_visibility([user.discord_user_id])
@@ -2152,8 +2149,8 @@ def testsolve_one(request, id):
                 .exclude(email__isnull=True)
                 .values_list("email", flat=True),
             )
-            if discord.enabled():
-                c = discord.get_client()
+            c = discord.get_client()
+            if c:
                 thread = discord.get_thread(c, session)
                 if thread:
                     c.post_message(
@@ -3260,6 +3257,9 @@ def user(request, username: str):
     them = get_object_or_404(User, username=username)
     if request.user.is_superuser and request.method == "POST":
         perm = Permission.objects.filter(name="Can change round").first()
+        if not perm:
+            msg = "Permission not found"
+            raise Exception(msg)
         if "remove-editor" in request.POST:
             them.user_permissions.remove(perm)
         elif "make-editor" in request.POST:

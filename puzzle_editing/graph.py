@@ -71,9 +71,9 @@ def curr_puzzle_graph_b64(time: str, target_count, width: int = 20, height: int 
         .order_by("date")
         .select_related("puzzle")
     )
-    counts = Counter()
-    curr_status = {}
-    x = []
+    counts = Counter[str]()
+    curr_status: dict[int, str] = {}
+    x: list[datetime] = []
     y = []
 
     labels = [
@@ -97,14 +97,14 @@ def curr_puzzle_graph_b64(time: str, target_count, width: int = 20, height: int 
     if time in timetypes:
         now = datetime.now()
         plt.xlim(x[-1] - timetypes[time], now)
-    colormap = list(matplotlib.cm.get_cmap("tab20").colors)
+    colormap: list[str] = list(matplotlib.cm.get_cmap("tab20").colors)  # type: ignore
     col = (colormap[::2] + colormap[1::2])[: len(status.STATUSES) - len(exclude)]
-    ax.stackplot(x, np.transpose(y), labels=labels, colors=col[-1::-1])
+    ax.stackplot(np.array(x), np.transpose(y), labels=labels, colors=col[-1::-1])
     if target_count is not None:
-        ax.plot(x, [target_count for i in x], color=(0, 0, 0))
+        ax.plot(np.array(x), [target_count for i in x], color=(0, 0, 0))
     handles, plabels = ax.get_legend_handles_labels()
     box = ax.get_position()
-    ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+    ax.set_position((box.x0, box.y0, box.width * 0.8, box.height))
     ax.legend(handles[::-1], plabels[::-1], loc="center left", bbox_to_anchor=(1, 0.5))
     buf = BytesIO()
     fig.savefig(buf, format="png")

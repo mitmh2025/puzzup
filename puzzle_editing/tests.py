@@ -205,7 +205,7 @@ class Misc(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIsNotNone(response.context["participation"])
 
-    def test_rest_sanity(self):
+    def test_rest_sanity(self) -> None:
         ac = Client()
         ac.login(username="a", password="secret")
 

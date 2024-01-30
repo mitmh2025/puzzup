@@ -21,6 +21,12 @@ repos:
       - id: djjs
   - repo: local
     hooks:
+      - id: mypy
+        name: Run mypy
+        entry: poetry run mypy .
+        language: system
+        types: [python]
+        pass_filenames: false
       - id: pre-commit-django-migrations
         name: Check django migrations
         entry: poetry run python manage.py makemigrations --check --dry-run --no-input

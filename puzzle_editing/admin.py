@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from import_export.admin import ImportExportModelAdmin
+from import_export.admin import ImportExportModelAdmin  # type: ignore
 
 from .models import (
     CommentReaction,
@@ -28,7 +28,7 @@ class UserAdmin(BaseUserAdmin):
 
     list_display = ("username", "email", "display_name", "discord_username", "hat")
 
-    fieldsets = (
+    fieldsets = (  # type: ignore
         *BaseUserAdmin.fieldsets,
         (
             None,

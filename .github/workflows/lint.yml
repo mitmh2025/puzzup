@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - staging
   pull_request:
 
 jobs:
@@ -35,3 +36,4 @@ jobs:
       - run: poetry run djhtml --check .
       - run: poetry run djcss --check .
       - run: poetry run djjs --check .
+      - run: poetry run mypy .
