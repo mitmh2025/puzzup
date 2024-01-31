@@ -10,7 +10,6 @@ from django.core import validators
 from django.core.exceptions import ValidationError
 from django.db.models import Count, Q
 from django.db.models.functions import Lower
-from django.forms.fields import MultipleChoiceField
 from django.forms.models import ModelChoiceIterator
 from django.utils.text import normalize_newlines
 from googleapiclient.errors import HttpError
@@ -131,7 +130,7 @@ class CustomModelChoiceField(forms.ModelMultipleChoiceField):
             return self._choices
         return CustomModelChoiceIterator(self)
 
-    choices = property(_get_choices, MultipleChoiceField._set_choices)  # type: ignore
+    choices = property(_get_choices, forms.ChoiceField.choices.fset)  # type: ignore
 
 
 class TagMultipleChoiceField(CustomModelChoiceField):
