@@ -31,8 +31,6 @@ def slashCommandHandler(request):
             if payload["data"]["options"][0]["type"] == 1:
                 if payload["data"]["options"][0]["name"] == "create":
                     return createPuzzleHandler(request, payload)
-                elif payload["data"]["options"][0]["name"] == "archive":
-                    return archiveChannelHandler(request, payload)
                 elif payload["data"]["options"][0]["name"] == "info":
                     return puzzleInfoHandler(request, payload)
                 elif payload["data"]["options"][0]["name"] == "url":
@@ -100,46 +98,6 @@ def create_puzzle_for_channel(request: HttpRequest, ch_id: str) -> MsgPayload:
         tags_to_include.append(tag)
         total += len(tag)
     return msg + "".join(tags_to_include)
-
-
-def archiveChannelHandler(request, payload):
-    c = discord.get_client()
-    if not c:
-        return ":warning: Discord has been disabled."
-    puzzle = Puzzle.objects.filter(discord_channel_id=payload["channel_id"])
-    responseJson = {"type": 4}
-    puzzles = [
-        {
-            "name": p.name,
-            "id": p.id,
-            "codename": p.codename,
-            "summary": p.summary,
-            "description": p.description,
-        }
-        for p in puzzle
-    ]
-    if len(puzzles) > 0:
-        responsetext = ":warning: This puzzle is already linked to the puzzle{} below (you cannot archive a linked channel):\n".format(
-            "" if len(puzzles) == 1 else "s"
-        )
-        responsetext += "\n".join(
-            [
-                "• <https://{}/puzzle/{}>: {} ||{}||".format(
-                    request.META["HTTP_HOST"],
-                    p["id"],
-                    p["codename"] or "NO CODENAME",
-                    p["name"],
-                )
-                for p in puzzles
-            ]
-        )
-        responseJson["data"] = {"content": responsetext}
-    else:
-        ch = c.get_text_channel(payload["channel_id"])
-        discord.save_channel(c, ch, "Archive")
-        responsetext = "**This channel has been archived**"
-    responseJson = {"type": 4, "data": {"content": responsetext}}
-    return JsonResponse(responseJson)
 
 
 def puzzleInfoHandler(request, payload):

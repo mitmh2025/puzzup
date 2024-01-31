@@ -257,11 +257,6 @@ Alternately, you can instead make the `POST` request to `https://discord.com/api
     },
     {
       "type": 1,
-      "name": "archive",
-      "description": "Archive the current channel"
-    },
-    {
-      "type": 1,
       "name": "info",
       "description": "Get information about the current channel's puzzle"
     },
