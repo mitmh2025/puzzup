@@ -958,11 +958,15 @@ def post_save_factcheck(sender, instance, created, **kwargs):
     if not created:
         return
 
-    google_sheet_id = google.GoogleManager.instance().create_factchecking_sheet(
-        instance.puzzle
-    )
-    instance.google_sheet_id = google_sheet_id
-    instance.save()
+    changed = False
+    if google.enabled():
+        instance.google_sheet_id = (
+            google.GoogleManager.instance().create_factchecking_sheet(instance.puzzle)
+        )
+        changed = True
+
+    if changed:
+        instance.save()
 
 
 class StatusSubscription(models.Model):
