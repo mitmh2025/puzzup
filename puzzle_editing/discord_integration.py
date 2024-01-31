@@ -179,7 +179,7 @@ def save_channel(client: Client, tc: TextChannel, category: str) -> TextChannel:
 
 def build_testsolve_thread(session: m.TestsolveSession, guild_id: str):
     return Thread(
-        id=None,
+        id="",
         name=f"Testsolve Session ({session.id}) - {session.puzzle.name}",
         guild_id=guild_id,
         parent_id=settings.DISCORD_TESTSOLVE_CHANNEL_ID,
@@ -205,7 +205,7 @@ def build_puzzle_channel(
     themselves. It also ONLY adds the authors and editors - if there are other
     users you want to have permission, you should add them yourself.
     """
-    tc = TextChannel(id=None, name=puzzle.codename, guild_id=guild_id)
+    tc = TextChannel(id="", name=puzzle.codename, guild_id=guild_id)
     sync_puzzle_channel(puzzle, tc, url=url)
     if private:
         tc.make_private()

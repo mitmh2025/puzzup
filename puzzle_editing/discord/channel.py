@@ -71,8 +71,8 @@ class TextChannel(Channel):
     """A Text Channel."""
 
     type: t.Literal[0] = 0
-    parent_id: str = ""
-    topic: str = ""
+    parent_id: str | None = None
+    topic: str | None = None
 
 
 class Category(Channel):

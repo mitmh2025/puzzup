@@ -229,7 +229,7 @@ class Client:
             catname = f"{settings.DISCORD_CATEGORY_PREFIX}{catname}"
         name_re = re.compile(r"^" + re.escape(catname) + r"(-\d+)?$", re.I)
         cats = self.get_all_cats()
-        parent = cats.get(tc.parent_id)
+        parent = cats.get(tc.parent_id) if tc.parent_id else None
         if parent and name_re.match(parent.name):
             # We're already in a matching channel
             return self.save_channel(tc)
@@ -292,7 +292,7 @@ class Client:
         default is for that value, you must specify it explicitly, otherwise we
         treat it as "keep the current value."
         """
-        if tc.id is None:
+        if not tc.id:
             pth = f"/guilds/{self.guild_id}/channels"
             rawch = self._request("post", pth, tc.dict(exclude={"id"}))
         else:
@@ -307,7 +307,7 @@ class Client:
         return newtc
 
     def save_category(self, cat: Category) -> Category:
-        if cat.id is None:
+        if not cat.id:
             rawcat = self.create_category(cat.name)
             cat.id = rawcat.id
         rawcat = self._request("patch", f"/channels/{cat.id}", cat.dict(exclude={"id"}))
@@ -315,7 +315,7 @@ class Client:
         return newcat
 
     def save_thread(self, thread: Thread) -> Thread:
-        if thread.id is None:
+        if not thread.id:
             pth = f"/channels/{thread.parent_id}/threads"
             rawch = self._request("post", pth, thread.dict(exclude={"id"}))
         else:
