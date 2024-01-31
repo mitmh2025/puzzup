@@ -2490,15 +2490,15 @@ def factcheck(request):
 def flavor(request):
     needs_flavor = Puzzle.objects.filter(
         flavor="", flavor_approved_time__isnull=True
-    ).prefetch_related("answers__round__act")
+    ).prefetch_related("answers__round")
     needs_flavor_approved = (
         Puzzle.objects.exclude(flavor="")
         .filter(flavor_approved_time__isnull=True)
-        .prefetch_related("answers__round__act")
+        .prefetch_related("answers__round")
     )
     has_flavor_approved = Puzzle.objects.filter(
         flavor_approved_time__isnull=False
-    ).prefetch_related("answers__round__act")
+    ).prefetch_related("answers__round")
 
     context = {
         "has_flavor_approved": has_flavor_approved,
