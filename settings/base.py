@@ -187,13 +187,13 @@ LOGGING = {
     },
     "loggers": {
         "django": {
-            "handlers": ["django"],
-            "level": "DEBUG",
+            "handlers": ["django", "console"],
+            "level": "INFO",
             "propagate": True,
         },
         "puzzle_editing": {
-            "handlers": ["puzzle"],
-            "level": "DEBUG",
+            "handlers": ["puzzle", "console"],
+            "level": "INFO",
         },
     },
 }
