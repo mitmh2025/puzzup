@@ -952,17 +952,17 @@ class PuzzleFactcheck(models.Model):
     def __str__(self):
         return f"<Factcheck {self.puzzle_id} {self.puzzle.spoiler_free_name()}>"
 
-    def save(self, *args, **kwargs):
-        is_new = self._state.adding
-        super().save(*args, **kwargs)
-        # Copy the template factcheck id
-        # We call super().save first in order to ensure the id for this instance
-        # exists.
-        if is_new and google.enabled():
-            self.google_sheet_id = (
-                google.GoogleManager.instance().create_factchecking_sheet(self.puzzle)
-            )
-            super().save(*args, **kwargs)
+
+@receiver(post_save, sender=PuzzleFactcheck)
+def post_save_factcheck(sender, instance, created, **kwargs):
+    if not created:
+        return
+
+    google_sheet_id = google.GoogleManager.instance().create_factchecking_sheet(
+        instance.puzzle
+    )
+    instance.google_sheet_id = google_sheet_id
+    instance.save()
 
 
 class StatusSubscription(models.Model):
@@ -1135,13 +1135,15 @@ def create_testsolve_thread(
     except Exception as e:
         logger.exception("Failed to create Discord thread", exc_info=e)
 
-    updates = {}
+    changed = False
     if discord_thread_id:
-        updates["discord_thread_id"] = discord_thread_id
+        instance.discord_thread_id = discord_thread_id
+        changed = True
     if sheet_id:
-        updates["google_sheets_id"] = sheet_id
-
-    TestsolveSession.objects.filter(id=instance.id).update(**updates)
+        instance.google_sheets_id = sheet_id
+        changed = True
+    if changed:
+        instance.save()
 
 
 class PuzzleComment(models.Model):
