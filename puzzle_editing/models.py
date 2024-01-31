@@ -1019,18 +1019,6 @@ class TestsolveSession(models.Model):
     def __str__(self):
         return f"Testsolve session #{self.id} on {self.puzzle}"
 
-    def save(self, *args, **kwargs):
-        is_new = self._state.adding
-        super().save(*args, **kwargs)
-        # Create a thread in Discord and a Google Sheets for new testsolve sessions.
-        # We call super().save first in order to ensure the id for this instance
-        # exists.
-        if is_new:
-            discord_thread_id, google_sheets_id = create_testsolve_thread(self)
-            self.discord_thread_id = discord_thread_id
-            self.google_sheets_id = google_sheets_id
-            super().save(*args, **kwargs)
-
     def get_absolute_url(self):
         return urls.reverse("testsolve_one", kwargs={"id": self.id})
 
@@ -1110,10 +1098,23 @@ class TestsolveSession(models.Model):
         return list(emails)
 
 
-def create_testsolve_thread(instance: TestsolveSession):
-    c = discord.get_client()
-    if c:
-        try:
+@receiver(post_save, sender=TestsolveSession)
+def create_testsolve_thread(
+    sender, instance: TestsolveSession, created: bool, **kwargs
+):
+    if not created:
+        return
+
+    sheet_id = ""
+    try:
+        sheet_id = google.GoogleManager.instance().create_testsolving_sheet(instance)
+    except Exception as e:
+        logger.exception("Failed to create Google sheet", exc_info=e)
+
+    discord_thread_id = ""
+    try:
+        c = discord.get_client()
+        if c:
             puzzle = instance.puzzle
 
             thread = discord.build_testsolve_thread(instance, c.guild_id)
@@ -1130,25 +1131,17 @@ def create_testsolve_thread(instance: TestsolveSession):
                 f"Editor(s): {', '.join(editor_tags)}",
             )
 
-            sheet_id = google.GoogleManager.instance().create_testsolving_sheet(
-                instance
-            )
-            message = c.post_message(
-                thread.id,
-                f"Google Sheets link: https://docs.google.com/spreadsheets/d/{sheet_id}",
-            )
-            c.pin_message(thread.id, message["id"])
+            discord_thread_id = thread.id
+    except Exception as e:
+        logger.exception("Failed to create Discord thread", exc_info=e)
 
-            TestsolveSession.objects.filter(id=instance.id).update(
-                discord_thread_id=thread.id, google_sheets_id=sheet_id
-            )
+    updates = {}
+    if discord_thread_id:
+        updates["discord_thread_id"] = discord_thread_id
+    if sheet_id:
+        updates["google_sheets_id"] = sheet_id
 
-            return (thread.id, sheet_id)
-        except Exception as e:
-            logger.exception(
-                "Failed to create Discord thread or Google sheets.", exc_info=e
-            )
-    return ("", "")
+    TestsolveSession.objects.filter(id=instance.id).update(**updates)
 
 
 class PuzzleComment(models.Model):
