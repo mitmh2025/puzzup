@@ -12,6 +12,9 @@
     - - change_testsolvesession
       - puzzle_editing
       - testsolvesession
+    - - change_status_puzzle
+      - puzzle_editing
+      - puzzle
 - model: auth.group
   fields:
     name: EIC
@@ -34,6 +37,9 @@
     - - change_testsolvesession
       - puzzle_editing
       - testsolvesession
+    - - change_status_puzzle
+      - puzzle_editing
+      - puzzle
 - model: auth.group
   fields:
     name: Testsolve Coordinators
@@ -41,6 +47,9 @@
     - - change_testsolvesession
       - puzzle_editing
       - testsolvesession
+    - - change_status_puzzle
+      - puzzle_editing
+      - puzzle
 - model: auth.group
   fields:
     name: Art
@@ -72,6 +81,9 @@
     - - change_puzzlepostprod
       - puzzle_editing
       - puzzlepostprod
+    - - change_status_puzzle
+      - puzzle_editing
+      - puzzle
 - model: auth.group
   fields:
     name: Postprod Lead
@@ -82,6 +94,9 @@
     - - change_round
       - puzzle_editing
       - round
+    - - change_status_puzzle
+      - puzzle_editing
+      - puzzle
 - model: auth.group
   fields:
     name: Factchecker
@@ -89,6 +104,9 @@
     - - change_puzzlefactcheck
       - puzzle_editing
       - puzzlefactcheck
+    - - change_status_puzzle
+      - puzzle_editing
+      - puzzle
 - model: auth.group
   fields:
     name: Factcheck Lead
@@ -99,3 +117,6 @@
     - - change_round
       - puzzle_editing
       - round
+    - - change_status_puzzle
+      - puzzle_editing
+      - puzzle

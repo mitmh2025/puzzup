@@ -823,6 +823,7 @@ def puzzle(request: AuthenticatedHttpRequest, id, slug=None):
                     msg.append(f"Editor(s): {', '.join(editor_tags)}")
                 c.post_message(tc.id, "\n".join(msg))
         elif "change_status" in request.POST:
+            check_permission("puzzle_editing.change_status_puzzle")
             new_status = request.POST["change_status"]
             status_display = status.get_display(new_status)
             if new_status != puzzle.status:
@@ -1006,6 +1007,7 @@ def puzzle(request: AuthenticatedHttpRequest, id, slug=None):
                 status_change = status_change_dirty
 
             if status_change and puzzle.status != status_change:
+                check_permission("puzzle_editing.change_status_puzzle")
                 puzzle.status = status_change
                 puzzle.save()
                 if c and ch:

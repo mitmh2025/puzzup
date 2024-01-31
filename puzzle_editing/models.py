@@ -453,6 +453,7 @@ class Puzzle(models.Model):
         permissions = (
             ("list_puzzle", "Can see all puzzles"),
             ("unspoil_puzzle", "Can unspoil people"),
+            ("change_status_puzzle", "Can change puzzle status"),
         )
 
     def __str__(self):

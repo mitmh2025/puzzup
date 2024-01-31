@@ -46,7 +46,8 @@ def comment_list(
         "comments": comments,
         "comment_form": comment_form,
         "show_testsolve_session_links": show_testsolve_session_links,
-        "allow_status_changes": allow_status_changes,
+        "allow_status_changes": allow_status_changes
+        and user.has_perm("puzzle_editing.change_status_puzzle"),
         "all_statuses": status.ALL_STATUSES,
         "emoji_options": CommentReaction.EMOJI_OPTIONS,
     }

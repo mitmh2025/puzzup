@@ -132,34 +132,35 @@
                     </form>
                 </div>
 
+                {% if perms.puzzle_editing.change_status_puzzle %}
+                    <h3>Move to next step</h3>
 
-                <h3>Move to next step</h3>
-
-                <form method="POST" id="change-status" class="hidden">
-                    {% csrf_token %}
-                    {% with puzzle.get_transitions as transitions %}
-                        {% if transitions %}
-                            {% for transition in puzzle.get_transitions %}
-                                <button type="submit" class="button is-small is-fullwidth" name="change_status" value="{{ transition.status }}">{{ transition.description }}</button>
+                    <form method="POST" id="change-status" class="hidden">
+                        {% csrf_token %}
+                        {% with puzzle.get_transitions as transitions %}
+                            {% if transitions %}
+                                {% for transition in puzzle.get_transitions %}
+                                    <button type="submit" class="button is-small is-fullwidth" name="change_status" value="{{ transition.status }}">{{ transition.description }}</button>
 						{# (send to {{ transition.status_display }}) #}
-                            {% endfor %}
-                        {% endif %}
+                                {% endfor %}
+                            {% endif %}
 
-                        <button type="button" class="toggle-show button is-link is-outlined is-small" data-target="all-statuses" data-rehide="Hide all status changes">Show all status changes</button>
-                        <div id="all-statuses" class="hidden">
-                            <h5>or change status to:</h5>
-                            {% for status in all_statuses %}
-                                <button type="submit" class="button is-small is-fullwidth" name="change_status" value="{{ status.value }}">
-                                    {{ status.emoji }} {{ status.display }}
-                                </button>
-                            {% endfor %}
-                        </div>
-                    {% endwith %}
-                </form>
+                            <button type="button" class="toggle-show button is-link is-outlined is-small" data-target="all-statuses" data-rehide="Hide all status changes">Show all status changes</button>
+                            <div id="all-statuses" class="hidden">
+                                <h5>or change status to:</h5>
+                                {% for status in all_statuses %}
+                                    <button type="submit" class="button is-small is-fullwidth" name="change_status" value="{{ status.value }}">
+                                        {{ status.emoji }} {{ status.display }}
+                                    </button>
+                                {% endfor %}
+                            </div>
+                        {% endwith %}
+                    </form>
 
-                <p>
-                    <button class="button is-small is-link is-light toggle-show" data-target="change-status" data-rehide="Hide next steps">Show next steps</button>
-                </p>
+                    <p>
+                        <button class="button is-small is-link is-light toggle-show" data-target="change-status" data-rehide="Hide next steps">Show next steps</button>
+                    </p>
+                {% endif %}
             </div>
             {% if can_unspoil %}
                 <div class="block">
