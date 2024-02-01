@@ -347,43 +347,6 @@ class Client:
                 return member
         return None
 
-    def get_channel_messages(
-        self, channel_id: str, message_limit: int = 100
-    ) -> list[JsonDict]:
-        """Get messages in a channel.
-
-        Retrieves the last `message_limit` messages; if message_limit is large,
-        (usually >500) discord will rate limit us, and we'll just stop there.
-        """
-        message_list: list[Any] = []
-        last_message = False
-        while len(message_list) < message_limit:
-            url = f"/channels/{channel_id}/messages?limit={message_limit}"
-            if last_message:
-                url = f"{url}&before={last_message}"
-            resp = self._raw_request("get", url)
-            if resp.status_code in [429, 204]:
-                # Ran out of users (204 No Content), OR hit a rate limit (429)
-                break
-            messages = resp.json()
-            if not messages:
-                break
-            message_list.extend(messages)
-            last_message = min(m["id"] for m in messages)
-        return message_list
-
-    def get_message_authors_in_channel(
-        self, channel_id: str, message_limit: int = 100
-    ) -> set[str]:
-        """Get message authors in a channel.
-
-        Retrieves authors for the last `message_limit` messages, or however
-        many we can load before getting rate-limited."""
-        messages = self.get_channel_messages(channel_id, message_limit)
-        from_people = [m for m in messages if "webook_id" not in m]
-        authors = {m["author"]["id"] for m in from_people}
-        return authors
-
     def delete_channel(self, channel_id: str) -> dict:
         """Delete a channel"""
         self._channel_cache.drop(channel_id)
