@@ -155,13 +155,27 @@ class LogisticsInfoForm(forms.ModelForm):
     class Meta:
         model = Puzzle
         fields = (
+            "logistics_clean_testsolve_count",
             "logistics_difficulty_testsolve",
-            "logistics_difficulty_postprod",
-            "logistics_difficulty_factcheck",
             "logistics_number_testsolvers",
             "logistics_testsolve_length",
             "logistics_testsolve_skills",
+            "logistics_difficulty_postprod",
+            "logistics_difficulty_factcheck",
             "logistics_specialized_type",
+        )
+
+        labels = MappingProxyType(
+            {
+                "logistics_clean_testsolve_count": "Clean testsolve count",
+                "logistics_difficulty_testsolve": "Testsolving",
+                "logistics_number_testsolvers": "Number of Testsolvers",
+                "logistics_testsolve_length": "Expected Testsolve Length",
+                "logistics_testsolve_skills": "Testsolver Specialized Skills",
+                "logistics_difficulty_postprod": "Postprod",
+                "logistics_difficulty_factcheck": "Factcheck",
+                "logistics_specialized_type": "Specialized Puzzle Type",
+            }
         )
 
         widgets = MappingProxyType(
@@ -208,6 +222,12 @@ class LogisticsInfoForm(forms.ModelForm):
                 "logistics_testsolve_length": forms.TextInput(attrs={"class": "input"}),
                 "logistics_testsolve_skills": forms.TextInput(attrs={"class": "input"}),
                 "logistics_specialized_type": RadioSelect(),
+            }
+        )
+
+        help_texts = MappingProxyType(
+            {
+                "logistics_clean_testsolve_count": "(Note that this field is entirely manually maintained)",
             }
         )
 

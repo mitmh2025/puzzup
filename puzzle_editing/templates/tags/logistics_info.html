@@ -1,0 +1,76 @@
+<div class="box">
+    <h2>
+        Logistics Info
+        <button type="button" class="button is-small is-light toggle-show" data-target="difficulty-form" data-rehide="Hide editing">Edit</button>
+    </h2>
+    <div id="difficulty-form" class="hidden block">
+        <form method="post">
+            {% csrf_token %}
+            {{ difficulty_form.as_p }}
+            <input type="submit" class="button is-info" name="edit_logistics" value="Submit">
+        </form>
+    </div>
+
+    {% if perms.puzzle_editing.change_testsolvesession %}
+        <div>
+            Clean testsolve count:
+            <span>{{ logistics_info.logistics_clean_testsolve_count }}</span>
+        </div>
+    {% endif %}
+    <div>
+        Testsolving:
+        {% if logistics_info.logistics_difficulty_testsolve %}
+            <span>{{ logistics_info.logistics_difficulty_testsolve }}</span>
+        {% else %}
+            <span class="empty">(not rated)</span>
+        {% endif %}
+    </div>
+    <div>
+        Number of Testsolvers:
+        {% if logistics_info.logistics_number_testsolvers %}
+            <span>{{ logistics_info.logistics_number_testsolvers }}</span>
+        {% else %}
+            <span class="empty">(not rated)</span>
+        {% endif %}
+    </div>
+    <div>
+        Expected Testsolve Length:
+        {% if logistics_info.logistics_testsolve_length %}
+            <span>{{ logistics_info.logistics_testsolve_length }}</span>
+        {% else %}
+            <span class="empty">(not rated)</span>
+        {% endif %}
+    </div>
+    <div>
+        Testsolver Specialized Skills:
+        {% if logistics_info.logistics_testsolve_skills %}
+            <span>{{ logistics_info.logistics_testsolve_skills }}</span>
+        {% else %}
+            <span class="empty">(not rated)</span>
+        {% endif %}
+    </div>
+    <div>
+        Postprod:
+        {% if logistics_info.logistics_difficulty_postprod %}
+            <span>{{ logistics_info.logistics_difficulty_postprod }}</span>
+        {% else %}
+            <span class="empty">(not rated)</span>
+        {% endif %}
+    </div>
+    <div>
+        Factcheck:
+        {% if logistics_info.logistics_difficulty_factcheck %}
+            <span>{{ logistics_info.logistics_difficulty_factcheck }}</span>
+        {% else %}
+            <span class="empty">(not rated)</span>
+        {% endif %}
+    </div>
+    <div>
+        Specialized Puzzle Type:
+        {% if logistics_info.logistics_specialized_type %}
+            <span>{{ logistics_info.logistics_specialized_type }}</span>
+        {% else %}
+            <span class="empty">No</span>
+        {% endif %}
+    </div>
+</div>

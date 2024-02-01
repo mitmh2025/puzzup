@@ -4,6 +4,7 @@
 {% load user_list %}
 {% load comment_list %}
 {% load markdown %}
+{% load logistics_info %}
 
 {% block title %}{{ puzzle.spoiler_free_title }}{% endblock %}
 
@@ -340,88 +341,7 @@
                 {% endwith %}
             </div>
 
-            <div class="box">
-                <h3>
-                    Logistics Info
-                    <button type="button" class="button is-small is-light toggle-show" data-target="difficulty-form" data-rehide="Hide editing">Edit</button>
-                </h3>
-                <div id="difficulty-form" class="hidden block">
-                    <form method="post">
-                        {% csrf_token %}
-                        Testsolving:
-                        {{ difficulty_form.logistics_difficulty_testsolve }}
-                        Number of Testsolvers:
-                        {{ difficulty_form.logistics_number_testsolvers }}
-                        Expected Testsolve Length:
-                        {{ difficulty_form.logistics_testsolve_length }}
-                        Testsolver Specialized Skills:
-                        {{ difficulty_form.logistics_testsolve_skills }}
-                        Postprod:
-                        {{ difficulty_form.logistics_difficulty_postprod }}
-                        Factcheck:
-                        {{ difficulty_form.logistics_difficulty_factcheck }}
-                        Specialized Puzzle Type:
-                        {{ difficulty_form.logistics_specialized_type }}
-                        <input type="submit" class="button is-info" name="edit_logistics" value="Submit">
-                    </form>
-                </div>
-                <div>
-                    Testsolving:
-                    {% if logistics_info.logistics_difficulty_testsolve %}
-                        <span>{{ logistics_info.logistics_difficulty_testsolve }}</span>
-                    {% else %}
-                        <span class="empty">(not rated)</span>
-                    {% endif %}
-                </div>
-                <div>
-                    Number of Testsolvers:
-                    {% if logistics_info.logistics_number_testsolvers %}
-                        <span>{{ logistics_info.logistics_number_testsolvers }}</span>
-                    {% else %}
-                        <span class="empty">(not rated)</span>
-                    {% endif %}
-                </div>
-                <div>
-                    Expected Testsolve Length:
-                    {% if logistics_info.logistics_testsolve_length %}
-                        <span>{{ logistics_info.logistics_testsolve_length }}</span>
-                    {% else %}
-                        <span class="empty">(not rated)</span>
-                    {% endif %}
-                </div>
-                <div>
-                    Testsolver Specialized Skills:
-                    {% if logistics_info.logistics_testsolve_skills %}
-                        <span>{{ logistics_info.logistics_testsolve_skills }}</span>
-                    {% else %}
-                        <span class="empty">(not rated)</span>
-                    {% endif %}
-                </div>
-                <div>
-                    Postprod:
-                    {% if logistics_info.logistics_difficulty_postprod %}
-                        <span>{{ logistics_info.logistics_difficulty_postprod }}</span>
-                    {% else %}
-                        <span class="empty">(not rated)</span>
-                    {% endif %}
-                </div>
-                <div>
-                    Factcheck:
-                    {% if logistics_info.logistics_difficulty_factcheck %}
-                        <span>{{ logistics_info.logistics_difficulty_factcheck }}</span>
-                    {% else %}
-                        <span class="empty">(not rated)</span>
-                    {% endif %}
-                </div>
-                <div>
-                    Specialized Puzzle Type:
-                    {% if logistics_info.logistics_specialized_type %}
-                        <span>{{ logistics_info.logistics_specialized_type }}</span>
-                    {% else %}
-                        <span class="empty">No</span>
-                    {% endif %}
-                </div>
-            </div>
+            {% logistics_info logistics_info difficulty_form perms %}
 
             <div class="box">
                 <h3>

@@ -424,6 +424,10 @@ class Puzzle(models.Model):
         verbose_name="Is this a meta?", help_text="Check the box if yes.", default=False
     )
 
+    # How many clean testsolves has this puzzle had
+    logistics_clean_testsolve_count = models.PositiveSmallIntegerField(
+        default=0, blank=False, null=False
+    )
     # From 0-2, what is the expected difficulty of this puzzle across various fields?
     logistics_difficulty_testsolve = models.PositiveSmallIntegerField(
         validators=[MaxValueValidator(2)], blank=True, null=True

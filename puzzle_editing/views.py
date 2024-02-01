@@ -736,6 +736,13 @@ def puzzle(request: AuthenticatedHttpRequest, id, slug=None):
 
     user: User = request.user
 
+    exclude = []
+    if not user.has_perm("puzzle_editing.change_testsolvesession"):
+        exclude.append("logistics_clean_testsolve_count")
+    LogisticsForm = forms.modelform_factory(
+        Puzzle, form=LogisticsInfoForm, exclude=exclude
+    )
+
     vis, vis_created = PuzzleVisited.objects.get_or_create(puzzle=puzzle, user=user)
     if not vis_created:
         # update the auto_now=True DateTimeField anyway
@@ -950,8 +957,8 @@ def puzzle(request: AuthenticatedHttpRequest, id, slug=None):
             puzzle.postprodders.remove(user)
             add_system_comment_here("Removed postprodder " + str(user))
         elif "edit_logistics" in request.POST:
-            form = LogisticsInfoForm(request.POST, instance=puzzle)
-            if form.is_valid():
+            form = LogisticsForm(request.POST, instance=puzzle)
+            if form and form.is_valid():
                 form.save()
                 add_system_comment_here("Edited logistics info")
         elif "edit_content" in request.POST:
@@ -1123,7 +1130,7 @@ def puzzle(request: AuthenticatedHttpRequest, id, slug=None):
                 "can_unspoil": can_unspoil,
                 "is_factchecker": is_factchecker_on(user, puzzle),
                 "is_postprodder": is_postprodder_on(user, puzzle),
-                "difficulty_form": LogisticsInfoForm(instance=puzzle),
+                "difficulty_form": LogisticsForm(instance=puzzle),
                 "postprod_form": EditPostprodForm(instance=puzzle.postprod)
                 if puzzle.has_postprod()
                 else None,
