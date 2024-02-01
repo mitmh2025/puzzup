@@ -3261,7 +3261,7 @@ def users_statuses(request):
 
 
 @login_required
-@permission_required("puzzle_editing.list_puzzle")
+@permission_required("puzzle_editing.list_puzzle", raise_exception=True)
 def user(request, username: str):
     them = get_object_or_404(User, username=username)
     if request.user.is_superuser and request.method == "POST":

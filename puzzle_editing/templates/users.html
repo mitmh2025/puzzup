@@ -60,10 +60,10 @@
                                     <td>
                                         {% if perms.puzzle_editing.list_puzzle %}
                                             <a href="{% url 'user' user.username %}">
-                                        {% endif %}
-                                        {{ user|display_name }}
-                                        {% if perms.puzzle_editing.list_puzzle %}
+                                                {{ user|display_name }}
                                             </a>
+                                        {% else %}
+                                            {{ user|display_name }}
                                         {% endif %}
                                     </td>
                                     <td>{{ user.hat }}</td>
@@ -110,9 +110,13 @@
         {% for user in users %}
             {% if user.username != "admin" and user.username != "puzzup" %}
                 <div id="user-{{ user.username }}">
-                    <a href="{% url 'user' user.username %}">
+                    {% if perms.puzzle_editing.list_puzzle %}
+                        <a href="{% url 'user' user.username %}">
+                            <h4>{{ user }}</h4>
+                        </a>
+                    {% else %}
                         <h4>{{ user }}</h4>
-                    </a>
+                    {% endif %}
                     <ul>
                         <li>Username: {{ user.username }}</li>
                         {% if user.discord_username %}
