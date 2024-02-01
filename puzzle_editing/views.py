@@ -754,7 +754,7 @@ def puzzle(request: AuthenticatedHttpRequest, id, slug=None):
         )
 
     def check_permission(perm):
-        if not user.has_perm(perm, puzzle):
+        if not user.has_perm(perm):
             raise PermissionDenied
 
     if request.method == "POST":
