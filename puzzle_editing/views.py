@@ -222,6 +222,8 @@ def index(request):
 
 @login_required
 def docs(request):
+    if not request.user.is_staff:
+        raise PermissionDenied
     return render(request, "docs.html", {})
 
 
