@@ -171,11 +171,11 @@ def index(request):
 
     blocked_on_author_puzzles = Puzzle.objects.filter(
         authors=user,
-        status__in=status.STATUSES_BLOCKED_ON_AUTHORS,
+        status__in=status.STATUSES_BY_BLOCKERS[status.AUTHORS_AND_EDITORS],
     )
     blocked_on_editor_puzzles = Puzzle.objects.filter(
         editors=user,
-        status__in=status.STATUSES_BLOCKED_ON_EDITORS,
+        status__in=status.STATUSES_BY_BLOCKERS[status.AUTHORS_AND_EDITORS],
     )
     current_user_sessions = TestsolveSession.objects.filter(
         participations__in=TestsolveParticipation.objects.filter(
@@ -184,10 +184,10 @@ def index(request):
     ).order_by("started")
 
     factchecking = Puzzle.objects.filter(
-        status=status.NEEDS_FACTCHECK, factcheckers=user
+        status=status.STATUSES_BY_BLOCKERS[status.FACTCHECKERS], factcheckers=user
     )
     postprodding = Puzzle.objects.filter(
-        status=status.NEEDS_POSTPROD, postprodders=user
+        status=status.STATUSES_BY_BLOCKERS[status.POSTPRODDERS], postprodders=user
     )
     inbox_puzzles = (
         user.spoiled_puzzles.exclude(status=status.DEAD)
@@ -886,12 +886,9 @@ def puzzle(request: AuthenticatedHttpRequest, id, slug=None):
                 .values_list("user__email", flat=True)
             )
             if subscriptions:
-                status_template = status.get_template(new_status)
-                template = f"emails/{status_template}"
-
                 messaging.send_mail_wrapper(
                     f"{puzzle.spoiler_free_title()} ➡ {status_display}",
-                    template,
+                    "emails/status_update_email",
                     {
                         "request": request,
                         "puzzle": puzzle,
@@ -2047,21 +2044,6 @@ def testsolve_one(request, id):
                 c, ch = discord.get_client_and_channel(puzzle)
                 comment = f"Correct answer: {guess}."
 
-                # Auto-set puzzle status to Awaiting Testsolve Review.
-                if puzzle.status == status.TESTSOLVING:
-                    status_display = status.get_display(
-                        status.AWAITING_TESTSOLVE_REVIEW
-                    )
-                    comment += f" Moving puzzle to {status_display}."
-                    puzzle.status = status.AWAITING_TESTSOLVE_REVIEW
-                    puzzle.save()
-                    if c and ch:
-                        discord.save_channel(c, ch, status_display)
-                        c.post_message(
-                            ch.id,
-                            f"Testsolve completed with correct answer! Moving puzzle to **{status_display}**.",
-                        )
-
                 if session.joinable:
                     comment += " Automatically marking session as no longer joinable."
 
@@ -2308,19 +2290,6 @@ def puzzle_feedback_all_csv(request):
 
 
 @login_required
-def spoiled(request):
-    puzzles = Puzzle.objects.filter(
-        status__in=[status.TESTSOLVING, status.REVISING]
-    ).annotate(
-        is_spoiled=Exists(
-            User.objects.filter(spoiled_puzzles=OuterRef("pk"), id=request.user.id)
-        )
-    )
-    context = {"puzzles": puzzles}
-    return render(request, "spoiled.html", context)
-
-
-@login_required
 @require_testsolving_enabled
 def testsolve_finish(request, id):
     session = get_object_or_404(TestsolveSession, id=id)
@@ -2405,12 +2374,7 @@ def testsolve_finish(request, id):
 @permission_required("puzzle_editing.change_puzzlepostprod", raise_exception=True)
 def postprod(request):
     postprodding = Puzzle.objects.filter(
-        status__in=[
-            status.NEEDS_POSTPROD,
-            status.ACTIVELY_POSTPRODDING,
-            status.POSTPROD_BLOCKED,
-            status.POSTPROD_BLOCKED_ON_TECH,
-        ],
+        status=status.NEEDS_POSTPROD,
         postprodders=request.user,
     )
     needs_postprod = Puzzle.objects.annotate(
@@ -2430,14 +2394,9 @@ def postprod_all(request):
         Puzzle.objects.filter(
             status__in=[
                 status.NEEDS_POSTPROD,
-                status.ACTIVELY_POSTPRODDING,
-                status.POSTPROD_BLOCKED,
-                status.POSTPROD_BLOCKED_ON_TECH,
                 status.AWAITING_POSTPROD_APPROVAL,
                 status.NEEDS_FACTCHECK,
                 status.NEEDS_FINAL_REVISIONS,
-                status.NEEDS_COPY_EDITS,
-                status.NEEDS_ART_CHECK,
                 status.NEEDS_FINAL_DAY_FACTCHECK,
                 # status.NEEDS_HINTS,
                 # status.AWAITING_HINTS_APPROVAL,
@@ -2463,8 +2422,6 @@ def factcheck(request):
     factchecking = Puzzle.objects.filter(
         status__in=(
             status.NEEDS_FACTCHECK,
-            status.NEEDS_COPY_EDITS,
-            status.NEEDS_ART_CHECK,
             status.NEEDS_FINAL_DAY_FACTCHECK,
         ),
         factcheckers=request.user,
@@ -2473,14 +2430,6 @@ def factcheck(request):
         has_factchecker=Exists(User.objects.filter(factchecking_puzzles=OuterRef("pk")))
     ).filter(status=status.NEEDS_FACTCHECK)
 
-    needs_copyedit = Puzzle.objects.annotate(
-        has_factchecker=Exists(User.objects.filter(factchecking_puzzles=OuterRef("pk")))
-    ).filter(status=status.NEEDS_COPY_EDITS)
-
-    needs_copyedit_all = Puzzle.objects.filter(status=status.NEEDS_COPY_EDITS)
-
-    needs_art_check = Puzzle.objects.filter(status=status.NEEDS_ART_CHECK)
-
     needs_final_day_factcheck = Puzzle.objects.filter(
         status=status.NEEDS_FINAL_DAY_FACTCHECK
     )
@@ -2488,9 +2437,6 @@ def factcheck(request):
     context = {
         "factchecking": factchecking,
         "needs_factchecking": needs_factcheck,
-        "needs_copyediting": needs_copyedit,
-        "needs_copyediting_all": needs_copyedit_all,
-        "needs_art_check": needs_art_check,
         "needs_final_day_factcheck": needs_final_day_factcheck,
     }
     return render(request, "factcheck.html", context)
@@ -2525,46 +2471,29 @@ def eic(request, template="awaiting_editor.html"):
         request,
         template,
         {
-            "awaiting_eic": Puzzle.objects.filter(
-                status=status.AWAITING_EDITOR
-            ).order_by("status_mtime"),
-            "needs_discussion": Puzzle.objects.filter(
-                status=status.NEEDS_DISCUSSION
-            ).order_by("status_mtime"),
-            "waiting_for_round": Puzzle.objects.filter(
-                status=status.WAITING_FOR_ROUND
-            ).order_by("status_mtime"),
             "awaiting_answer": Puzzle.objects.filter(
                 status=status.AWAITING_ANSWER
             ).order_by("status_mtime"),
+            "awaiting_answer_flexible": Puzzle.objects.filter(
+                status=status.AWAITING_ANSWER_FLEXIBLE
+            ).order_by("status_mtime"),
+            "initial_idea": Puzzle.objects.filter(status=status.INITIAL_IDEA).order_by(
+                "status_mtime"
+            ),
         },
     )
-
-
-@group_required("EIC")
-def triage(request):
-    return eic(request, "awaiting_editor_thin.html")
 
 
 @group_required("EIC")
 def editor_overview(request):
     active_statuses = [
         status.INITIAL_IDEA,
-        status.AWAITING_EDITOR,
-        status.NEEDS_DISCUSSION,
-        status.AWAITING_REVIEW,
+        status.IN_DEVELOPMENT,
         status.AWAITING_ANSWER,
         status.WRITING,
         status.WRITING_FLEXIBLE,
-        status.AWAITING_EDITOR_PRE_TESTSOLVE,
         status.TESTSOLVING,
-        status.AWAITING_TESTSOLVE_REVIEW,
-        status.REVISING,
-        status.REVISING_POST_TESTSOLVING,
-        status.AWAITING_APPROVAL_POST_TESTSOLVING,
-        status.NEEDS_SOLUTION_SKETCH,
         status.NEEDS_SOLUTION,
-        status.AWAITING_SOLUTION_AND_HINTS_APPROVAL,
         status.NEEDS_POSTPROD,
         status.AWAITING_POSTPROD_APPROVAL,
     ]

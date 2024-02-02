@@ -86,8 +86,6 @@ urlpatterns = [
     path("factcheck", views.factcheck, name="factcheck"),
     path("flavor", views.flavor, name="flavor"),
     path("eic", views.eic, name="eic"),
-    path("awaiting_editor", RedirectView.as_view(url="/eic"), name="awaiting_editor"),
-    path("triage", views.triage, name="triage"),
     path(
         "needs_editor", views.needs_editor, name="needs_editor"
     ),  # leftover, we're not using yet
@@ -112,7 +110,6 @@ urlpatterns = [
     ),
     path("account/timezone", views.account_timezone, name="account_timezone"),
     path("tags", views.tags, name="tags"),
-    path("spoiled", views.spoiled, name="spoiled"),
     path("statistics", views.statistics, name="statistics"),
     path("tags/new", views.new_tag, name="new_tag"),
     path("tags/<int:id>", views.single_tag, name="single_tag"),

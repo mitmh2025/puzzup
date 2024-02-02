@@ -36,33 +36,11 @@ timetypes = {
 
 exclude = [
     status.INITIAL_IDEA,
-    status.NEEDS_DISCUSSION,
-    status.WAITING_FOR_ROUND,
     status.AWAITING_ANSWER,
-    status.AWAITING_REVIEW,
-    status.WRITING_FLEXIBLE,
-    status.AWAITING_EDITOR_PRE_TESTSOLVE,
-    status.REVISING,
-    status.REVISING_POST_TESTSOLVING,
-    # status.NEEDS_HINTS,
-    # status.AWAITING_HINTS_APPROVAL,
-    # status.NEEDS_COPY_EDITS,
-    # status.NEEDS_FACTCHECK,
-    # status.NEEDS_FINAL_REVISIONS,
+    status.IN_DEVELOPMENT,
     status.DEFERRED,
     status.DEAD,
 ]
-
-#     status.WRITING: "✏️",
-#     status.TESTSOLVING: "💡",
-#     status.NEEDS_POSTPROD: "🪵",
-#     status.ACTIVELY_POSTPRODDING: "🪵",
-#     status.POSTPROD_BLOCKED: "🪵",
-#     status.POSTPROD_BLOCKED_ON_TECH: "🪵",
-#     status.AWAITING_POSTPROD_APPROVAL: "🪵",
-#     status.DONE: "🏁",
-#     status.DEFERRED: "💀",
-#     status.DEAD: "💀",
 
 
 def curr_puzzle_graph_b64(time: str, target_count, width: int = 20, height: int = 10):
