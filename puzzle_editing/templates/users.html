@@ -67,23 +67,23 @@
                                         {% endif %}
                                     </td>
                                     <td>{{ user.hat }}</td>
-                                    <td class="left-border">{{ user.authored_lead }}</td>
-                                    <td class="deemph">{{ user.authored_active }}</td>
-                                    <td class="deemph">{{ user.authored_deferred }}</td>
-                                    <td class="deemph">{{ user.authored_dead }}</td>
-                                    <td class="deemph">{{ user.authored_done }}</td>
-                                    <td class="left-border">{{ user.editing_active }}</td>
-                                    <td class="deemph">{{ user.editing_deferred }}</td>
-                                    <td class="deemph">{{ user.editing_dead }}</td>
-                                    <td class="deemph">{{ user.editing_done }}</td>
-                                    <td class="left-border">{{ user.postprodding_active }}</td>
-                                    <td class="deemph">{{ user.postprodding_done }}</td>
-                                    <td class="left-border">{{ user.factchecking_active }}</td>
-                                    <td class="deemph">{{ user.factchecking_deferred }}</td>
-                                    <td class="deemph">{{ user.factchecking_dead }}</td>
-                                    <td class="deemph">{{ user.factchecking_done }}</td>
-                                    <td class="left-border">{{ user.testsolving_in_progress }}</td>
-                                    <td>{{ user.testsolving_done }}</td>
+                                    <td class="left-border" data-tippy-content="Puzzles lead authored by user">{{ user.authored_lead }}</td>
+                                    <td class="deemph" data-tippy-content="Active puzzles authored by user">{{ user.authored_active }}</td>
+                                    <td class="deemph" data-tippy-content="Deferred puzzles authored by user">{{ user.authored_deferred }}</td>
+                                    <td class="deemph" data-tippy-content="Dead puzzles authored by user">{{ user.authored_dead }}</td>
+                                    <td class="deemph" data-tippy-content="Done puzzles authored by user">{{ user.authored_done }}</td>
+                                    <td class="left-border" data-tippy-content="Active puzzles edited by user">{{ user.editing_active }}</td>
+                                    <td class="deemph" data-tippy-content="Deferred puzzles edited by user">{{ user.editing_deferred }}</td>
+                                    <td class="deemph" data-tippy-content="Dead puzzles edited by user">{{ user.editing_dead }}</td>
+                                    <td class="deemph" data-tippy-content="Done puzzles edited by user">{{ user.editing_done }}</td>
+                                    <td class="left-border" data-tippy-content="Active puzzles postprodded by user">{{ user.postprodding_active }}</td>
+                                    <td class="deemph" data-tippy-content="Done puzzles postprodded by user">{{ user.postprodding_done }}</td>
+                                    <td class="left-border" data-tippy-content="Active puzzles factchecked by user">{{ user.factchecking_active }}</td>
+                                    <td class="deemph" data-tippy-content="Deferred puzzles factchecked by user">{{ user.factchecking_deferred }}</td>
+                                    <td class="deemph" data-tippy-content="Dead puzzles factchecked by user">{{ user.factchecking_dead }}</td>
+                                    <td class="deemph" data-tippy-content="Done puzzles factchecked by user">{{ user.factchecking_done }}</td>
+                                    <td class="left-border" data-tippy-content="Puzzles currently being testsolved by user">{{ user.testsolving_in_progress }}</td>
+                                    <td data-tippy-content="Puzzles previously testsolved by user">{{ user.testsolving_done }}</td>
                                     {% with user.last_comment.puzzle as puzzle %}
                                         <td class="left-border is-size-7 system" sorttable_customkey="{{ user.last_comment.date|date:"c" }}">
                                             {{ user.last_comment.date|naturaltime|default:"N/A" }}
