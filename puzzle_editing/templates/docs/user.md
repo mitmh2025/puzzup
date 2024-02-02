@@ -44,9 +44,9 @@ PuzzUp does not dictate the exact workflow after that, but you and other people 
 * edit the solution
 * change the puzzle status.
 
-The next step is to change the status to "Awaiting Editor", at which point somebody else will assign an editor or editors to your puzzle. (Note: An admin can set up a "status subscription" to notify an editor in chief when any puzzle enters this status; see admin docs for more info.)
+The next step is for the EiCs to change the status to "In Development" and assign editors.
 
-You can then discuss the puzzle idea with editors, and either of you might change the puzzle status a few times. Eventually, they should assign an answer to allow you to write the puzzle. The biggest qualitative change comes when the puzzle enters the Testsolving status.
+You can then discuss the puzzle idea with editors, developing the idea into a form that can be assigned an answer and written. The biggest qualitative change comes when the puzzle enters the Testsolving status.
 
 ## Testsolving
 
