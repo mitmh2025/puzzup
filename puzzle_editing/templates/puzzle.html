@@ -175,7 +175,9 @@
             <div class="box">
                 <h3>
                     Answers
-                    <a href="{% url 'puzzle_answers' puzzle.id %}" class="button is-small is-light toggle-show">Edit</a>
+                    {% if perms.puzzle_editing.change_round %}
+                        <a href="{% url 'puzzle_answers' puzzle.id %}" class="button is-small is-light toggle-show">Edit</a>
+                    {% endif %}
                 </h3>
                 {% with puzzle.answers.all as answers %}
                     {% for answer in answers %}

@@ -1187,7 +1187,7 @@ def puzzle(request: AuthenticatedHttpRequest, id, slug=None):
         )
 
 
-@login_required
+@permission_required("puzzle_editing.change_round", raise_exception=True)
 def puzzle_answers(request, id):
     puzzle = get_object_or_404(Puzzle, id=id)
     user = request.user
