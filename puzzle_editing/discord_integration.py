@@ -180,7 +180,7 @@ def save_channel(client: Client, tc: TextChannel, category: str) -> TextChannel:
 def build_testsolve_thread(session: m.TestsolveSession, guild_id: str):
     return Thread(
         id="",
-        name=f"Testsolve Session ({session.id}) - {session.puzzle.name}",
+        name=f"Session {session.id} - Puzzle {session.puzzle.id} ({session.puzzle.codename})",
         guild_id=guild_id,
         parent_id=settings.DISCORD_TESTSOLVE_CHANNEL_ID,
     )
