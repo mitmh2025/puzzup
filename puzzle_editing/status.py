@@ -78,7 +78,7 @@ BLOCKERS = [
     NOBODY,
 ]
 
-BLOCKERS_AND_TRANSITIONS = {
+BLOCKERS_AND_TRANSITIONS: dict[str, tuple[str, list[tuple[str, str]]]] = {
     INITIAL_IDEA: (
         AUTHORS_AND_EDITORS,
         [
@@ -186,9 +186,9 @@ def get_blocker(status):
         return NOBODY
 
 
-def get_transitions(status, puzzle=None):
-    value = BLOCKERS_AND_TRANSITIONS.get(status)
-    return value or []
+def get_transitions(status):
+    _, transitions = BLOCKERS_AND_TRANSITIONS.get(status)
+    return transitions or []
 
 
 STATUSES_BY_BLOCKERS = {

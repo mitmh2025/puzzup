@@ -553,7 +553,7 @@ class Puzzle(models.Model):
                 "status_display": status.get_display(s),
                 "description": description,
             }
-            for s, description in status.get_transitions(self.status, self)
+            for s, description in status.get_transitions(self.status)
         ]
 
     def get_emails(self, exclude_emails=()):
