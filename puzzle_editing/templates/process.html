@@ -8,8 +8,6 @@
         <div class="column is-one-fifth">
             <a href="/process/getting-started">Getting Started</a><br>
             <a href="/process/writing">Writing</a><br>
-            <a href="/process/testsolving">Testsolving</a><br>
-            <a href="/process/solution">Solution and Hints</a><br>
         </div>
         <div class="column">
             {% if doc == "getting-started" %}
@@ -20,16 +18,6 @@
             {% if doc == "writing" %}
                 <div id="writing" class="box">
                     {% include "process/writing.html" %}
-                </div>
-            {% endif %}
-            {% if doc == "testsolving" %}
-                <div id="testsolving" class="box">
-                    {% include "process/testsolving.html" %}
-                </div>
-            {% endif %}
-            {% if doc == "solution" %}
-                <div id="solution" class="box">
-                    {% include "process/solution.html" %}
                 </div>
             {% endif %}
         </div>
