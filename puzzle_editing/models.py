@@ -416,10 +416,18 @@ class Puzzle(models.Model):
         ),
         default=3,
     )
-    content = models.TextField(
-        blank=True, help_text="The puzzle itself. An external link is fine."
+    content_google_doc_id = models.CharField(
+        max_length=64,
+        blank=True,
     )
-    solution = models.TextField(blank=True)
+    solution_google_doc_id = models.CharField(
+        max_length=64,
+        blank=True,
+    )
+    resource_google_folder_id = models.CharField(
+        max_length=64,
+        blank=True,
+    )
     is_meta = models.BooleanField(
         verbose_name="Is this a meta?", help_text="Check the box if yes.", default=False
     )
@@ -464,21 +472,9 @@ class Puzzle(models.Model):
         return self.spoiler_free_title()
 
     def save(self, *args, **kwargs):
-        is_new = self._state.adding
         super().save(*args, **kwargs)
         # Make sure lead author is always spoiled (see update_spoiled below for the m2m version)
         self.spoiled.add(self.lead_author)
-        # Create a placeholder brainstorm sheet.
-        # We call super().save first in order to ensure the id for this instance
-        # exists.
-        if is_new and google.enabled():
-            sheet_id = google.GoogleManager.instance().create_brainstorm_sheet(self)
-            self.solution = f"https://docs.google.com/spreadsheets/d/{sheet_id}"
-            super().save(*args, **kwargs)
-        elif self.status == status.NEEDS_FACTCHECK:
-            if not getattr(self, "factcheck", None):
-                # Create a factcheck object the first time state changes to NEEDS_FACTCHECK
-                PuzzleFactcheck(puzzle=self).save()
 
     def get_absolute_url(self):
         return urls.reverse("puzzle_w_slug", kwargs={"id": self.id, "slug": self.slug})
@@ -725,6 +721,34 @@ class Puzzle(models.Model):
             [puzzle_data, spoilr_puzzle_data, *hint_data, *pseudoanswers_data],
             sort_keys=False,
         )
+
+
+@receiver(post_save, sender=Puzzle)
+def post_save_puzzle(sender, instance, created, **kwargs):
+    changed = False
+
+    if google.enabled():
+        gm = google.GoogleManager.instance()
+        if not instance.content_google_doc_id:
+            instance.content_google_doc_id = gm.create_puzzle_content_doc(instance)
+            changed = True
+        if not instance.solution_google_doc_id:
+            instance.solution_google_doc_id = gm.create_puzzle_solution_doc(instance)
+            changed = True
+        if not instance.resource_google_folder_id:
+            instance.resource_google_folder_id = gm.create_puzzle_resources_folder(
+                instance
+            )
+            changed = True
+
+    if instance.status == status.NEEDS_FACTCHECK and not getattr(
+        instance, "factcheck", None
+    ):
+        # Create a factcheck object the first time state changes to NEEDS_FACTCHECK
+        PuzzleFactcheck(puzzle=instance).save()
+
+    if changed:
+        instance.save()
 
 
 @receiver(m2m_changed, sender=Puzzle.authors.through)
@@ -1020,6 +1044,10 @@ class TestsolveSession(models.Model):
         max_length=19,
         blank=True,
     )
+    puzzle_copy_google_doc_id = models.CharField(
+        max_length=64,
+        blank=True,
+    )
     google_sheets_id = models.CharField(
         max_length=64,
         blank=True,
@@ -1114,9 +1142,12 @@ def create_testsolve_thread(
     if not created:
         return
 
-    sheet_id = ""
+    content_id, sheet_id = "", ""
     try:
-        sheet_id = google.GoogleManager.instance().create_testsolving_sheet(instance)
+        (
+            content_id,
+            sheet_id,
+        ) = google.GoogleManager.instance().create_testsolving_folder(instance)
     except Exception as e:
         logger.exception("Failed to create Google sheet", exc_info=e)
 
@@ -1140,6 +1171,13 @@ def create_testsolve_thread(
                 f"Editor(s): {', '.join(editor_tags)}",
             )
 
+            if content_id and sheet_id:
+                c.post_message(
+                    thread.id,
+                    f"Here is a **read-only copy** of the puzzle for you to testsolve: https://docs.google.com/document/d/{content_id}\n"
+                    f"Here is a Google Sheet to work in: https://docs.google.com/spreadsheets/d/{sheet_id}",
+                )
+
             discord_thread_id = thread.id
     except Exception as e:
         logger.exception("Failed to create Discord thread", exc_info=e)
@@ -1149,6 +1187,7 @@ def create_testsolve_thread(
         instance.discord_thread_id = discord_thread_id
         changed = True
     if sheet_id:
+        instance.puzzle_copy_google_doc_id = content_id
         instance.google_sheets_id = sheet_id
         changed = True
     if changed:

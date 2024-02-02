@@ -44,7 +44,7 @@ def make_puzzle_data(puzzles, user, do_query_filter_in, show_factcheck=False):
         #         to_attr="prefetched_important_tags",
         #     ),
         # )
-        .defer("description", "notes", "editor_notes", "content", "solution")
+        .defer("description", "notes", "editor_notes")
     )
 
     puzzles = list(puzzles)

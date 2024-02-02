@@ -348,19 +348,10 @@
             <div class="box">
                 <h3>
                     Puzzle
-                    <button type="button" class="button is-small is-light toggle-show" data-target="content-form" data-rehide="Hide editing">Edit</button>
                 </h3>
-                <div id="content-form" class="hidden block">
-                    <form method="post" >
-                        Puzzle (<a href="http://www.markdownguide.org/">markdown</a> supported):
-                        {% csrf_token %}
-                        {{ content_form.content }}
-                        <input type="submit" class="button is-info" name="edit_content" value="Submit">
-                    </form>
-                </div>
                 {% if puzzle.has_postprod %}<b>See <a href="{{ puzzle.postprod_url }}">the postprodded puzzle</a>.</b><br/>{% endif %}
-                {% if puzzle.content %}
-                    {{ puzzle.content|markdown }}
+                {% if puzzle.content_google_doc_id %}
+                    <a href="https://docs.google.com/document/d/{{ puzzle.content_google_doc_id }}/edit" target="_blank">Edit content in Google Docs</a>
                 {% else %}
                     <div class="empty">(no puzzle yet)</div>
                 {% endif %}
@@ -368,227 +359,233 @@
 
             <div class="box">
                 <h3>
-                    Solution walkthrough
-                    <button type="button" class="button is-small is-light toggle-show" data-target="solution-form" data-rehide="Hide editing">Edit</button>
+                    Solution
                 </h3>
-                <form method="post" id="solution-form" class="hidden">
-                    <p>Solution (<a href="http://www.markdownguide.org/">markdown</a> supported):
-                        {% csrf_token %}
-                        {{ solution_form.solution }}
-                        <input type="submit" class="button is-info" name="edit_solution" value="Submit">
-                    </form>
-                    {% if puzzle.has_postprod %}<b>See <a href="{{ puzzle.postprod_solution_url }}">the postprodded solution</a>.</b><br/>{% endif %}
-                    {% if puzzle.solution %}
-                        {{ puzzle.solution|markdown }}
-                    {% else %}
-                        <div class="empty">(no solution yet)</div>
-                    {% endif %}
-                </div>
-
-                <div class="box">
-                    <h3>Partial Answers ({{ puzzle.pseudo_answers.all|length }})</h3>
-                    <details>
-                        <summary>View partial answers</summary>
-                        <table class="table classic">
-                            <thead>
-                                <tr>
-                                    <td>Partial Answer</td>
-                                    <td>Response</td>
-                                </tr>
-                            </thead>
-                            {% for pseudo_answer in puzzle.pseudo_answers.all %}
-                                <tr>
-                                    <td>{{ pseudo_answer.answer }}</td>
-                                    <td>{{ pseudo_answer.response }}</td>
-                                    <td><a href="{% url 'edit_pseudo_answer' pseudo_answer.id %}">Edit/Delete</a></td>
-                                </tr>
-                            {% endfor %}
-                        </table>
-                    </details>
-                    <details>
-                        <summary>Add partial answer</summary>
-                        <form method="POST" id="add-hint" >
-                            {% csrf_token %}
-                            {{ pseudo_answer_form.non_field_errors }}
-                            {% for field in pseudo_answer_form %}
-                                <div class='columns {{ field.name }}'>
-                                    <div class="column form-column {{field.field.required|yesno:"is-required," }}">
-                                        {% if not field.is_hidden %}
-                                            <label class="label">
-                                                {{ field.label }}
-                                            </label>
-                                        {% endif %}
-                                        <div class="control">
-                                            {{ field }}
-                                            {{ field.errors }}
-                                        </div>
-                                        <p>
-                                            <small>
-                                                {{ field.help_text }}
-                                            </small>
-                                        </p>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                            <button type="submit" class="button is-small is-fullwidth" name="add_pseudo_answer">Add</button>
-                        </form>
-                    </details>
-                </div>
-
-                <div class="box">
-                    <h3>Hints ({{ puzzle.hints.all|length }}) <a class="button is-small is-light toggle-show" href="{% url 'puzzle_hints' puzzle.id %}">View all</a></h3>
-                    <details>
-                        <summary>View hints</summary>
-                        <table class="table classic">
-                            <thead>
-                                <tr>
-                                    <td>Order</td>
-                                    <td>Description</td>
-                                    <td>Keywords</td>
-                                    <td>Content</td>
-                                    <td></td>
-                                </tr>
-                            </thead>
-                            {% for hint in puzzle.hints.all|dictsort:"order" %}
-                                <tr>
-                                    <td>{{ hint.order }}</td>
-                                    <td>{{ hint.description }}</td>
-                                    <td>{{ hint.keywords }}</td>
-                                    <td>{{ hint.content }}</td>
-                                    <td><a href="{% url 'edit_hint' hint.id %}">Edit/Delete</a></td>
-                                </tr>
-                            {% endfor %}
-                        </table>
-                    </details>
-                    <details>
-                        <summary>Add hint</summary>
-                        <form method="POST" id="add-hint" >
-                            {% csrf_token %}
-                            {{ hint_form.non_field_errors }}
-                            {% for field in hint_form %}
-                                <div class='columns {{ field.name }}'>
-                                    <div class="column form-column {{field.field.required|yesno:"is-required," }}">
-                                        {% if not field.is_hidden %}
-                                            <label class="label">
-                                                {{ field.label }}
-                                            </label>
-                                        {% endif %}
-                                        <div class="control">
-                                            {{ field }}
-                                            {{ field.errors }}
-                                        </div>
-                                        <p>
-                                            <small>
-                                                {{ field.help_text }}
-                                            </small>
-                                        </p>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                            <button type="submit" class="button is-small is-fullwidth" name="add_hint">Add</button>
-                        </form>
-                    </details>
-                </div>
-
-                {% if AUTO_POSTPRODDING_ENABLED and perms.puzzle_editing.change_puzzlepostprod %}
-                    <div class="box">
-                        <h3>Postprod</h3>
-                        <div class="columns">
-                            {% if puzzle.has_postprod %}
-                                <div class="column is-half">
-                                    <a href="{% url 'puzzle_postprod' puzzle.id %}">View postprod data (or export again)</a><br>
-                                </div>
-                            {% endif %}
-                            <div class="column is-half">
-                                Download this puzzle's <a href="{% url 'puzzle_yaml' puzzle.id %}">puzzle.yaml</a>
-                            </div>
-                        </div>
-                        {% if puzzle.has_postprod %}
-                            Postprodded at <span class="timestamp" data-timestamp="{{puzzle.postprod.mtime.timestamp}}">{{puzzle.postprod.mtime}}</span>
-                            <form id="postprod-form" method="post">
-                                {% csrf_token %}
-                                Hosted at (leave blank for staging): {{ postprod_form.host_url }}
-                                <input type="submit" class="button is-info" name="edit_postprod" value="Edit">
-                            </form>
-                        {% else %}
-                            <div class="empty">(no postprod yet -
-                                <a href="{% url 'puzzle_postprod' puzzle.id %}">start one now</a>)</div>
-                        {% endif %}
-                    </div>
+                {% if puzzle.has_postprod %}<b>See <a href="{{ puzzle.postprod_solution_url }}">the postprodded solution</a>.</b><br/>{% endif %}
+                {% if puzzle.solution_google_doc_id %}
+                    <a href="https://docs.google.com/document/d/{{ puzzle.solution_google_doc_id }}/edit" target="_blank">Edit solution in Google Docs</a>
+                {% else %}
+                    <div class="empty">(no solution yet)</div>
                 {% endif %}
-
-                <div class="box">
-                    <h3>Factcheck</h3>
-                    {% if puzzle.has_factcheck %}
-                        <p>
-                            <a href="https://docs.google.com/spreadsheets/d/{{ puzzle.factcheck.google_sheet_id }}/edit" target="_blank">View factcheck sheet</a><br>
-                        </p>
-                        <button type="button" class="button is-small is-light toggle-show" data-target="factcheck-form" data-rehide="Hide editing">Edit</button>
-                        <form id="factcheck-form" method="post" class="hidden">
-                            {% csrf_token %}
-                            Output: {{ factcheck_form.output }}
-                            <input type="submit" class="button is-info" name="edit_factcheck" value="Submit">
-                        </form>
-                        <div>{{ puzzle.factcheck.output|linebreaks|default:"---" }}</div>
-                    {% else %}
-                        <div class="empty">(no factcheck yet - move to "Needs Factcheck" to autocreate a sheet)</div>
-                    {% endif %}
-                </div>
-
-                {% if TESTSOLVING_ALLOWED %}
-                    <form method="POST" action="{% url "testsolve_main" %}">
-                        {% csrf_token %}
-                        <h2>
-                            Testsolve Sessions
-                            <button class="button is-info is-small" type="submit" name="start_session" value="{{ puzzle.id }}">Start new testsolving session</button>
-                        </h2>
-                    </form>
-                    {% if testsolve_sessions %}
-                        <div class="block"><a href="{% url 'puzzle_feedback' puzzle.id %}">View all feedback for this puzzle</a> | <a href="{% url 'puzzle_feedback_csv' puzzle.id %}">Download as CSV</a></div>
-                        <div class="block">✅ = correct guess 🤷 = no guess yet</div>
-
-                        {% for session in testsolve_sessions %}
-                            {% with session.puzzle as puzzle %}
-                                <div class="message">
-                                    <div class="message-header">
-                                        <span><a href="{% url 'testsolve_one' session.id %}">Session {{ session.id }}</a> {{ session.has_correct_guess|yesno:"✅,🤷" }}</span>
-                                        Finished: {{ session.get_done_participants_display }}
-                                    </div>
-                                    <div class="message-body">
-                                        <div class="columns">
-                                            <div class="column is-three-quarters">
-                                                {{ session.notes|markdown }}
-                                                <strong>Participants:</strong>
-                                                {% user_list session.participants %}
-                                            </div>
-                                            <div class="column">
-                                                <div class="tags has-addons are-small">
-                                                    <span class="tag is-info">{{ session.get_average_diff | floatformat }}</span>
-                                                    <span class="tag is-dark">Avg Diff</span>
-                                                </div>
-                                                <div class="tags has-addons are-small">
-                                                    <span class="tag is-info">{{ session.get_average_fun | floatformat }}</span>
-                                                    <span class="tag is-dark">Avg Fun</span>
-                                                </div>
-                                                <div class="tags has-addons are-small">
-                                                    <span class="tag is-info">{{ session.get_average_hours | floatformat }}</span>
-                                                    <span class="tag is-dark">Avg Hours</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            {% endwith %}
-                        {% endfor %}
-
-                    {% else %}
-                        <div class="empty">(no testsolve sessions yet)</div>
-                    {% endif %}
-                {% endif %}
-
-                <div class="block">
-                    {% comment_list request.user puzzle comments comment_form True True %}
-                </div>
             </div>
+
+
+            <div class="box">
+                <h3>
+                    Resources
+                </h3>
+                {% if puzzle.resource_google_folder_id %}
+                    <a href="https://drive.google.com/drive/folders/{puzzle.resource_google_folder_id}" target="_blank">View resource folder in Google Drive</a>.
+                    You can use this folder for any additional materials, resources, documents, etc. that you need while writing.
+                {% else %}
+                    <div class="empty">(no solution yet)</div>
+                {% endif %}
+            </div>
+
+            <div class="box">
+                <h3>Partial Answers ({{ puzzle.pseudo_answers.all|length }})</h3>
+                <details>
+                    <summary>View partial answers</summary>
+                    <table class="table classic">
+                        <thead>
+                            <tr>
+                                <td>Partial Answer</td>
+                                <td>Response</td>
+                            </tr>
+                        </thead>
+                        {% for pseudo_answer in puzzle.pseudo_answers.all %}
+                            <tr>
+                                <td>{{ pseudo_answer.answer }}</td>
+                                <td>{{ pseudo_answer.response }}</td>
+                                <td><a href="{% url 'edit_pseudo_answer' pseudo_answer.id %}">Edit/Delete</a></td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </details>
+                <details>
+                    <summary>Add partial answer</summary>
+                    <form method="POST" id="add-hint" >
+                        {% csrf_token %}
+                        {{ pseudo_answer_form.non_field_errors }}
+                        {% for field in pseudo_answer_form %}
+                            <div class='columns {{ field.name }}'>
+                                <div class="column form-column {{field.field.required|yesno:"is-required," }}">
+                                    {% if not field.is_hidden %}
+                                        <label class="label">
+                                            {{ field.label }}
+                                        </label>
+                                    {% endif %}
+                                    <div class="control">
+                                        {{ field }}
+                                        {{ field.errors }}
+                                    </div>
+                                    <p>
+                                        <small>
+                                            {{ field.help_text }}
+                                        </small>
+                                    </p>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        <button type="submit" class="button is-small is-fullwidth" name="add_pseudo_answer">Add</button>
+                    </form>
+                </details>
+            </div>
+
+            <div class="box">
+                <h3>Hints ({{ puzzle.hints.all|length }}) <a class="button is-small is-light toggle-show" href="{% url 'puzzle_hints' puzzle.id %}">View all</a></h3>
+                <details>
+                    <summary>View hints</summary>
+                    <table class="table classic">
+                        <thead>
+                            <tr>
+                                <td>Order</td>
+                                <td>Description</td>
+                                <td>Keywords</td>
+                                <td>Content</td>
+                                <td></td>
+                            </tr>
+                        </thead>
+                        {% for hint in puzzle.hints.all|dictsort:"order" %}
+                            <tr>
+                                <td>{{ hint.order }}</td>
+                                <td>{{ hint.description }}</td>
+                                <td>{{ hint.keywords }}</td>
+                                <td>{{ hint.content }}</td>
+                                <td><a href="{% url 'edit_hint' hint.id %}">Edit/Delete</a></td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </details>
+                <details>
+                    <summary>Add hint</summary>
+                    <form method="POST" id="add-hint" >
+                        {% csrf_token %}
+                        {{ hint_form.non_field_errors }}
+                        {% for field in hint_form %}
+                            <div class='columns {{ field.name }}'>
+                                <div class="column form-column {{field.field.required|yesno:"is-required," }}">
+                                    {% if not field.is_hidden %}
+                                        <label class="label">
+                                            {{ field.label }}
+                                        </label>
+                                    {% endif %}
+                                    <div class="control">
+                                        {{ field }}
+                                        {{ field.errors }}
+                                    </div>
+                                    <p>
+                                        <small>
+                                            {{ field.help_text }}
+                                        </small>
+                                    </p>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        <button type="submit" class="button is-small is-fullwidth" name="add_hint">Add</button>
+                    </form>
+                </details>
+            </div>
+
+            {% if AUTO_POSTPRODDING_ENABLED and perms.puzzle_editing.change_puzzlepostprod %}
+                <div class="box">
+                    <h3>Postprod</h3>
+                    <div class="columns">
+                        {% if puzzle.has_postprod %}
+                            <div class="column is-half">
+                                <a href="{% url 'puzzle_postprod' puzzle.id %}">View postprod data (or export again)</a><br>
+                            </div>
+                        {% endif %}
+                        <div class="column is-half">
+                            Download this puzzle's <a href="{% url 'puzzle_yaml' puzzle.id %}">puzzle.yaml</a>
+                        </div>
+                    </div>
+                    {% if puzzle.has_postprod %}
+                        Postprodded at <span class="timestamp" data-timestamp="{{puzzle.postprod.mtime.timestamp}}">{{puzzle.postprod.mtime}}</span>
+                        <form id="postprod-form" method="post">
+                            {% csrf_token %}
+                            Hosted at (leave blank for staging): {{ postprod_form.host_url }}
+                            <input type="submit" class="button is-info" name="edit_postprod" value="Edit">
+                        </form>
+                    {% else %}
+                        <div class="empty">(no postprod yet -
+                            <a href="{% url 'puzzle_postprod' puzzle.id %}">start one now</a>)</div>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            <div class="box">
+                <h3>Factcheck</h3>
+                {% if puzzle.has_factcheck %}
+                    <p>
+                        <a href="https://docs.google.com/spreadsheets/d/{{ puzzle.factcheck.google_sheet_id }}/edit" target="_blank">View factcheck sheet</a><br>
+                    </p>
+                    <button type="button" class="button is-small is-light toggle-show" data-target="factcheck-form" data-rehide="Hide editing">Edit</button>
+                    <form id="factcheck-form" method="post" class="hidden">
+                        {% csrf_token %}
+                        Output: {{ factcheck_form.output }}
+                        <input type="submit" class="button is-info" name="edit_factcheck" value="Submit">
+                    </form>
+                    <div>{{ puzzle.factcheck.output|linebreaks|default:"---" }}</div>
+                {% else %}
+                    <div class="empty">(no factcheck yet - move to "Needs Factcheck" to autocreate a sheet)</div>
+                {% endif %}
+            </div>
+
+            {% if TESTSOLVING_ALLOWED %}
+                <form method="POST" action="{% url "testsolve_main" %}">
+                    {% csrf_token %}
+                    <h2>
+                        Testsolve Sessions
+                        <button class="button is-info is-small" type="submit" name="start_session" value="{{ puzzle.id }}">Start new testsolving session</button>
+                    </h2>
+                </form>
+                {% if testsolve_sessions %}
+                    <div class="block"><a href="{% url 'puzzle_feedback' puzzle.id %}">View all feedback for this puzzle</a> | <a href="{% url 'puzzle_feedback_csv' puzzle.id %}">Download as CSV</a></div>
+                    <div class="block">✅ = correct guess 🤷 = no guess yet</div>
+
+                    {% for session in testsolve_sessions %}
+                        {% with session.puzzle as puzzle %}
+                            <div class="message">
+                                <div class="message-header">
+                                    <span><a href="{% url 'testsolve_one' session.id %}">Session {{ session.id }}</a> {{ session.has_correct_guess|yesno:"✅,🤷" }}</span>
+                                    Finished: {{ session.get_done_participants_display }}
+                                </div>
+                                <div class="message-body">
+                                    <div class="columns">
+                                        <div class="column is-three-quarters">
+                                            {{ session.notes|markdown }}
+                                            <strong>Participants:</strong>
+                                            {% user_list session.participants %}
+                                        </div>
+                                        <div class="column">
+                                            <div class="tags has-addons are-small">
+                                                <span class="tag is-info">{{ session.get_average_diff | floatformat }}</span>
+                                                <span class="tag is-dark">Avg Diff</span>
+                                            </div>
+                                            <div class="tags has-addons are-small">
+                                                <span class="tag is-info">{{ session.get_average_fun | floatformat }}</span>
+                                                <span class="tag is-dark">Avg Fun</span>
+                                            </div>
+                                            <div class="tags has-addons are-small">
+                                                <span class="tag is-info">{{ session.get_average_hours | floatformat }}</span>
+                                                <span class="tag is-dark">Avg Hours</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endwith %}
+                    {% endfor %}
+
+                {% else %}
+                    <div class="empty">(no testsolve sessions yet)</div>
+                {% endif %}
+            {% endif %}
+
+            <div class="block">
+                {% comment_list request.user puzzle comments comment_form True True %}
+            </div>
+        </div>
 
 {% endblock %}

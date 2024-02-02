@@ -51,7 +51,6 @@ from puzzle_editing.forms import (
     LogisticsInfoForm,
     PuzzleAnswersForm,
     PuzzleCommentForm,
-    PuzzleContentForm,
     PuzzleFactcheckForm,
     PuzzleHintForm,
     PuzzleInfoForm,
@@ -60,7 +59,6 @@ from puzzle_editing.forms import (
     PuzzlePostprodForm,
     PuzzlePriorityForm,
     PuzzlePseudoAnswerForm,
-    PuzzleSolutionForm,
     PuzzleTagForm,
     PuzzleTaggingForm,
     RegisterForm,
@@ -459,7 +457,9 @@ def puzzle_new(request) -> HttpResponse:
                     tc.id,
                     f"This puzzle has been created in status **{cat}**!\n"
                     f"Access it at {url}\n"
-                    f"Brainstorming/solution sheet: {puzzle.solution}\n"
+                    f"Write your puzzle here: https://docs.google.com/document/d/{puzzle.content_google_doc_id}/edit\n"
+                    f"Write your solution here: https://docs.google.com/document/d/{puzzle.solution_google_doc_id}/edit\n"
+                    f"Kepe any additional resources you need to help with writing here: https://drive.google.com/drive/folders/{puzzle.resource_google_folder_id}\n"
                     f"Author(s): {', '.join(author_tags)}",
                 )
             add_comment(
@@ -960,21 +960,11 @@ def puzzle(request: AuthenticatedHttpRequest, id, slug=None):
             if form and form.is_valid():
                 form.save()
                 add_system_comment_here("Edited logistics info")
-        elif "edit_content" in request.POST:
-            form = PuzzleContentForm(request.POST, instance=puzzle)
-            if form.is_valid():
-                form.save()
-                add_system_comment_here("Edited puzzle content")
         elif "add_pseudo_answer" in request.POST:
             form = PuzzlePseudoAnswerForm(request.POST)
             if form.is_valid():
                 form.save()
                 add_system_comment_here("Added partial answer")
-        elif "edit_solution" in request.POST:
-            form = PuzzleSolutionForm(request.POST, instance=puzzle)
-            if form.is_valid():
-                form.save()
-                add_system_comment_here("Edited puzzle solution")
         elif "edit_postprod" in request.POST:
             form = EditPostprodForm(request.POST, instance=puzzle.postprod)
             if form.is_valid():
@@ -1136,11 +1126,9 @@ def puzzle(request: AuthenticatedHttpRequest, id, slug=None):
                 "factcheck_form": PuzzleFactcheckForm(instance=puzzle.factcheck)
                 if puzzle.has_factcheck()
                 else None,
-                "content_form": PuzzleContentForm(instance=puzzle),
                 "pseudo_answer_form": PuzzlePseudoAnswerForm(
                     initial={"puzzle": puzzle}
                 ),
-                "solution_form": PuzzleSolutionForm(instance=puzzle),
                 "priority_form": PuzzlePriorityForm(instance=puzzle),
                 "hint_form": PuzzleHintForm(initial={"puzzle": puzzle}),
                 "unspoiled": unspoiled,

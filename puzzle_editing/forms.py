@@ -507,17 +507,6 @@ class PuzzleCommentForm(forms.Form):
     content = forms.CharField(widget=MarkdownTextarea)
 
 
-class PuzzleContentForm(forms.ModelForm):
-    class Meta:
-        model = Puzzle
-        fields = ("content",)
-        widgets = MappingProxyType(
-            {
-                "content": MarkdownTextarea(attrs={"class": "textarea"}),
-            }
-        )
-
-
 class PuzzlePseudoAnswerForm(forms.ModelForm):
     class Meta:
         model = PseudoAnswer
@@ -537,17 +526,6 @@ class PuzzlePseudoAnswerForm(forms.ModelForm):
         labels = MappingProxyType(
             {
                 "answer": "Partial Answer",
-            }
-        )
-
-
-class PuzzleSolutionForm(forms.ModelForm):
-    class Meta:
-        model = Puzzle
-        fields = ("solution",)
-        widgets = MappingProxyType(
-            {
-                "solution": MarkdownTextarea(attrs={"class": "textarea"}),
             }
         )
 
@@ -630,12 +608,12 @@ class PuzzlePostprodForm(forms.ModelForm):
 
         # Try to guess the google doc id from the puzzle content or solution.
         else:
-            if doc_id := guess_google_doc_id(puzzle.content):
+            if doc_id := puzzle.content_google_doc_id:
                 self.fields["puzzle_google_doc_id"].initial = doc_id
                 self.fields[
                     "puzzle_google_doc_id"
                 ].help_text = f"(Automatically extracted from https://docs.google.com/document/d/{doc_id}/)"
-            if doc_id := guess_google_doc_id(puzzle.solution):
+            if doc_id := puzzle.solution_google_doc_id:
                 self.fields["solution_google_doc_id"].initial = doc_id
                 self.fields[
                     "solution_google_doc_id"

@@ -18,6 +18,11 @@ def enabled():
     return "credentials" in settings.DRIVE_SETTINGS
 
 
+TYPE_FOLDER = "application/vnd.google-apps.folder"
+TYPE_DOC = "application/vnd.google-apps.document"
+TYPE_SHEET = "application/vnd.google-apps.spreadsheet"
+
+
 class GoogleManager:
     __instance: Self | None = None
 
@@ -53,14 +58,27 @@ class GoogleManager:
             supportsAllDrives=True,
         ).execute()
 
-    def create_brainstorm_sheet(self, puzzle):
-        # Create a child folder in the puzzle draft folder
+    def make_file_public_view(self, file_id: str) -> None:
+        self.drive.permissions().create(
+            fileId=file_id,
+            body={"role": "reader", "type": "anyone"},
+            supportsAllDrives=True,
+        ).execute()
+
+    def make_file_public_edit(self, file_id: str) -> None:
+        self.drive.permissions().create(
+            fileId=file_id,
+            body={"role": "writer", "type": "anyone"},
+            supportsAllDrives=True,
+        ).execute()
+
+    def create_file(self, name: str, parent: str, type: str) -> str:
         file_metadata = {
-            "name": puzzle.spoiler_free_title(),
-            "mimeType": "application/vnd.google-apps.folder",
-            "parents": [settings.PUZZLE_DRAFT_FOLDER_ID],
+            "name": name,
+            "mimeType": type,
+            "parents": [parent],
         }
-        folder_id = (
+        return (
             self.drive.files()
             .create(
                 body=file_metadata,
@@ -70,22 +88,68 @@ class GoogleManager:
             .execute()
             .get("id")
         )
-        return self._create_sheet(
-            title=f"{puzzle.spoiler_free_title()} Brainstorm",
-            text="Puzzup Link",
-            url=f"{settings.PUZZUP_URL}/puzzle/{puzzle.id}",
-            folder_id=folder_id,
+
+    def create_puzzle_content_doc(self, puzzle):
+        content_id = self.create_file(
+            name=f"{puzzle.id:03d} ({puzzle.codename})",
+            type=TYPE_DOC,
+            parent=settings.PUZZLE_DRAFT_FOLDER_ID,
+        )
+        self.make_file_public_edit(content_id)
+        return content_id
+
+    def create_puzzle_solution_doc(self, puzzle):
+        # Create a solution document
+        solution_id = self.create_file(
+            name=f"{puzzle.id:03d} ({puzzle.codename}) Solution",
+            type=TYPE_DOC,
+            parent=settings.PUZZLE_SOLUTION_FOLDER_ID,
+        )
+        self.make_file_public_edit(solution_id)
+        return solution_id
+
+    def create_puzzle_resources_folder(self, puzzle):
+        resources_id = self.create_file(
+            name=f"{puzzle.id:03d} ({puzzle.codename}) Resources",
+            type=TYPE_FOLDER,
+            parent=settings.PUZZLE_RESOURCES_FOLDER_ID,
+        )
+        self.make_file_public_edit(resources_id)
+
+        return resources_id
+
+    def create_testsolving_folder(self, session):
+        folder_id = self.create_file(
+            name=f"Testsolve #{session.id} ({session.puzzle.codename})",
+            type=TYPE_FOLDER,
+            parent=settings.TESTSOLVING_FOLDER_ID,
         )
 
-    def create_testsolving_sheet(self, session):
         sheet_id = self._create_sheet(
-            title=f"{session.puzzle.name} (Testsolve #{session.id})",
+            title=f"{session.puzzle.name} (Testsolve #{session.id} Worksheet)",
             text="Puzzup Testsolve Session",
             url=f"{settings.PUZZUP_URL}/testsolve/{session.id}",
-            folder_id=settings.TESTSOLVING_FOLDER_ID,
+            folder_id=folder_id,
         )
+        self.make_file_public_edit(sheet_id)
 
-        return sheet_id
+        content_id = (
+            self.drive.files()
+            .copy(
+                fileId=session.puzzle.content_google_doc_id,
+                fields="id",
+                supportsAllDrives=True,
+                body={
+                    "name": f"{session.puzzle.name} (Testsolve #{session.id} read-only copy)",
+                    "parents": [folder_id],
+                },
+            )
+            .execute()
+            .get("id")
+        )
+        self.make_file_public_view(content_id)
+
+        return content_id, sheet_id
 
     def create_factchecking_sheet(self, puzzle):
         # Look up the existing puzzle folder, if any
