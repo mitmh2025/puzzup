@@ -495,7 +495,7 @@ class PuzzleInfoForm(forms.ModelForm):
                 "name": forms.TextInput(attrs={"class": "input"}),
                 "authors_addl": forms.TextInput(attrs={"class": "input"}),
                 "codename": forms.TextInput(attrs={"class": "input"}),
-                "summary": MarkdownTextarea(attrs={"rows": 6}),
+                "summary": MarkdownTextarea(attrs={"rows": 3}),
                 "description": MarkdownTextarea(attrs={"rows": 6}),
                 "flavor": MarkdownTextarea(attrs={"rows": 3}),
                 "editor_notes": forms.TextInput(attrs={"class": "input"}),
