@@ -385,7 +385,7 @@ class Puzzle(models.Model):
 
     summary = models.TextField(
         blank=True,
-        help_text="A **non-spoilery description.** For potential testsolvers to get a sense if it'll be something they enjoy (without getting spoiled). Useful to mention: how long it'll take, how difficult it is, good for 1 solver or for a group, etc.",
+        help_text="A **non-spoilery summary.** For potential testsolvers to get a sense if it'll be something they enjoy (without getting spoiled). Useful to mention: how long it'll take, how difficult it is, good for 1 solver or for a group, etc.",
     )
     description = models.TextField(
         help_text="A **spoilery description** of how the puzzle works."

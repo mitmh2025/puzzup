@@ -483,6 +483,12 @@ class PuzzleInfoForm(forms.ModelForm):
             "notes",
             "is_meta",
         )
+        labels = MappingProxyType(
+            {
+                "summary": "Non-spoilery summary",
+                "description": "Spoilery description",
+            }
+        )
         widgets = MappingProxyType(
             {
                 "authors": forms.CheckboxSelectMultiple(),
