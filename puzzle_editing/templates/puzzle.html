@@ -226,21 +226,21 @@
                         {{ puzzle.editor_notes|default:"--" }}
                     </div>
                 </div>
-                <div class="columns">
-                    <div class="column is-one-quarter">
-                        <h4>Flavor</h4>
-                        {% if user.is_artist %}
+                {% if user.is_artist %}
+                    <div class="columns">
+                        <div class="column is-one-quarter">
+                            <h4>Flavor</h4>
                             <form method="POST" id="change-flavor">
                                 {% csrf_token %}
                                 <input class="button is-small is-link" type="submit" name="{% if puzzle.flavor_approved_time %}un{% endif %}approve_flavor" value="{% if puzzle.flavor_approved_time %}Unapprove{% else %}Approve{% endif %}">
                             </form>
-                        {% endif %}
+                        </div>
+                        <div class="column">
+                            {{ puzzle.flavor|markdown|default:"--" }}
+                            <div class="empty">{% if puzzle.flavor_approved_time %}(approved){% endif %}</div>
+                        </div>
                     </div>
-                    <div class="column">
-                        {{ puzzle.flavor|markdown|default:"--" }}
-                        <div class="empty">{% if puzzle.flavor_approved_time %}(approved){% endif %}</div>
-                    </div>
-                </div>
+                {% endif %}
                 {% if puzzle.notes %}
                     <div class="columns">
                         <div class="column is-one-quarter">
