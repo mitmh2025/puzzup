@@ -4,9 +4,8 @@ from puzzle_editing import status
 
 BLOCKER_COLORS = {
     status.EIC: "lemonchiffon",
-    status.EDITORS: "lightsalmon",
-    status.AUTHORS: "palegreen",
-    status.TESTSOLVERS: "white",
+    status.AUTHORS_AND_EDITORS: "palegreen",
+    status.TESTSOLVERS: "lightpink",
     status.POSTPRODDERS: "orchid",
     status.FACTCHECKERS: "lightskyblue",
     status.NOBODY: "grey",
