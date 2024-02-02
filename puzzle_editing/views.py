@@ -1561,7 +1561,7 @@ def puzzle_people(request, id):
                     if new != old[key]:
                         changed.add(key)
             form.save()
-            if changed and discord.enabled():
+            if changed:
                 c, ch = discord.get_client_and_channel(puzzle)
                 if c and ch:
                     discord.sync_puzzle_channel(puzzle, ch)
