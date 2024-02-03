@@ -92,12 +92,9 @@ better
 best
 bewitched
 big
-big-hearted
 biodegradable
-bite-sized
 bitter
 black
-black-and-white
 bland
 blank
 blaring
@@ -160,7 +157,6 @@ circular
 classic
 clean
 clear
-clear-cut
 clever
 close
 closed
@@ -299,7 +295,6 @@ eager
 earnest
 early
 easy
-easy-going
 ecstatic
 edible
 educated
@@ -348,8 +343,6 @@ experienced
 expert
 extraneous
 extroverted
-extra-large
-extra-small
 fabulous
 failing
 faint
@@ -363,8 +356,6 @@ fancy
 fantastic
 far
 faraway
-far-flung
-far-off
 fast
 fat
 fatal
@@ -415,7 +406,6 @@ frail
 frank
 frayed
 free
-French
 fresh
 frequent
 friendly
@@ -460,7 +450,6 @@ glossy
 glum
 golden
 good
-good-natured
 gorgeous
 graceful
 gracious
@@ -497,9 +486,7 @@ handmade
 handsome
 handy
 happy
-happy-go-lucky
 hard
-hard-to-find
 harmful
 harmless
 harmonious
@@ -518,7 +505,6 @@ helpless
 hidden
 hideous
 high
-high-level
 hilarious
 hoarse
 hollow
@@ -549,8 +535,6 @@ idolized
 ignorant
 ill
 illegal
-ill-fated
-ill-informed
 illiterate
 illustrious
 imaginary
@@ -608,7 +592,6 @@ irritating
 itchy
 jaded
 jagged
-jam-packed
 jaunty
 jealous
 jittery
@@ -671,7 +654,6 @@ loathsome
 lone
 lonely
 long
-long-term
 loose
 lopsided
 lost
@@ -688,7 +670,6 @@ lumpy
 lustrous
 luxurious
 mad
-made-up
 magnificent
 majestic
 major
@@ -792,7 +773,6 @@ offbeat
 offensive
 official
 old
-old-fashioned
 only
 open
 optimal
@@ -904,7 +884,6 @@ queasy
 querulous
 questionable
 quick
-quick-witted
 quiet
 quintessential
 quirky
@@ -981,10 +960,7 @@ scratchy
 scrawny
 second
 secondary
-second-hand
 secret
-self-assured
-self-reliant
 selfish
 sentimental
 separate
@@ -1006,7 +982,6 @@ shocked
 shocking
 shoddy
 short
-short-term
 showy
 shrill
 shy
@@ -1053,7 +1028,6 @@ sorrowful
 soulful
 soupy
 sour
-Spanish
 sparkling
 sparse
 specific
@@ -1111,7 +1085,6 @@ superb
 superficial
 superior
 supportive
-sure-footed
 surprised
 suspicious
 svelte
@@ -1285,14 +1258,6 @@ weepy
 weighty
 weird
 welcome
-well-documented
-well-groomed
-well-informed
-well-lit
-well-made
-well-off
-well-to-do
-well-worn
 wet
 which
 whimsical
@@ -1303,7 +1268,6 @@ whole
 whopping
 wicked
 wide
-wide-eyed
 wiggly
 wild
 willing

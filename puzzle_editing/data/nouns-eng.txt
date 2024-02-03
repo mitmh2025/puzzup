@@ -171,7 +171,6 @@ horseshoe
 hospital
 hotel
 ice
-ice cream
 india
 iron
 ivory
@@ -201,7 +200,6 @@ line
 link
 lion
 litter
-loch ness
 lock
 log
 london
@@ -231,7 +229,6 @@ mug
 nail
 needle
 net
-new york
 night
 ninja
 note
@@ -307,7 +304,6 @@ school
 scientist
 scorpion
 screen
-scuba diver
 seal
 server
 shadow
