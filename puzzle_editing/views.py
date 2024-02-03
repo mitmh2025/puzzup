@@ -459,7 +459,7 @@ def puzzle_new(request) -> HttpResponse:
                     f"Access it at {url}\n"
                     f"Write your puzzle here: https://docs.google.com/document/d/{puzzle.content_google_doc_id}/edit\n"
                     f"Write your solution here: https://docs.google.com/document/d/{puzzle.solution_google_doc_id}/edit\n"
-                    f"Kepe any additional resources you need to help with writing here: https://drive.google.com/drive/folders/{puzzle.resource_google_folder_id}\n"
+                    f"Keep any additional resources you need to help with writing here: https://drive.google.com/drive/folders/{puzzle.resource_google_folder_id}\n"
                     f"Author(s): {', '.join(author_tags)}",
                 )
             add_comment(
