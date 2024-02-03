@@ -1,2 +1,2 @@
 release: python manage.py migrate
-web: gunicorn puzzup.wsgi
+web: daphne puzzup.asgi:application

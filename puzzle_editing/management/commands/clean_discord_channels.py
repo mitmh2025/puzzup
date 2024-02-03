@@ -1,90 +1,10 @@
+import contextlib
 import logging
-import re
-from collections import Counter
-from operator import attrgetter, itemgetter
-from typing import TypedDict
 
-from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from puzzle_editing import discord_integration as discord
-from puzzle_editing import status
-from puzzle_editing.discord import Category
-from puzzle_editing.discord.channel import TextChannel
-from puzzle_editing.models import Puzzle
-
-
-def get_status_category(s):
-    display = status.get_display(s)
-    if settings.DISCORD_CATEGORY_PREFIX:
-        display = settings.DISCORD_CATEGORY_PREFIX + display
-    return display
-
-
-_stats = "|".join([re.escape(get_status_category(s)) for s in status.STATUSES])
-_cat_re = re.compile(rf"^(?P<status>{_stats})(-(?P<num>\d+))?$")
-
-_stat_order = {
-    get_status_category(s): status.STATUSES.index(s) for s in status.STATUSES
-}
-
-
-class DryRunError(Exception):
-    """Indicates a dry run tried to write to the server."""
-
-
-class DryRunClient:
-    """A discord client that caches things like the set of all channels.
-
-    Not useful for the site in general, because channels can change in other
-    ways, but e.g. they probably won't change *during one run* of a management
-    command (if they do, the command might break, but that's a small price to
-    pay for making a command much, much faster).
-    """
-
-    dry_run: bool
-
-    def __init__(self, client: discord.Client, dry_run=True, logger=None):
-        self.dry_run = dry_run
-        self.logger = logger or logging.getLogger("puzzle_editing.commands")
-        self._client = client
-        channel_data = client._load_all_channels()
-        self.channels = channel_data.tcs
-        self.cats = channel_data.cats
-
-    def _debug(self, msg: str, *args, **kwargs):
-        if self.dry_run:
-            msg = "DRY_RUN: " + msg
-        self.logger.debug(msg, *args, **kwargs)
-
-    def save_channel(self, c: TextChannel) -> TextChannel:
-        self._debug(f"Saving channel {c.name}")
-        if self.dry_run:
-            return c
-        return self._client.save_channel(c)
-
-    def save_category(self, c: Category) -> Category:
-        self._debug(f"Saving category {c.name}")
-        if self.dry_run:
-            return c
-        return self._client.save_category(c)
-
-    def save_channel_to_cat(self, c: TextChannel, catname: str) -> TextChannel:
-        self._debug(f"Saving channel {c.name} to category {catname}")
-        if self.dry_run:
-            return c
-        return self._client.save_channel_to_cat(c, catname)
-
-    def delete_channel(self, channel_id: str) -> dict:
-        """Delete a channel"""
-        if channel_id not in self.channels:
-            self._debug(f"Channel {channel_id} does not exist")
-            return {}
-        ch = self.channels[channel_id]
-        self._debug(f"Deleting channel {ch.name}")
-        if self.dry_run:
-            return {}
-        return self._client.delete_channel(channel_id)
+from puzzle_editing.models import DiscordCategoryCache, DiscordTextChannelCache, Puzzle
 
 
 class Command(BaseCommand):
@@ -93,8 +13,8 @@ class Command(BaseCommand):
     def __init__(self, *a, **kw):
         super().__init__(*a, **kw)
         self.logger = logging.getLogger("puzzle_editing.commands")
-        self.d: DryRunClient = None  # type: ignore
         self.dry_run = True
+        self.client = discord.get_client()
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -128,10 +48,14 @@ class Command(BaseCommand):
         """
         puzzles = Puzzle.objects.all()
         self.logger.info(f"Organizing {len(puzzles)} puzzles...")
-        p: Puzzle
         for p in puzzles:
-            ch = self.d.channels.get(p.discord_channel_id)
-            if not ch:
+            cached_channel = None
+            if p.discord_channel_id:
+                with contextlib.suppress(DiscordTextChannelCache.DoesNotExist):
+                    cached_channel = DiscordTextChannelCache.objects.get(
+                        id=p.discord_channel_id
+                    )
+            if not cached_channel:
                 # channel id is empty OR points to an id that doesn't exist
                 if p.discord_channel_id:
                     self.logger.warning(
@@ -144,88 +68,67 @@ class Command(BaseCommand):
                         self.logger.warning("Refusing to fix in dryrun mode.")
                     else:
                         p.discord_channel_id = ""
+                        p.save()
                 continue
 
-            ch = discord.sync_puzzle_channel(p, ch.copy(deep=True))
-            cat = p.get_status_display()
-            self.d.save_channel_to_cat(ch, cat)
+            if not self.dry_run:
+                discord.sync_puzzle_channel(self.client, p)
 
     def organize_categories(self, delete_empty: bool, sort_cats: bool):
         """Organize the status categories.
 
-        If delete_empty is True, status categories (i.e. any category whose
-        name is the display name of a status, optionally followed by -N for
-        some integer N) without channels in them will be deleted.
+        If sort_cats is True, status categories will be sorted, by status order
+        and then by number, and all categories will be placed at the end of the
+        list.
+
+        If delete_empty is True, status categories without channels in them will
+        be deleted.
 
         If sort_cats is True, status categories will be sorted, by status order
-        and then by number, so that e.g. Initial Idea will be first, followed
-        by Initial Idea-1, Initial Idea-2 etc. if those exist, then the same
-        for Awaiting Editor, etc.
+        and then by number, so that e.g. Initial Idea will be first, followed by
+        Initial Idea-1, Initial Idea-2 etc. if those exist, then the same for
+        Awaiting Editor, etc.
         """
-        # Get categories and parents of channels
-        cat_count = Counter[str]()
-        status_cat_ids = set()
 
-        class ProcessedCat(TypedDict):
-            puzzup_status: str
-            status_sort_key: tuple[int, int]
-            og_cat: Category
-
-        cats: list[ProcessedCat] = []
-        for c in self.d.channels.values():
-            if c.parent_id:
-                cat_count[c.parent_id] += 1
-        for cached_cat in self.d.cats.values():
-            match = _cat_re.match(cached_cat.name)
-            # This is a status category
-            if match:
-                stat = match.group("status")
-                num = match.group("num") or 0
-                num = int(num)
-                cats.append(
+        # Put all status categories after the current max position. Sort first
+        # so we don't have to worry about cache consistency. Discord doesn't
+        # require new positions to be consequtive, so we can just start higher
+        # than the possible number of channels
+        starting_position = 1000
+        if sort_cats:
+            new_order = (
+                DiscordCategoryCache.objects.exclude(puzzle_status="")
+                .order_by("puzzle_status", "puzzle_status_index")
+                .all()
+            )
+            new_order_request = []
+            for i, cat in enumerate(new_order):
+                if self.dry_run:
+                    self.logger.info(
+                        f"Would move category {cat.name} to position {starting_position + i}"
+                    )
+                new_order_request.append(
                     {
-                        "puzzup_status": match.group("status"),
-                        "status_sort_key": (_stat_order[stat], num),
-                        "og_cat": cached_cat,
+                        "id": cat.id,
+                        "position": starting_position + i,
                     }
                 )
-                status_cat_ids.add(cached_cat.id)
+            if not self.dry_run:
+                self.client._request(
+                    "patch",
+                    f"/guilds/{self.client.guild_id}/channels",
+                    json=new_order_request,
+                )
 
+        # Delete any status categories with no channels in them
         if delete_empty:
-            self.logger.info(f"Checking {len(cats)} categories for emptiness.")
-            for cat in list(cats):
-                if cat["status_sort_key"][1] == 0:
-                    # Don't delete the base 'Initial Idea', etc.
-                    continue
-                if not cat_count[cat["og_cat"].id]:
-                    self.logger.info(f"Deleting empty category {cat["og_cat"].name}")
-                    self.d.delete_channel(cat["og_cat"].id)
-                    cats.remove(cat)
-
-        if sort_cats:
-            cats.sort(key=itemgetter("status_sort_key"))
-            minpos = min(cat["og_cat"].position or 0 for c in cats)
-
-            # cats among or after status cats, but not status cats (hopefully empty)
-            others = [
-                c
-                for c in self.d.cats.values()
-                if (c.position or 0) >= minpos and c.id not in status_cat_ids
-            ]
-            others.sort(key=attrgetter("position"))
-            self.logger.info(
-                f"Rearranging {len(cats)} status categories and"
-                f" {len(others)} post-status categories."
-            )
-
-            for i, other_cat in enumerate(others):
-                other_cat.position = minpos + i
-                self.d.save_category(other_cat)
-            minpos += len(others)
-            for i, cat in enumerate(cats):
-                og_cat: Category = cat["og_cat"]
-                og_cat.position = minpos + i
-                self.d.save_category(og_cat)
+            for cat in DiscordCategoryCache.objects.filter(
+                text_channels__isnull=True
+            ).exclude(puzzle_status=""):
+                if self.dry_run:
+                    self.logger.info(f"Would delete category {cat.name}")
+                else:
+                    self.client.delete_channel(cat.id)
 
     def handle(self, *args, **options):
         delete_cats = options["delete_cats"] or options["all"]
@@ -244,12 +147,6 @@ class Command(BaseCommand):
         if not client:
             self.logger.error("No discord client found. Exiting.")
             return
-        # Set up our client as the default
-        self.d = DryRunClient(
-            client,
-            dry_run=self.dry_run,
-            logger=self.logger,
-        )
         # Clean up each puzzle
         self.organize_puzzles()
         # Process categories

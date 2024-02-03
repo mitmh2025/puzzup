@@ -478,7 +478,8 @@ class Puzzle(models.Model):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        # Make sure lead author is always spoiled (see update_spoiled below for the m2m version)
+        # Make sure lead author is always spoiled and is always an author (see update_spoiled below for the m2m version)
+        self.authors.add(self.lead_author)
         self.spoiled.add(self.lead_author)
 
     def get_absolute_url(self):
@@ -731,6 +732,8 @@ class Puzzle(models.Model):
 @receiver(post_save, sender=Puzzle)
 def post_save_puzzle(sender, instance, created, **kwargs):
     changed = False
+
+    discord.sync_puzzle_channel(discord.get_client(), instance)
 
     if google.enabled():
         gm = google.GoogleManager.instance()
@@ -1162,13 +1165,12 @@ def create_testsolve_thread(
         if c:
             puzzle = instance.puzzle
 
-            thread = discord.build_testsolve_thread(instance, c.guild_id)
-            thread = c.save_thread(thread)
+            discord.make_testsolve_thread(c, instance)
 
-            author_tags = discord.get_tags(puzzle.authors.all(), False)
-            editor_tags = discord.get_tags(puzzle.editors.all(), False)
+            author_tags = discord.mention_users(puzzle.authors.all(), False)
+            editor_tags = discord.mention_users(puzzle.editors.all(), False)
             c.post_message(
-                thread.id,
+                instance.discord_thread_id,
                 f"New testsolve session created for {puzzle.name}.\n"
                 # This is a hack to auto-add authors and editors to the thread
                 # by tagging them (to get around Discord rate limits).
@@ -1178,12 +1180,12 @@ def create_testsolve_thread(
 
             if content_id and sheet_id:
                 c.post_message(
-                    thread.id,
+                    instance.discord_thread_id,
                     f"Here is a **read-only copy** of the puzzle for you to testsolve: https://docs.google.com/document/d/{content_id}\n"
                     f"Here is a Google Sheet to work in: https://docs.google.com/spreadsheets/d/{sheet_id}",
                 )
 
-            discord_thread_id = thread.id
+            discord_thread_id = instance.discord_thread_id
     except Exception as e:
         logger.exception("Failed to create Discord thread", exc_info=e)
 
@@ -1410,12 +1412,10 @@ def add_testsolver_to_thread(
     c = discord.get_client()
     if c:
         session = instance.session
-        thread = discord.get_thread(c, session)
-        if not thread:
-            return
-        for did in discord.get_dids([instance.user]):
-            if did:
-                c.add_member_to_thread(thread.id, did)
+        if instance.user.discord_user_id:
+            c.add_member_to_thread(
+                session.discord_thread_id, instance.user.discord_user_id
+            )
 
 
 class TestsolveGuess(models.Model):
@@ -1561,3 +1561,60 @@ class SiteSetting(models.Model):
             return False
         except ValueError:
             return False
+
+
+class DiscordCategoryCache(models.Model):
+    """Cache of Discord categories, maintained by the discord_daemon task"""
+
+    _CATEGORY_STATUS_RE = "|".join(
+        [re.escape(status.get_display(s)) for s in status.STATUSES]
+    )
+    _CATEGORY_RE = re.compile(
+        rf"^{settings.DISCORD_CATEGORY_PREFIX or ""}(?P<description>{_CATEGORY_STATUS_RE})(-(?P<num>\d+))?$"
+    )
+
+    id = models.CharField(primary_key=True, max_length=20)  # Discord snowflake ID
+    name = models.CharField(max_length=100)
+    position = models.IntegerField()
+    puzzle_status = models.CharField(max_length=status.MAX_LENGTH, blank=True)
+    puzzle_status_index = models.IntegerField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.id} ({self.name})"
+
+    def save(self, *args, **kwargs):
+        if match := DiscordCategoryCache._CATEGORY_RE.match(self.name):
+            puzzle_status = None
+            for s, d in status.DESCRIPTIONS.items():
+                if d == match.group("description"):
+                    puzzle_status = s
+                    break
+            if puzzle_status:
+                self.puzzle_status = puzzle_status
+                num = match.group("num")
+                self.puzzle_status_index = int(num or 0)
+        super().save(*args, **kwargs)
+
+
+class DiscordTextChannelCache(models.Model):
+    """Cache of Discord channels, maintained by the discord_daemon task"""
+
+    id = models.CharField(primary_key=True, max_length=20)  # Discord snowflake ID
+    name = models.CharField(max_length=100)
+    topic = models.CharField(max_length=100)
+    position = models.IntegerField()
+    category = models.ForeignKey(
+        DiscordCategoryCache,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="text_channels",
+        db_constraint=False,
+    )
+    permission_overwrites = models.JSONField()
+
+    def __str__(self):
+        return f"{self.id} ({self.name})"
+
+    @property
+    def url(self):
+        return f"https://discord.com/channels/{settings.DISCORD_GUILD_ID}/{self.id}"

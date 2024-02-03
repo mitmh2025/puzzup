@@ -258,11 +258,11 @@ ALL_STATUSES = [
 ]
 
 
-def get_message_for_status(status, puzzle, status_display):
+def get_message_for_status(status, puzzle):
     additional_msg = ""
     if status == AWAITING_POSTPROD_APPROVAL:
         postprod_url = puzzle.postprod_url
         if postprod_url:
             additional_msg = f"\nView the postprod at {postprod_url}"
 
-    return f"This puzzle is now **{status_display}**." + additional_msg
+    return f"This puzzle is now **{get_display(status)}**." + additional_msg

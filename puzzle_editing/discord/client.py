@@ -1,13 +1,8 @@
 import logging
 import re
-from typing import Any, TypeVar
+from typing import Any
 
-import pydantic
 import requests
-from django.conf import settings
-
-from .cache import TimedCache
-from .channel import Category, Channel, Object, TextChannel, Thread
 
 logger = logging.getLogger(__name__)
 
@@ -21,19 +16,6 @@ MsgPayload = str | JsonDict
 
 class DiscordError(Exception):
     """Generic discord integration failure."""
-
-
-ChannelCache = TimedCache[str, TextChannel]
-
-
-class ChannelData(pydantic.BaseModel):
-    tcs: dict[str, TextChannel] = pydantic.Field(default_factory=dict)
-    cats: dict[str, Category] = pydantic.Field(default_factory=dict)
-    other: dict[str, Channel] = pydantic.Field(default_factory=dict)
-
-    @property
-    def total(self):
-        return len(self.tcs) + len(self.cats) + len(self.other)
 
 
 def sanitize_channel_name(name: str) -> str:
@@ -63,63 +45,6 @@ def sanitize_channel_name(name: str) -> str:
     return name
 
 
-C = TypeVar("C", bound=Object)
-
-
-def delta(old: C, new: C) -> JsonDict:
-    """Returns a dict of changed fields only.
-
-    Specifically, the return value will only contain "id" plus the value of
-    'new' for any field where 'new' differs from 'old'.
-
-    >>> c1 = TextChannel(id="12345", guild_id="guild")
-    >>> c2 = c1.copy(deep=True)
-    >>> delta(c1, c2)
-    {'id': '12345'}
-    >>> c1.name = "puzzle-name-🧩"
-    >>> c2.name = "  @Puzzle. .Name! 🧩!!@#$%!"
-    >>> delta(c1, c2)
-    {'id': '12345'}
-    >>> c2.name = "P!name🧩"
-    >>> delta(c1, c2)
-    {'id': '12345', 'name': 'P!name🧩'}
-    >>> c2.make_private()
-    >>> c2.topic = "http://www.google.com/"
-    >>> delta(c1, c2) == dict(
-    ...     id = '12345',
-    ...     name = 'P!name🧩',
-    ...     permission_overwrites = [{'id': 'guild', 'type': 0, 'allow': '0', 'deny': '1024'}],
-    ...     topic = "http://www.google.com/")
-    True
-    >>> c1.make_private()
-    >>> c1.name = "pname🧩"
-    >>> delta(c1, c2)
-    {'id': '12345', 'topic': 'http://www.google.com/'}
-    """
-    d1 = old.dict()
-    d2 = new.dict()
-
-    def include(field: str):
-        """Returns True if field should be included.
-
-        A field is included if it's "id", or if the two dicts differ in it; if
-        the field is 'name', then equality is tested on the sanitized versions.
-        """
-        if field == "id":
-            return True
-        if field == "name":
-            n1 = sanitize_channel_name(old.name or "")
-            n2 = sanitize_channel_name(new.name or "")
-            return n1 != n2
-        return d1.get(field) != d2.get(field)
-
-    result = {}
-    for field in d2:
-        if include(field):
-            result[field] = d2[field]
-    return result
-
-
 class Client:
     """
     A barebones discord API library.
@@ -128,21 +53,13 @@ class Client:
     _api_base_url = "https://discord.com/api/v9"
 
     def __init__(
-        self, token: str, guild_id: str, channel_cache: ChannelCache, thread_cache
+        self,
+        token: str,
+        guild_id: str,
     ):
         """Initialise the Discord client object"""
         self._token = token
         self.guild_id = guild_id
-        self._channel_cache = channel_cache
-        self._thread_cache = thread_cache
-
-    def _cache_tc(self, ch: TextChannel):
-        """Save a channel to our cache."""
-        self._channel_cache.set(ch.id, ch)
-
-    def _cache_thread(self, thread: Thread):
-        """Save a thread to our cache."""
-        self._thread_cache.set(thread.id, thread)
 
     def _raw_request(
         self, method: str, endpoint: str, json: Any = None
@@ -175,185 +92,38 @@ class Client:
         resp.raise_for_status()
         return content
 
-    def _load_all_channels(self) -> ChannelData:
-        """Load all channels in our guild."""
-        cd = ChannelData()
-        channels = self._request("get", f"/guilds/{self.guild_id}/channels")
-        for ch in channels:
-            if ch["type"] == 4:  # Category
-                cd.cats[ch["id"]] = Category.parse_obj(ch)
-            elif ch["type"] == 0:  # Text channel
-                tc = TextChannel.parse_obj(ch)
-                cd.tcs[tc.id] = tc
-                self._cache_tc(tc)
-            else:  # Voice and others
-                cd.other[ch["id"]] = Channel.parse_obj(ch)
-        return cd
+    def create_thread(self, channel: str, params: JsonDict) -> JsonDict:
+        pth = f"/channels/{channel}/threads"
+        return self._request("post", pth, params)
 
-    def get_all_cats(self) -> dict[str, Category]:
-        """Get all category channels, by id."""
-        return self._load_all_channels().cats
+    def create_channel(self, params: JsonDict) -> JsonDict:
+        """Create a new channel in the guild."""
+        pth = f"/guilds/{self.guild_id}/channels"
+        return self._request("post", pth, params)
 
-    def _get_channel(self, channel_id: str) -> JsonDict:
-        """Get a specific channel"""
-        return self._request("get", f"/channels/{channel_id}")
+    def update_channel(self, channel: str, updates: JsonDict) -> JsonDict:
+        """Update a channel's settings."""
+        pth = f"/channels/{channel}"
+        return self._request("patch", pth, updates)
 
-    def get_text_channel(self, channel_id: str) -> TextChannel:
-        """Get a text channel.
-
-        Note that multiple calls to get_text_channel(id) will return DISTINCT
-        objects, not multiple copies of the same object.
-        """
-        tc = self._channel_cache.get(channel_id)
-        if tc is None:
-            tc = TextChannel.parse_obj(self._get_channel(channel_id))
-            self._cache_tc(tc)
-        return tc.copy(deep=True)
-
-    def get_thread(self, thread_id: str) -> Thread:
-        thread = self._thread_cache.get(thread_id)
-        if thread is None:
-            thread = Thread.parse_obj(self._get_channel(thread_id))
-            self._thread_cache.set(thread.id, thread)
-        return thread.copy(deep=True)
-
-    def save_channel_to_cat(self, tc: TextChannel, catname: str) -> TextChannel:
-        """Just like save_channel, but specifying a category by name.
-
-        This will attempt to put the channel in the category `catname`,
-        creating that category if it doesn't exist. If the category is full, it
-        will try `catname`-1, then `catname`-2, etc. until it finds one that
-        has space.
-        """
-        if settings.DISCORD_CATEGORY_PREFIX is not None:
-            catname = f"{settings.DISCORD_CATEGORY_PREFIX}{catname}"
-        name_re = re.compile(r"^" + re.escape(catname) + r"(-\d+)?$", re.I)
-        cats = self.get_all_cats()
-        parent = cats.get(tc.parent_id) if tc.parent_id else None
-        if parent and name_re.match(parent.name):
-            # We're already in a matching channel
-            return self.save_channel(tc)
-
-        cats_by_name = {cat.name: cat for cat in cats.values()}
-        for i in range(10):
-            name = catname if i == 0 else f"{catname}-{i}"
-            cat = cats_by_name.get(name)
-            if cat is not None:
-                if parent is cat:
-                    # This is the channel we're already in - save normally.
-                    return self.save_channel(tc)
-                # A channel by this name exists - try to move to it.
-                tc.parent_id = cat.id
-                try:
-                    return self.save_channel(tc)
-                except requests.HTTPError as e:
-                    msg = e.response.json()
-                    pids = msg.get("errors", {}).get("parent_id", {})
-                    errs = pids.get("_errors", [])
-                    max_ch_code = "CHANNEL_PARENT_MAX_CHANNELS"
-                    if errs and errs[0].get("code") == max_ch_code:
-                        # This channel has too many children, so keep going
-                        continue
-                    # Something else went wrong, just raise it.
-                    raise
-            else:
-                # A category doesn't exist -> create it and move to it.
-                new_cat = self.create_category(name)
-                tc.parent_id = new_cat.id
-                return self.save_channel(tc)
-        # If we get to here, then we tried 10 possible categories and they
-        # were all full, which means the server is maxed out on channels.
-        msg = f"All 500 channels are in category {cat}?!"
-        raise DiscordError(msg)
-
-    def save_channel(self, tc: TextChannel) -> TextChannel:
-        """Saves a text channel.
-
-        If the channel has no id, this will create a new channel from it. If it
-        DOES have an id, this will patch the existing channel.
-
-        Note that this will include all fields on the channel, even ones
-        pydantic doesn't recognize, if they were provided at creation. This
-        means that loading a channel and then saving it will preserve its
-        properties, even the ones we didn't model.
-
-        For patching existing channels, values that were never set will not be
-        posted.
-
-        Thus, save_channel(TextChannel(id="x", guild_id="y", topic="foo")) will
-        update the topic of channel x WITHOUT modifying any other features -
-        specifically, the update we send to discord will be a dict with just
-        id, guild_id, and topic).
-
-        Pydantic is smart enough to know what's been set, so e.g. in the above
-        example including parent_id=None means that the save will clear the
-        parent_id (even though None is the default value for parent_id). In
-        other words, if you want to set a value to whatever the TextChannel
-        default is for that value, you must specify it explicitly, otherwise we
-        treat it as "keep the current value."
-        """
-        if not tc.id:
-            pth = f"/guilds/{self.guild_id}/channels"
-            rawch = self._request("post", pth, tc.dict(exclude={"id"}))
-        else:
-            old = self.get_text_channel(tc.id)
-            diff = delta(old, tc)
-            if list(diff.keys()) == ["id"]:
-                # Nothing changed -> no-op
-                return tc
-            rawch = self._request("patch", f"/channels/{tc.id}", diff)
-        newtc = TextChannel.parse_obj(rawch)
-        self._cache_tc(newtc)
-        return newtc
-
-    def save_category(self, cat: Category) -> Category:
-        if not cat.id:
-            rawcat = self.create_category(cat.name)
-            cat.id = rawcat.id
-        rawcat = self._request("patch", f"/channels/{cat.id}", cat.dict(exclude={"id"}))
-        newcat = Category.parse_obj(rawcat)
-        return newcat
-
-    def save_thread(self, thread: Thread) -> Thread:
-        if not thread.id:
-            pth = f"/channels/{thread.parent_id}/threads"
-            rawch = self._request("post", pth, thread.dict(exclude={"id"}))
-        else:
-            old = self.get_thread(thread.id)
-            diff = delta(old, thread)
-            if list(diff.keys()) == ["id"]:
-                # Nothing changed -> no-op
-                return thread
-            rawch = self._request("patch", f"/channels/{thread.id}", diff)
-        newThread = Thread.parse_obj(rawch)
-        self._cache_thread(newThread)
-        return newThread
-
-    def create_category(self, name: str) -> Category:
+    def create_category(self, name: str) -> JsonDict:
         """Creates a new category channel in the guild."""
         json = {"name": name, "type": 4}
         pth = f"/guilds/{self.guild_id}/channels"
-        return Category.parse_obj(self._request("post", pth, json))
-
-    def get_members_in_guild(self) -> list:
-        """Get the first 1000 members in the guild."""
-        return self._request("get", f"/guilds/{self.guild_id}/members?limit=1000")
+        return self._request("post", pth, json)
 
     def get_member_by_id(self, discord_id: str) -> JsonDict | None:
         """Find a member by discord id."""
-        members = self.get_members_in_guild()
-        for member in members:
-            if member["user"]["id"] == discord_id.strip():
-                return member
-        return None
+        try:
+            return self._request("get", f"/guilds/{self.guild_id}/members/{discord_id}")
+        except requests.HTTPError as e:
+            if e.response.status_code == 404:
+                return None
+            raise
 
     def delete_channel(self, channel_id: str) -> dict:
         """Delete a channel"""
-        self._channel_cache.drop(channel_id)
         return self._request("delete", f"/channels/{channel_id}")
-
-    def get_guild_roles(self) -> list:
-        return self._request("get", f"/guilds/{self.guild_id}/roles")
 
     def post_message(self, channel_id: str, payload: MsgPayload) -> JsonDict:
         """Post a message to a channel.
@@ -378,3 +148,13 @@ class Client:
 
     def pin_message(self, channel_id: str, message_id: str):
         self._request("put", f"/channels/{channel_id}/pins/{message_id}")
+
+    def set_channel_permission(
+        self, channel_id: str, entity_id: str, permission: JsonDict
+    ) -> None:
+        self._request(
+            "put", f"/channels/{channel_id}/permissions/{entity_id}", permission
+        )
+
+    def delete_channel_permission(self, channel_id: str, entity_id: str) -> None:
+        self._request("delete", f"/channels/{channel_id}/permissions/{entity_id}")

@@ -286,8 +286,6 @@ class UserTimezoneForm(forms.ModelForm):
 class SupportForm(forms.ModelForm):
     def __init__(self, user, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if not user.is_staff:
-            del self.fields["discord_channel_id"]
         self.fields["authors"] = UserMultipleChoiceField(initial=user)
         self.fields["notes"].label = "Answer & Round requests"
 
@@ -451,8 +449,6 @@ class TestsolveFinderForm(forms.Form):
 class PuzzleInfoForm(forms.ModelForm):
     def __init__(self, user, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if not user.is_staff:
-            del self.fields["discord_channel_id"]
         self.fields["authors"] = UserMultipleChoiceField(initial=user)
         self.fields["lead_author"] = UserChoiceField(
             initial=user,
@@ -477,7 +473,6 @@ class PuzzleInfoForm(forms.ModelForm):
             "authors",
             "lead_author",
             "authors_addl",
-            "discord_channel_id",
             "summary",
             "description",
             "editor_notes",

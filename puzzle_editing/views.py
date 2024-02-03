@@ -1,15 +1,13 @@
+import contextlib
 import csv
 import datetime
 import json
 import operator
 import os
 import secrets
-import traceback
-import typing as t
 from collections import defaultdict
 from functools import reduce
 
-import pydantic
 import requests
 from django import forms, urls
 from django.conf import settings
@@ -31,13 +29,14 @@ from django.db.models import (
     Subquery,
 )
 from django.db.models.functions import Lower
-from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, JsonResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils.http import urlencode
 from django.utils.text import slugify
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
+from requests import HTTPError
 
 import puzzle_editing.discord_integration as discord
 from puzzle_editing import messaging, status, utils
@@ -76,6 +75,7 @@ from puzzle_editing.forms import (
 from puzzle_editing.graph import curr_puzzle_graph_b64
 from puzzle_editing.models import (
     CommentReaction,
+    DiscordTextChannelCache,
     Hint,
     PseudoAnswer,
     Puzzle,
@@ -101,8 +101,6 @@ from puzzle_editing.models import (
 )
 from settings.base import SITE_PASSWORD
 
-from .discord import Permission as DiscordPermission
-from .discord import TextChannel
 from .view_helpers import (
     auto_postprodding_required,
     external_puzzle_url,
@@ -435,28 +433,14 @@ def puzzle_new(request) -> HttpResponse:
             puzzle.status_mtime = datetime.datetime.now()
             puzzle.save()
             form.save_m2m()
-            c = discord.get_client()
-            if c:
-                url = external_puzzle_url(request, puzzle)
-                tc = None
-                if puzzle.discord_channel_id:
-                    # if you put in an invalid discord ID, we just ignore it
-                    # and create a new channel for you.
-                    tc = discord.get_channel(c, puzzle)
-                if tc is None:
-                    tc = discord.build_puzzle_channel(url, puzzle, c.guild_id)
-                else:
-                    tc = discord.sync_puzzle_channel(puzzle, tc, url=url)
-                tc.make_private()
-                author_tags = discord.get_tags(puzzle.authors.all(), False)
-                cat = status.get_display(puzzle.status)
-                tc = discord.save_channel(c, tc, cat)
-                puzzle.discord_channel_id = tc.id
-                puzzle.save()
+
+            if c := discord.get_client():
+                discord.sync_puzzle_channel(c, puzzle)
+                author_tags = discord.mention_users(puzzle.authors.all(), False)
                 c.post_message(
-                    tc.id,
-                    f"This puzzle has been created in status **{cat}**!\n"
-                    f"Access it at {url}\n"
+                    puzzle.discord_channel_id,
+                    f"This puzzle has been created in status **{status.get_display(puzzle.status)}**!\n"
+                    f"Access it at {external_puzzle_url(request, puzzle)}\n"
                     f"Write your puzzle here: https://docs.google.com/document/d/{puzzle.content_google_doc_id}/edit\n"
                     f"Write your solution here: https://docs.google.com/document/d/{puzzle.solution_google_doc_id}/edit\n"
                     f"Keep any additional resources you need to help with writing here: https://drive.google.com/drive/folders/{puzzle.resource_google_folder_id}\n"
@@ -580,65 +564,13 @@ def add_comment(
             emails,
         )
 
-    if send_discord and content:
-        c, ch = discord.get_client_and_channel(puzzle)
-        if c is not None and ch is not None:
-            name = author.display_name or author.credits_name
-            if author.discord_user_id:
-                name = discord.tag_id(author.discord_user_id)
-            c.post_message(ch.id, f"{name} ({action_text}):\n{content}")
-
-
-class DiscordData(pydantic.BaseModel):
-    """Data about a puzzle's discord channel, for display on a page."""
-
-    # Whether discord is enabled, disabled, or supposedly enabled but we
-    # couldn't fetch data
-    status: t.Literal["enabled", "disabled", "broken"]
-    guild_id: str = ""  # For URL generation
-    channel_id: str = ""
-    name: str = ""
-    public: bool = False
-    nvis: int = 0  # Number of people with explicit view permission
-    i_can_see: bool = False  # Whether the current user has view permission
-    error: str = ""
-
-    @property
-    def exists(self):
-        """True iff discord is working and we have a channel_id.
-
-        The assumption is that whoever creates this object will have checked
-        whether the channel_id actually exists already, and won't set one here
-        if the one we have is invalid.
-        """
-        return self.status == "enabled" and self.guild_id and self.channel_id
-
-    @property
-    def url(self):
-        """URL for the discord channel, or None if there isn't one."""
-        if not self.guild_id or not self.channel_id:
-            return None
-        return "discord://discord.com/channels/" f"{self.guild_id}/{self.channel_id}"
-
-    @classmethod
-    def from_channel(cls, tc: discord.TextChannel, me: User) -> "DiscordData":
-        """Parse a TextChannel+User into a DiscordData"""
-        myid = me.discord_user_id
-        vis = False
-        nvis = 0
-        for uid, overwrite in tc.perms.users.items():
-            if DiscordPermission.VIEW_CHANNEL in overwrite.allow:
-                nvis += 1
-                if uid == myid:
-                    vis = True
-        return cls(
-            status="enabled",
-            name=tc.name,
-            guild_id=tc.guild_id,
-            public=tc.is_public(),
-            channel_id=tc.id,
-            nvis=nvis,
-            i_can_see=vis,
+    if send_discord and content and puzzle.discord_channel_id:
+        c = discord.get_client()
+        name = author.display_name or author.credits_name
+        if author.discord_user_id:
+            name = discord.mention_user(author.discord_user_id)
+        discord.safe_post_message(
+            c, puzzle.discord_channel_id, f"{name} ({action_text}):\n{content}"
         )
 
 
@@ -768,69 +700,25 @@ def puzzle(request: AuthenticatedHttpRequest, id, slug=None):
 
     if request.method == "POST":
         form: forms.Form | forms.ModelForm | None = None
-        c: discord.Client | None = None
-        ch: TextChannel | None = None
-        our_d_id: str | None = user.discord_user_id
-        disc_ops = {
-            "subscribe-me",
-            "unsubscribe-me",
-            "discord-public",
-            "discord-private",
-            "resync-discord",
-        }
-        # Preload the discord client and current channel data.
-        c, ch = discord.get_client_and_channel(puzzle)
+        c = discord.get_client()
+        channel_exists = DiscordTextChannelCache.objects.filter(
+            id=puzzle.discord_channel_id
+        ).exists()
         if c:
-            if puzzle.discord_channel_id and not ch:
+            if puzzle.discord_channel_id and not channel_exists:
                 # If the puzzle has a channel_id but it doesn't exist, clear it
                 # here to save time in the future.
                 puzzle.discord_channel_id = ""
                 puzzle.save()
+
         if "do_spoil" in request.POST:
             puzzle.spoiled.add(user)
-        elif set(request.POST) & disc_ops:
-            if c and ch:
-                newcat = None
-                if "subscribe-me" in request.POST:
-                    ch.add_visibility([our_d_id] if our_d_id else ())
-                elif "unsubscribe-me" in request.POST:
-                    ch.rm_visibility([our_d_id] if our_d_id else ())
-                elif "discord-public" in request.POST:
-                    ch.make_public()
-                elif "discord-private" in request.POST:
-                    ch.make_private()
-                elif "resync-discord" in request.POST:
-                    # full resync of all attributes
-                    url = external_puzzle_url(request, puzzle)
-                    discord.sync_puzzle_channel(puzzle, ch, url)
-                    newcat = status.get_display(puzzle.status)
-                if newcat is not None:
-                    discord.save_channel(c, ch, newcat)
-                else:
-                    c.save_channel(ch)
-            else:
-                return HttpResponseBadRequest("<b>Discord is not enabled.</b>")
-        elif "link-discord" in request.POST:
-            if not c:
-                return HttpResponseBadRequest("<b>Discord is not enabled.</b>")
-            if ch is None:
-                url = external_puzzle_url(request, puzzle)
-                tc = discord.build_puzzle_channel(url, puzzle, c.guild_id)
-                cat = status.get_display(puzzle.status)
-                tc = discord.save_channel(c, tc, cat)
-                puzzle.discord_channel_id = tc.id
-                puzzle.save()
-                author_tags = discord.get_tags(puzzle.authors.all(), False)
-                editor_tags = discord.get_tags(puzzle.editors.all(), False)
-                msg = [
-                    f"This channel was just created for puzzle {puzzle.name}!",
-                    f"Access it at {url}",
-                ]
-                if author_tags:
-                    msg.append(f"Author(s): {', '.join(author_tags)}")
-                if editor_tags:
-                    msg.append(f"Editor(s): {', '.join(editor_tags)}")
-                c.post_message(tc.id, "\n".join(msg))
+        elif "subscribe-me" in request.POST:
+            discord.set_puzzle_visibility(c, puzzle, user, True)
+        elif "unsubscribe-me" in request.POST:
+            discord.set_puzzle_visibility(c, puzzle, user, False)
+        elif "resync-discord" in request.POST:
+            discord.sync_puzzle_channel(c, puzzle)
         elif "change_status" in request.POST:
             check_permission("puzzle_editing.change_status_puzzle")
             new_status = request.POST["change_status"]
@@ -838,12 +726,10 @@ def puzzle(request: AuthenticatedHttpRequest, id, slug=None):
             if new_status != puzzle.status:
                 puzzle.status = new_status
                 puzzle.save()
-                if c and ch:
-                    discord.save_channel(c, ch, status_display)
-                    message = status.get_message_for_status(
-                        new_status, puzzle, status_display
-                    )
-                    c.post_message(ch.id, message)
+                if c:
+                    discord.sync_puzzle_channel(c, puzzle)
+                    message = status.get_message_for_status(new_status, puzzle)
+                    c.post_message(puzzle.discord_channel_id, message)
 
             add_system_comment_here("", status_change=new_status)
 
@@ -915,10 +801,8 @@ def puzzle(request: AuthenticatedHttpRequest, id, slug=None):
             add_system_comment_here("Puzzle flavor unapproved")
         elif "add_author" in request.POST:
             puzzle.authors.add(user)
-            if c and ch:
-                discord.sync_puzzle_channel(puzzle, ch)
-                c.save_channel(ch)
-                # discord.announce_ppl(c, ch, spoiled=[user])
+            discord.set_puzzle_visibility(c, puzzle, user, True)
+            discord.announce_ppl(c, puzzle.discord_channel_id, authors=[user])
             add_system_comment_here("Added author " + str(user))
         elif "remove_author" in request.POST:
             puzzle.authors.remove(user)
@@ -926,10 +810,8 @@ def puzzle(request: AuthenticatedHttpRequest, id, slug=None):
         elif "add_editor" in request.POST:
             check_permission("puzzle_editing.change_round")
             puzzle.editors.add(user)
-            if c and ch:
-                discord.sync_puzzle_channel(puzzle, ch)
-                c.save_channel(ch)
-                discord.announce_ppl(c, ch, editors=[user])
+            discord.set_puzzle_visibility(c, puzzle, user, True)
+            discord.announce_ppl(c, puzzle.discord_channel_id, editors=[user])
             add_system_comment_here("Added editor " + str(user))
         elif "remove_editor" in request.POST:
             check_permission("puzzle_editing.change_round")
@@ -938,10 +820,8 @@ def puzzle(request: AuthenticatedHttpRequest, id, slug=None):
         elif "add_factchecker" in request.POST:
             check_permission("puzzle_editing.change_puzzlefactcheck")
             puzzle.factcheckers.add(user)
-            if c and ch:
-                discord.sync_puzzle_channel(puzzle, ch)
-                c.save_channel(ch)
-                discord.announce_ppl(c, ch, factcheckers=[user])
+            discord.sync_puzzle_channel(c, puzzle)
+            discord.announce_ppl(c, puzzle.discord_channel_id, factcheckers=[user])
             add_system_comment_here("Added factchecker " + str(user))
         elif "remove_factchecker" in request.POST:
             check_permission("puzzle_editing.change_puzzlefactcheck")
@@ -1006,13 +886,10 @@ def puzzle(request: AuthenticatedHttpRequest, id, slug=None):
                 check_permission("puzzle_editing.change_status_puzzle")
                 puzzle.status = status_change
                 puzzle.save()
-                if c and ch:
-                    catname = status.get_display(puzzle.status)
-                    discord.save_channel(c, ch, catname)
-                    message = status.get_message_for_status(
-                        status_change, puzzle, catname
-                    )
-                    c.post_message(ch.id, message)
+                if c:
+                    discord.sync_puzzle_channel(c, puzzle)
+                    message = status.get_message_for_status(status_change, puzzle)
+                    c.post_message(puzzle.discord_channel_id, message)
             if comment_form.is_valid():
                 add_comment(
                     request=request,
@@ -1047,19 +924,23 @@ def puzzle(request: AuthenticatedHttpRequest, id, slug=None):
     unspoiled = sorted(unspoiled)
 
     if is_spoiled_on(user, puzzle):
-        discdata = DiscordData(status="disabled")
-        c = discord.get_client()
-        if c:
-            discdata.status = "enabled"
-            try:
-                ch = discord.get_channel(c, puzzle)
-                if ch:
-                    discdata = DiscordData.from_channel(ch, user)
-            except Exception:
-                discdata.status = "broken"
-                discdata.guild_id = c.guild_id
-                discdata.channel_id = puzzle.discord_channel_id
-                discdata.error = traceback.format_exc()
+        discord_status = "disabled"
+        discord_channel = None
+        discord_visible = False
+        if c := discord.get_client():
+            discord_status = "enabled"
+            with contextlib.suppress(DiscordTextChannelCache.DoesNotExist):
+                discord_channel = DiscordTextChannelCache.objects.get(
+                    id=puzzle.discord_channel_id
+                )
+                for cached_overwrite in discord_channel.permission_overwrites:
+                    overwrite = discord.PermissionOverwrite.from_cache(cached_overwrite)
+                    if (
+                        overwrite.entity == user.discord_user_id
+                        and overwrite.permission.view_channel
+                    ):
+                        discord_visible = True
+                        break
 
         comments = puzzle.comments.all()
         requests = (
@@ -1107,7 +988,11 @@ def puzzle(request: AuthenticatedHttpRequest, id, slug=None):
             "puzzle.html",
             {
                 "puzzle": puzzle,
-                "discord": discdata,
+                "discord": {
+                    "status": discord_status,
+                    "channel": discord_channel,
+                    "visible": discord_visible,
+                },
                 "support_requests": requests,
                 "comments": comments,
                 "comment_form": PuzzleCommentForm(),
@@ -1436,7 +1321,7 @@ def check_metadata(request):
 
 
 @login_required
-def puzzle_edit(request, id):
+def puzzle_edit(request, id) -> HttpResponse:
     puzzle = get_object_or_404(Puzzle, id=id)
     user = request.user
 
@@ -1445,9 +1330,7 @@ def puzzle_edit(request, id):
         if form.is_valid():
             if "authors" in form.changed_data:
                 old_authors = set(puzzle.authors.all())
-                set(form.cleaned_data["authors"]) - old_authors
-            else:
-                pass
+                new_authors = set(form.cleaned_data["authors"]) - old_authors
             form.save()
 
             if form.changed_data:
@@ -1459,13 +1342,12 @@ def puzzle_edit(request, id):
                     send_email=False,
                     content=get_changed_data_message(form),
                 )
-                c, ch = discord.get_client_and_channel(puzzle)
-                if c and ch:
-                    url = external_puzzle_url(request, puzzle)
-                    discord.sync_puzzle_channel(puzzle, ch, url=url)
-                    c.save_channel(ch)
-                    # if new_authors:
-                    #     discord.announce_ppl(c, ch, spoiled=new_authors)
+                c = discord.get_client()
+                discord.sync_puzzle_channel(c, puzzle)
+                if new_authors:
+                    discord.announce_ppl(
+                        c, puzzle.discord_channel_id, authors=new_authors
+                    )
 
             return redirect(urls.reverse("puzzle", args=[id]))
     else:
@@ -1533,29 +1415,19 @@ def puzzle_people(request, id):
     if request.method == "POST":
         form = PeopleForm(request.POST, instance=puzzle)
         if form.is_valid():
-            changed = set()
-            old = {}
             added = {}
             if form.changed_data:
-                for key in ["authors", "editors"]:
+                for key in ["authors", "editors", "factcheckers"]:
                     if key not in form.cleaned_data:
                         continue
-                    old[key] = set(getattr(puzzle, key).all())
-                    new = set(form.cleaned_data[key])
-                    added[key] = new - old[key]
-                    if new != old[key]:
-                        changed.add(key)
-            form.save()
-            if changed:
-                c, ch = discord.get_client_and_channel(puzzle)
-                if c and ch:
-                    discord.sync_puzzle_channel(puzzle, ch)
-                    c.save_channel(ch)
-                    discord.announce_ppl(
-                        c,
-                        ch,
-                        editors=added.get("editors", set()),
+                    added[key] = set(form.cleaned_data[key]) - set(
+                        getattr(puzzle, key).all()
                     )
+            form.save()
+            if added:
+                c = discord.get_client()
+                discord.sync_puzzle_channel(c, puzzle)
+                discord.announce_ppl(c, puzzle.discord_channel_id, **added)
 
             if form.changed_data:
                 add_comment(
@@ -1591,10 +1463,16 @@ def puzzle_escape(request, id) -> HttpResponse:
         if "unspoil" in request.POST:
             puzzle.spoiled.remove(user)
             if user.discord_user_id:
-                c, ch = discord.get_client_and_channel(puzzle)
-                if c and ch:
-                    ch.rm_visibility([user.discord_user_id])
-                    c.save_channel(ch)
+                c = discord.get_client()
+                if c:
+                    try:
+                        c.delete_channel_permission(
+                            puzzle.discord_channel_id, user.discord_user_id
+                        )
+                    except HTTPError as e:
+                        if e.response.status_code != 404:
+                            # The user isn't in the channel, so we don't need to remove them
+                            raise
             add_comment(
                 request=request,
                 puzzle=puzzle,
@@ -1965,7 +1843,7 @@ def testsolve_participants(request, id):
 
 @login_required
 @require_testsolving_enabled
-def testsolve_one(request, id):
+def testsolve_one(request, id) -> HttpResponse:
     session = get_object_or_404(
         (
             TestsolveSession.objects.select_related()
@@ -1990,10 +1868,10 @@ def testsolve_one(request, id):
             if not TestsolveParticipation.objects.filter(
                 session=session, user=user
             ).exists():
-                participation = TestsolveParticipation()
-                participation.session = session
-                participation.user = user
-                participation.save()
+                new_participation = TestsolveParticipation()
+                new_participation.session = session
+                new_participation.user = user
+                new_participation.save()
 
                 add_comment(
                     request=request,
@@ -2011,7 +1889,8 @@ def testsolve_one(request, id):
                 notes_form.save()
 
         elif "do_guess" in request.POST:
-            participation = get_object_or_404(
+            # Ensure the user is a participant
+            get_object_or_404(
                 TestsolveParticipation,
                 session=session,
                 user=user,
@@ -2029,34 +1908,36 @@ def testsolve_one(request, id):
             partial_response = ""
 
             if correct:
-                c, ch = discord.get_client_and_channel(puzzle)
-                comment = f"Correct answer: {guess}."
+                c = discord.get_client()
+                guess_comment = f"Correct answer: {guess}."
 
                 if session.joinable:
-                    comment += " Automatically marking session as no longer joinable."
+                    guess_comment += (
+                        " Automatically marking session as no longer joinable."
+                    )
 
                     session.joinable = False
                     session.save()
 
                     # Send a congratulatory message to the thread.
-                    if c:
-                        thread = discord.get_thread(c, session)
-                        if thread:
-                            c.post_message(
-                                thread.id,
-                                f":tada: Congratulations on solving this puzzle! :tada:\nTime since testsolve started: {session.time_since_started}",
-                            )
+                    discord.safe_post_message(
+                        c,
+                        session.discord_thread_id,
+                        f":tada: Congratulations on solving this puzzle! :tada:\nTime since testsolve started: {session.time_since_started}",
+                    )
             else:
                 # Guess might still be partially correct
                 for answer in session.puzzle.pseudo_answers.all():
                     if answer.is_correct(guess):
                         partially_correct = True
                         partial_response = answer.response
-                        comment = f"Guessed: {guess}. Response: {partial_response}"
+                        guess_comment = (
+                            f"Guessed: {guess}. Response: {partial_response}"
+                        )
                         break
 
                 if not partially_correct:
-                    comment = f"Incorrect answer: {guess}."
+                    guess_comment = f"Incorrect answer: {guess}."
 
             guess_model = TestsolveGuess(
                 session=session,
@@ -2075,7 +1956,7 @@ def testsolve_one(request, id):
                 testsolve_session=session,
                 is_system=True,
                 send_email=False,
-                content=comment,
+                content=guess_comment,
             )
 
         elif "change_joinable" in request.POST:
@@ -2097,11 +1978,11 @@ def testsolve_one(request, id):
 
         elif "react_comment" in request.POST:
             emoji = request.POST.get("emoji")
-            comment = PuzzleComment.objects.get(id=request.POST["react_comment"])
+            react_comment = PuzzleComment.objects.get(id=request.POST["react_comment"])
             # This just lets you react with any string to a comment, but it's
             # not the end of the world.
-            if emoji and comment:
-                CommentReaction.toggle(emoji, comment, user)
+            if emoji and react_comment:
+                CommentReaction.toggle(emoji, react_comment, user)
 
         elif "add_testsolvers" in request.POST:
             new_testers = User.objects.filter(
@@ -2131,13 +2012,11 @@ def testsolve_one(request, id):
                 .values_list("email", flat=True),
             )
             c = discord.get_client()
-            if c:
-                thread = discord.get_thread(c, session)
-                if thread:
-                    c.post_message(
-                        thread.id,
-                        "Don't worry - help is on the way! You have successfully requested for help. The Testsolve Coordinators will reach out when they've found someone.",
-                    )
+            discord.safe_post_message(
+                c,
+                session.discord_thread_id,
+                "Don't worry - help is on the way! You have successfully requested for help. The Testsolve Coordinators will reach out when they've found someone.",
+            )
 
         # refresh
         return redirect(urls.reverse("testsolve_one", args=[id]))

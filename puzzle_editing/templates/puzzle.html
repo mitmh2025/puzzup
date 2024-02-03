@@ -273,31 +273,16 @@
                     <div class="column">
                         {% if discord.status == 'disabled' %}
                             ❌ Discord is disabled
-                        {% elif discord.status == "broken" %}
-                            ❌ Discord info unavailable - an error occurred when trying to access it.
-                            {% if user.is_staff %}
-						<pre>{{ discord.error | escape }}</pre>
-                            {% endif %}
-                        {% elif not discord.channel_id %}
+                        {% elif not discord.channel %}
                             ❌ Not linked to Discord
-                            {% if can_manage_discord %}
-                                <form method="POST">
-                                    {% csrf_token %}
-                                    <input class="button is-small" type="submit" name="link-discord" value="Create Channel">
-                                </form>
-                            {% endif %}
+                            <form method="POST">
+                                {% csrf_token %}
+                                <input class="button is-small" type="submit" name="resync-discord" value="Fix out-of-sync channel">
+                            </form>
                         {% else %}
-                            <a href="{{discord.url}}">#{{discord.name}}</a>
+                            <a href="{{discord.channel.url}}">#{{discord.channel.name}}</a>
                             <br/>
-                            {% if discord.public %}
-                                This channel is public.
-                                {% if can_manage_discord %}
-                                    <form method="POST">
-                                        {% csrf_token %}
-                                        <input class="button is-small" type="submit" name="discord-private" value="Make it private">
-                                    </form>
-                                {% endif %}
-                            {% elif discord.i_can_see %}
+                            {% if discord.visible %}
                                 You are a member of this private channel.
                                 {% if not is_author and not is_editor %}
                                     <form method="POST">
@@ -306,12 +291,6 @@
                                     </form>
                                 {% else %}
                                     You cannot unsubscribe from it because you are an author or editor for it.
-                                {% endif %}
-                                {% if puzzle.status == "II" and can_manage_discord %}
-                                    <form method="POST">
-                                        {% csrf_token %}
-                                        <input class="button is-small" type="submit" name="discord-public" value="Make it public">
-                                    </form>
                                 {% endif %}
                             {% else %}
                                 You are not a member of this private channel, but since you are spoiled you can join it.

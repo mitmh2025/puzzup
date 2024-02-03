@@ -1,23 +1,97 @@
 from __future__ import annotations
 
+import contextlib
 import itertools
+import typing
 from collections.abc import Iterable
+from enum import Enum
+from typing import Any
 
 import requests
+from discord import PermissionOverwrite as DiscordPermissionOverrite
+from discord import Permissions
 from django.conf import settings
+from django.db import IntegrityError
 from django.db.models import Q
 
-from . import models as m
-from .discord import Client, TextChannel, Thread, TimedCache
+from puzzle_editing import status
+from puzzle_editing.discord.client import (
+    DiscordError,
+    JsonDict,
+    MsgPayload,
+    sanitize_channel_name,
+)
 
-# Global channel cache with a 10m timeout
-_global_cache: TimedCache[str, TextChannel] = TimedCache(timeout=600)
-# Global thread cache with a 10m timeout
-_global_thread_cache: TimedCache[str, Thread] = TimedCache(timeout=600)
+from . import models as m
+from .discord import Client
+
+
+class PermissionOverwriteType(Enum):
+    role = 0
+    user = 1
+
+
+class PermissionOverwrite:
+    entity: str
+    entity_type: PermissionOverwriteType
+    permission: DiscordPermissionOverrite
+
+    def __init__(
+        self,
+        /,
+        entity: str,
+        entity_type: PermissionOverwriteType,
+        permission: DiscordPermissionOverrite | None = None,
+    ):
+        if permission is None:
+            permission = DiscordPermissionOverrite()
+        self.entity = entity
+        self.entity_type = entity_type
+        self.permission = permission
+
+    @classmethod
+    def from_cache(cls, cached_overwrite: JsonDict) -> PermissionOverwrite:
+        return cls(
+            cached_overwrite["id"],
+            PermissionOverwriteType[cached_overwrite["type"]],
+            DiscordPermissionOverrite.from_pair(
+                allow=Permissions(cached_overwrite["allow"]),
+                deny=Permissions(cached_overwrite["deny"]),
+            ),
+        )
+
+    @classmethod
+    def from_api(cls, api_overwrite: JsonDict) -> PermissionOverwrite:
+        return cls(
+            api_overwrite["id"],
+            PermissionOverwriteType(api_overwrite["type"]),
+            DiscordPermissionOverrite.from_pair(
+                allow=Permissions(int(api_overwrite["allow"])),
+                deny=Permissions(int(api_overwrite["deny"])),
+            ),
+        )
+
+    def to_api(self) -> JsonDict:
+        allow, deny = self.permission.pair()
+        return {
+            "id": self.entity,
+            "type": self.entity_type.value,
+            "allow": str(allow.value),
+            "deny": str(deny.value),
+        }
+
+    def to_cache(self) -> JsonDict:
+        allow, deny = self.permission.pair()
+        return {
+            "id": self.entity,
+            "type": self.entity_type.name,
+            "allow": allow.value,
+            "deny": deny.value,
+        }
 
 
 def get_client() -> Client | None:
-    """Gets a discord client, or raises and error if discord isn't enabled."""
+    """Gets a discord client, or None if discord isn't enabled."""
     discord_bot_token = settings.DISCORD_BOT_TOKEN
     discord_guild_id = settings.DISCORD_GUILD_ID
     if discord_bot_token is None or discord_guild_id is None:
@@ -25,8 +99,6 @@ def get_client() -> Client | None:
     return Client(
         discord_bot_token,
         discord_guild_id,
-        _global_cache,
-        _global_thread_cache,
     )
 
 
@@ -37,29 +109,20 @@ def init_perms(c: Client, u: m.User):
     """
     if not c or not u.discord_user_id:
         return
-    isAuthEd = Q(authors__pk=u.pk) | Q(editors__pk=u.pk)
-    puzzles = set(m.Puzzle.objects.filter(isAuthEd))
+    must_see_puzzle = (
+        Q(authors__pk=u.pk) | Q(editors__pk=u.pk) | Q(factcheckers__pk=u.pk)
+    )
+    puzzles = set(m.Puzzle.objects.filter(must_see_puzzle))
     for p in puzzles:
-        ch = get_channel(c, p)
-        if ch is None:
-            continue
-        sync_puzzle_channel(p, ch)
-        c.save_channel(ch)
+        sync_puzzle_channel(c, p)
 
 
-def get_dids(users: Iterable[m.User]) -> Iterable[str]:
-    """Get the discord uids of all provided users that have them."""
-    for user in users:
-        if user.discord_user_id:
-            yield user.discord_user_id
-
-
-def tag_id(discord_id: str) -> str:
+def mention_user(discord_id: str) -> str:
     """Formats a discord id as a tag for a message."""
     return f"<@!{discord_id}>"
 
 
-def get_tags(users: Iterable[m.User], skip_missing: bool = True) -> list[str]:
+def mention_users(users: Iterable[m.User], skip_missing: bool = True) -> list[str]:
     """Get discord @tags from a bunch of users.
 
     Users without discord ids will be skipped, unless skip_missing is False, in
@@ -68,85 +131,46 @@ def get_tags(users: Iterable[m.User], skip_missing: bool = True) -> list[str]:
     items = []
     for user in users:
         if user.discord_user_id:
-            items.append(tag_id(user.discord_user_id))
+            items.append(mention_user(user.discord_user_id))
         elif not skip_missing:
             items.append(str(user))
     return items
 
 
-def get_channel(c: Client, p: m.Puzzle) -> TextChannel | None:
-    """Get the channel for a puzzle, or None if hasn't got one.
-
-    If the puzzle has a discord_channel_id set, but no channel has that id,
-    this will also return None (this indicates that someone deleted the channel
-    from the discord side)
-    """
-    if not p.discord_channel_id:
-        return None
-    try:
-        # If our id is valid, return the fetched channel.
-        return c.get_text_channel(p.discord_channel_id)
-    except requests.HTTPError as e:
-        if e.response.status_code != 404:
-            # Not 400 -> something else went wrong. Abort.
-            raise
-        # 400 -> we have a bad channel id (maybe someone deleted
-        # the channel). Clear it.
-        return None
-
-
-def get_thread(c: Client, s: m.TestsolveSession) -> Thread | None:
-    """Get the thread for a testsolving session, or None if hasn't got one.
-
-    If the session has a discord_thread_id set, but no thread has that id,
-    this will also return None (this indicates that someone deleted the thread
-    from the discord side)
-    """
-    if not s.discord_thread_id:
-        return None
-    try:
-        return c.get_thread(s.discord_thread_id)
-    except requests.HTTPError as e:
-        if e.response.status_code != 404:
-            raise
-        return None
-
-
-def get_client_and_channel(
-    p: m.Puzzle,
-) -> tuple[Client | None, TextChannel | None]:
-    """Shorthand for get_client followed by get_channel.
-
-    Returns (client, channel); both will be None if discord is disabled, and
-    channel will be None if the puzzle doesn't have one.
-    """
-    c = get_client()
-    if not c:
-        return None, None
-    ch = get_channel(c, p)
-    return c, ch
-
-
-def sync_puzzle_channel(
+def _build_puzzle_channel_updates(
     puzzle: m.Puzzle,
-    tc: TextChannel,
-    url: str | None = None,
-    sync_users: bool = True,
-) -> TextChannel:
-    """Syncs data from a puzzle to its TextChannel.
+) -> tuple[str | None, dict[str, Any]]:
+    """Generate the set of updates (or creation parameters) for a puzzle channel"""
+    current = None
+    with contextlib.suppress(m.DiscordTextChannelCache.DoesNotExist):
+        current = m.DiscordTextChannelCache.objects.get(id=puzzle.discord_channel_id)
 
-    This will update the channel name, topic, and permissions.
+    updates: dict[str, Any] = {}
 
-    If sync_users is true, this will query for all authors, editors, and
-    spoiled users on this puzzle, and will ensure that A) every author and
-    editor is in the channel, and B) anyone who isn't spoiled is removed from
-    the channel.
-    """
-    tc.name = f"{puzzle.codename:.96}-{puzzle.id:03d}"
-    if url:
-        tc.topic = url
-    if not sync_users:
-        return tc
+    name = f"{puzzle.codename:.96}-{puzzle.id:03d}"
+    if not current or sanitize_channel_name(current.name) != sanitize_channel_name(
+        name
+    ):
+        updates["name"] = name
+
+    topic = f"{settings.PUZZUP_URL}{puzzle.get_absolute_url()}"
+    if current and current.topic != topic:
+        updates["topic"] = topic
+
+    overwrites: dict[str, PermissionOverwrite] = {}
+    if current:
+        for cached_overwrite in current.permission_overwrites:
+            overwrite = PermissionOverwrite.from_cache(cached_overwrite)
+            overwrites[overwrite.entity] = overwrite
+    else:
+        assert settings.DISCORD_GUILD_ID is not None
+        # Default to private for newly created channels
+        overwrites[settings.DISCORD_GUILD_ID] = PermissionOverwrite(
+            entity=settings.DISCORD_GUILD_ID,
+            entity_type=PermissionOverwriteType.role,
+            permission=DiscordPermissionOverrite(view_channel=False),
+        )
+
     # Update individual user permissions
     # every author/editor MUST see the channel
     # this discord bot MUST see the channel
@@ -155,88 +179,211 @@ def sync_puzzle_channel(
         puzzle.editors.all(),
         puzzle.factcheckers.all(),
     )
-    must_see = set(get_dids(autheds))
+    must_see = {a.discord_user_id for a in autheds if a.discord_user_id}
     if settings.DISCORD_CLIENT_ID:
         must_see.add(settings.DISCORD_CLIENT_ID)
     # anyone who is spoiled CAN see the channel
-    can_see = set(get_dids(puzzle.spoiled.all()))
+    can_see = {s.discord_user_id for s in puzzle.spoiled.all() if s.discord_user_id}
     # Loop over all users who must see and all who currently have overwrites;
     # add VIEW_CHANNEL to those who must have it and remove VIEW_CHANNEL from
     # those who can't have it. If someone is a spoiled user but not an author
     # or an editor, their status will be unchanged.
-    current = set(tc.perms.user_ids())
-    for uid in must_see | current:
+    for uid in must_see | overwrites.keys():
+        overwrite = overwrites.setdefault(
+            uid, PermissionOverwrite(uid, PermissionOverwriteType.user)
+        )
         if uid in must_see:
-            tc.perms.update_user(uid, allow="VIEW_CHANNEL")
+            overwrite.permission.update(view_channel=True)
         elif uid not in can_see:
-            tc.perms.update_user(uid, ignore="VIEW_CHANNEL")
-    return tc
+            overwrite.permission.update(view_channel=False)
+    updates["permission_overwrites"] = [o.to_api() for o in overwrites.values()]
+
+    return (current.id if current else None, updates)
 
 
-def save_channel(client: Client, tc: TextChannel, category: str) -> TextChannel:
-    return client.save_channel_to_cat(tc, category)
+def _set_puzzle_channel_category(
+    c: Client, puzzle: m.Puzzle, current_category_id: str | None
+) -> None:
+    """Take an existing channel and make sure it's in the right category
+
+    This will attempt to put the channel in a category matching `status`,
+    creating that category if it doesn't exist. If the category is full, it
+    will try category-1, then category-2, etc. until it finds one that has
+    space.
+    """
+    categories = m.DiscordCategoryCache.objects.filter(
+        puzzle_status=puzzle.status
+    ).in_bulk()
+    if current_category_id and current_category_id in categories:
+        # We're already in the right category
+        return
+
+    categories_by_index = {cat.puzzle_status_index: cat for cat in categories.values()}
+    for i in range(10):
+        if category := categories_by_index.get(i):
+            category_id = category.id
+        else:
+            # Need to make the category
+            name = f"{settings.DISCORD_CATEGORY_PREFIX or ""}{status.get_display(puzzle.status)}{"" if i == 0 else f"-{i}"}"
+            new_category = c.create_category(name)
+            cache = m.DiscordCategoryCache(
+                id=int(new_category["id"]),
+                name=new_category["name"],
+                position=new_category["position"],
+            )
+            with contextlib.suppress(IntegrityError):
+                cache.save(force_insert=True)
+            category_id = cache.id
+
+        # Try to move the channel to the category
+        try:
+            c.update_channel(puzzle.discord_channel_id, {"parent_id": category_id})
+            return
+        except requests.HTTPError as e:
+            breakpoint()
+            msg = e.response.json()
+            pids = msg.get("errors", {}).get("parent_id", {})
+            errs = pids.get("_errors", [])
+            max_ch_code = "CHANNEL_PARENT_MAX_CHANNELS"
+            if errs and errs[0].get("code") == max_ch_code:
+                # This channel has too many children, so keep going
+                continue
+            # Something else went wrong, just raise it.
+            raise
+    # If we get to here, then we tried 10 possible categories and they
+    # were all full, which means the server is maxed out on channels.
+    msg = f"All 500 channels are in status {puzzle.status}?!"
+    raise DiscordError(msg)
 
 
-def build_testsolve_thread(session: m.TestsolveSession, guild_id: str):
-    return Thread(
-        id="",
-        name=f"Session {session.id} - Puzzle {session.puzzle.id} ({session.puzzle.codename})",
-        guild_id=guild_id,
-        parent_id=settings.DISCORD_TESTSOLVE_CHANNEL_ID,
+def sync_puzzle_channel(c: Client | None, puzzle: m.Puzzle) -> None:
+    """Ensure that a channel exists for the puzzle with the right configuration."""
+    if not c:
+        return
+
+    channel_id, updates = _build_puzzle_channel_updates(puzzle)
+    changed = False
+    if channel_id:
+        if updates:
+            channel = c.update_channel(channel_id, updates)
+            changed = True
+    else:
+        channel = c.create_channel(updates)
+        channel_id = typing.cast(str, channel["id"])
+        changed = True
+    category_id = channel["parent_id"]
+
+    # This will race with discord_daemon and that's fine - we want it to
+    # overwrite us
+    if changed:
+        with contextlib.suppress(IntegrityError):
+            cache = m.DiscordTextChannelCache(
+                id=channel_id,
+                name=channel["name"],
+                position=channel["position"],
+                topic=channel["topic"],
+                category_id=category_id,
+                permission_overwrites=[
+                    PermissionOverwrite.from_api(o).to_cache()
+                    for o in channel["permission_overwrites"]
+                ],
+            )
+            cache.save(force_insert=True)
+
+    if puzzle.discord_channel_id != channel_id:
+        puzzle.discord_channel_id = channel_id
+        puzzle.save()
+
+    _set_puzzle_channel_category(c, puzzle, category_id)
+
+
+def set_puzzle_visibility(
+    c: Client | None, puzzle: m.Puzzle, user: m.User, visible: bool
+) -> None:
+    """Set the visibility of a puzzle channel for a user.
+
+    This will add or remove the user from the channel's permission overwrites
+    as appropriate.
+    """
+    if not c or not user.discord_user_id:
+        return
+    channel_id = puzzle.discord_channel_id
+    if visible:
+        c.set_channel_permission(
+            channel_id,
+            user.discord_user_id,
+            PermissionOverwrite(
+                entity=user.discord_user_id,
+                entity_type=PermissionOverwriteType.user,
+                permission=DiscordPermissionOverrite(view_channel=True),
+            ).to_api(),
+        )
+    else:
+        c.delete_channel_permission(channel_id, user.discord_user_id)
+
+
+def make_testsolve_thread(c: Client | None, session: m.TestsolveSession) -> None:
+    """Create a thread for a testsolve session."""
+    if not c:
+        return
+    assert settings.DISCORD_TESTSOLVE_CHANNEL_ID is not None
+
+    thread = c.create_thread(
+        channel=settings.DISCORD_TESTSOLVE_CHANNEL_ID,
+        params={
+            "name": f"Session {session.id} - Puzzle {session.puzzle.id} ({session.puzzle.codename})",
+            "type": 12,  # private thread
+            "invitable": False,
+        },
     )
 
+    session.discord_thread_id = thread["id"]
+    session.save()
 
-def build_puzzle_channel(
-    url: str,
-    puzzle: m.Puzzle,
-    guild_id: str,
-    private: bool = True,
-) -> TextChannel:
-    """Builds a new TextChannel for a puzzle.
-
-    url should be the absolute url to the puzzle, i.e. it should start with
-    "http", because it's going to go into the discord topic.
-
-    The channel will have an appropriate name and topic, and will have
-    allow=VIEW_CHANNEL overwrites for all authors and editors. If private is
-    True (the default), it will deny VIEW_CHANNEL to @everyone.
-
-    This does NOT save the channel to discord - the caller must do that
-    themselves. It also ONLY adds the authors and editors - if there are other
-    users you want to have permission, you should add them yourself.
-    """
-    tc = TextChannel(id="", name=puzzle.codename, guild_id=guild_id)
-    sync_puzzle_channel(puzzle, tc, url=url)
-    if private:
-        tc.make_private()
-    return tc
+    return
 
 
 def announce_ppl(
-    c: Client,
-    ch: TextChannel,
-    spoiled: Iterable[m.User] = (),
+    c: Client | None,
+    channel_id: str,
+    authors: Iterable[m.User] = (),
     editors: Iterable[m.User] = (),
     factcheckers: Iterable[m.User] = (),
 ):
     """Announces new spoiled users and editors.
 
-    If c or ch is None we do nothing.
+    If c is None we do nothing.
     """
-    if c is None or ch is None:
+    if c is None:
         return
     msg = []
+    authors = set(authors)
     editors = set(editors)
-    spoiled = set(spoiled) - set(editors)
-    if spoiled:
-        tags = get_tags(spoiled, skip_missing=False)
-        msg.append(f"Newly spoiled: {', '.join(tags)}")
-    # Announce newly assigned editors
+    factcheckers = set(factcheckers)
+    if authors:
+        tags = mention_users(authors, skip_missing=False)
+        msg.append(f"New author(s): {', '.join(tags)}")
     if editors:
-        tags = get_tags(editors, skip_missing=False)
+        tags = mention_users(editors, skip_missing=False)
         msg.append(f"New editor(s): {', '.join(tags)}")
     if factcheckers:
-        tags = get_tags(factcheckers, skip_missing=False)
+        tags = mention_users(factcheckers, skip_missing=False)
         msg.append(f"New factcheckers(s): {', '.join(tags)}")
     if msg:
-        c.post_message(ch.id, "\n".join(msg))
+        c.post_message(channel_id, "\n".join(msg))
+
+
+def safe_post_message(
+    c: Client | None,
+    channel_id: str | None,
+    payload: MsgPayload,
+) -> JsonDict | None:
+    """Post a message to a channel"""
+    if c is None or channel_id is None:
+        return None
+    try:
+        return c.post_message(channel_id, payload)
+    except requests.HTTPError as e:
+        if e.response.status_code == 404:
+            return None
+        raise
