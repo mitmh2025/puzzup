@@ -446,6 +446,11 @@ class Puzzle(models.Model):
     logistics_difficulty_factcheck = models.PositiveSmallIntegerField(
         validators=[MaxValueValidator(2)], blank=True, null=True
     )
+    logistics_needs_final_day_factcheck = models.BooleanField(
+        verbose_name="Needs final day factcheck",
+        help_text="Are any facts or statuses of things outside the puzzle used in the puzzle that could possibly change before hunt, e.g. the ice cream flavors available at a certain store, or content on an external webpage? If so, factchecking will do a final day check.",
+        default=False,
+    )
     # Additional logistics information
     logistics_number_testsolvers = models.CharField(max_length=512, blank=True)
     logistics_testsolve_length = models.CharField(max_length=512, blank=True)

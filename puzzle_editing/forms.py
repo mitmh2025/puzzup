@@ -162,6 +162,7 @@ class LogisticsInfoForm(forms.ModelForm):
             "logistics_testsolve_skills",
             "logistics_difficulty_postprod",
             "logistics_difficulty_factcheck",
+            "logistics_needs_final_day_factcheck",
             "logistics_specialized_type",
         )
 
@@ -174,6 +175,7 @@ class LogisticsInfoForm(forms.ModelForm):
                 "logistics_testsolve_skills": "Testsolver Specialized Skills",
                 "logistics_difficulty_postprod": "Postprod",
                 "logistics_difficulty_factcheck": "Factcheck",
+                "logistics_needs_final_day_factcheck": "Needs Final Day Factcheck",
                 "logistics_specialized_type": "Specialized Puzzle Type",
             }
         )
