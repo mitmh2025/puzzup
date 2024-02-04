@@ -73,5 +73,3 @@ Hints were a fairly late addition to PuzzUp in 2021. The numbers and keywords do
 ## Discord
 
 Every new puzzle that's created on PuzzUp gets a channel created on our Discord. As the puzzle moves through statuses, it moves to a new category on Discord for that status. Most importantly, the only people who can see a channel (after it moves past **Initial Idea**), are those who are spoiled on the puzzle here on PuzzUp.
-
-If you've already created a channel in discord, you (or anyone else) may type the `/up create` command in that channel, and it will create a PuzzUp record for that channel.
