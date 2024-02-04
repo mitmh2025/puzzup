@@ -126,8 +126,12 @@ class Client(discord.Client):
                 elif isinstance(channel, discord.TextChannel):
                     await self.cache_text_channel(channel)
                     cached_text_channels.discard(str(channel.id))
-            DiscordCategoryCache.objects.filter(id__in=cached_categories).delete()
-            DiscordTextChannelCache.objects.filter(id__in=cached_text_channels).delete()
+            await DiscordCategoryCache.objects.filter(
+                id__in=cached_categories
+            ).adelete()
+            await DiscordTextChannelCache.objects.filter(
+                id__in=cached_text_channels
+            ).adelete()
 
 
 async def async_main() -> None:
