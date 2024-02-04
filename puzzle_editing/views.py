@@ -6,7 +6,9 @@ import operator
 import os
 import secrets
 from collections import defaultdict
+from dataclasses import dataclass
 from functools import reduce
+from typing import TypedDict
 
 import requests
 from django import forms, urls
@@ -485,31 +487,33 @@ def all_puzzles(request):
 
 
 @permission_required("puzzle_editing.list_puzzle", raise_exception=True)
-def bystatus(request):
-    all_puzzles = Puzzle.objects.exclude(
-        status__in=[
-            status.INITIAL_IDEA,
-            status.DEFERRED,
-            status.DEAD,
-        ]
-    ).prefetch_related("authors", "tags")
+def bystatus(request) -> HttpResponse:
+    all_puzzles = (
+        Puzzle.objects.exclude(
+            status__in=[
+                status.INITIAL_IDEA,
+                status.DEFERRED,
+                status.DEAD,
+            ]
+        )
+        .prefetch_related("authors", "tags")
+        .order_by("name")
+    )
 
-    puzzles = []
+    puzzles_by_status: dict[str, list[Puzzle]] = defaultdict(list)
     for puzzle in all_puzzles:
-        puzzle_obj = {
-            "puzzle": puzzle,
-            # "authors": [a for a in puzzle.authors.all()],
-            "status": "{} {}".format(
-                status.get_emoji(puzzle.status), status.get_display(puzzle.status)
-            ),
-        }
-        puzzles.append(puzzle_obj)
+        puzzles_by_status[puzzle.status].append(puzzle)
 
-    # sorted_puzzles = sorted(needs_postprod, key=lambda a: (status.STATUSES.index(a.status), a.name))
-    puzzles = sorted(puzzles, key=lambda x: status.get_status_rank(x["puzzle"].status))
-
-    return render(request, "bystatus.html", {"puzzles": puzzles})
-    # return render(request, "postprod_all.html", context)
+    return render(
+        request,
+        "bystatus.html",
+        {
+            "puzzles": {
+                status.get_display(s): puzzles
+                for s, puzzles in puzzles_by_status.items()
+            }
+        },
+    )
 
 
 def add_comment(
@@ -1281,7 +1285,6 @@ def check_metadata(request):
     mismatches = []
     credits_mismatches = []
     notfound = []
-    notfound = []
     exceptions = []
     for puzzledir in os.listdir(puzzleFolder):
         datafile = puzzleFolder / puzzledir / "metadata.json"
@@ -1743,41 +1746,49 @@ def my_spoiled(request):
 
 @login_required
 @require_testsolving_enabled
-def testsolve_finder(request):
+def testsolve_finder(request) -> HttpResponse:
+    @dataclass
+    class PuzzleData:
+        puzzle: Puzzle
+        user_data: list[str]
+        unspoiled_count: int
+
     solvers = request.GET.getlist("solvers")
     users = User.objects.filter(pk__in=solvers) if solvers else None
     if users:
-        puzzles = list(
+        testsolveable_puzzles = list(
             Puzzle.objects.filter(status=status.TESTSOLVING).order_by("priority")
         )
-        for puzzle in puzzles:
-            puzzle.user_data = []
-            puzzle.unspoiled_count = 0
+        puzzle_data: list[PuzzleData] = []
+        for puzzle in testsolveable_puzzles:
+            puzzle_data.append(
+                PuzzleData(puzzle=puzzle, user_data=[], unspoiled_count=0)
+            )
         for user in users:
             authored_ids = set(user.authored_puzzles.values_list("id", flat=True))
             editor_ids = set(user.editing_puzzles.values_list("id", flat=True))
             spoiled_ids = set(user.spoiled_puzzles.values_list("id", flat=True))
-            for puzzle in puzzles:
-                if puzzle.id in authored_ids:
-                    puzzle.user_data.append("📝 Author")
-                elif puzzle.id in editor_ids:
-                    puzzle.user_data.append("💬 Editor")
-                elif puzzle.id in spoiled_ids:
-                    puzzle.user_data.append("👀 Spoiled")
+            for pdata in puzzle_data:
+                if pdata.puzzle.id in authored_ids:
+                    pdata.user_data.append("📝 Author")
+                elif pdata.puzzle.id in editor_ids:
+                    pdata.user_data.append("💬 Editor")
+                elif pdata.puzzle.id in spoiled_ids:
+                    pdata.user_data.append("👀 Spoiled")
                 else:
-                    puzzle.user_data.append("❓ Unspoiled")
-                    puzzle.unspoiled_count += 1
+                    pdata.user_data.append("❓ Unspoiled")
+                    pdata.unspoiled_count += 1
 
-        puzzles.sort(key=lambda puzzle: -puzzle.unspoiled_count)
+        puzzle_data.sort(key=lambda pdata: -pdata.unspoiled_count)
     else:
-        puzzles = None
+        puzzle_data = []
 
     form = TestsolveFinderForm(solvers or request.user)
 
     return render(
         request,
         "testsolve_finder.html",
-        {"puzzles": puzzles, "solvers": solvers, "form": form, "users": users},
+        {"puzzle_data": puzzle_data, "solvers": solvers, "form": form, "users": users},
     )
 
 
@@ -2158,7 +2169,7 @@ def puzzle_feedback_all_csv(request):
 
 @login_required
 @require_testsolving_enabled
-def testsolve_finish(request, id):
+def testsolve_finish(request, id) -> HttpResponse:
     session = get_object_or_404(TestsolveSession, id=id)
     puzzle = session.puzzle
     user = request.user
@@ -2169,15 +2180,15 @@ def testsolve_finish(request, id):
         participation = None
 
     if request.method == "POST" and participation:
-        form = TestsolveParticipationForm(
+        completed_form = TestsolveParticipationForm(
             request.POST,
             instance=participation,
         )
         already_spoiled = is_spoiled_on(user, puzzle)
-        if form.is_valid():
-            fun = form.cleaned_data["fun_rating"] or None
-            difficulty = form.cleaned_data["difficulty_rating"] or None
-            hours_spent = form.cleaned_data["hours_spent"] or None
+        if completed_form.is_valid():
+            fun = completed_form.cleaned_data["fun_rating"] or None
+            difficulty = completed_form.cleaned_data["difficulty_rating"] or None
+            hours_spent = completed_form.cleaned_data["hours_spent"] or None
 
             if already_spoiled:
                 spoil_message = "(solver was already spoiled)"
@@ -2195,8 +2206,8 @@ def testsolve_finish(request, id):
                         None,
                         [
                             "Finished testsolve",
-                            form.cleaned_data["general_feedback"],
-                            form.cleaned_data.get("misc_feedback"),
+                            completed_form.cleaned_data["general_feedback"],
+                            completed_form.cleaned_data.get("misc_feedback"),
                             ratings_text,
                         ],
                     )
@@ -2221,7 +2232,7 @@ def testsolve_finish(request, id):
             context = {
                 "session": session,
                 "participation": participation,
-                "form": form,
+                "form": completed_form,
             }
 
             return render(request, "testsolve_finish.html", context)
@@ -2352,7 +2363,7 @@ def eic(request, template="awaiting_editor.html"):
 
 
 @group_required("EIC")
-def editor_overview(request):
+def editor_overview(request) -> HttpResponse:
     active_statuses = [
         status.INITIAL_IDEA,
         status.IN_DEVELOPMENT,
@@ -2388,7 +2399,12 @@ def editor_overview(request):
             }
         )
 
-    counts_by_editor = defaultdict(
+    class CountsByEditor(TypedDict):
+        active: int
+        with_drafts: int
+        testsolved: int
+
+    counts_by_editor = defaultdict[int, CountsByEditor](
         lambda: {
             "active": 0,
             "with_drafts": 0,

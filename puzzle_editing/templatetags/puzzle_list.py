@@ -1,4 +1,6 @@
 import random
+from collections.abc import Mapping
+from typing import Any
 
 from django import template
 from django.db.models import Exists, Max, OuterRef, Subquery
@@ -161,7 +163,7 @@ def puzzle_list(
     show_round=False,
     show_flavor=False,
     show_factcheck=False,
-):
+) -> Mapping[str, Any]:
     req = context["request"]
     perms = context["perms"]
     limit = None

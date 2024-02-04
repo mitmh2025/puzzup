@@ -186,9 +186,9 @@ def get_blocker(status):
         return NOBODY
 
 
-def get_transitions(status):
-    _, transitions = BLOCKERS_AND_TRANSITIONS.get(status)
-    return transitions or []
+def get_transitions(status) -> list[tuple[str, str]]:
+    _, transitions = BLOCKERS_AND_TRANSITIONS.get(status, (None, []))
+    return transitions
 
 
 STATUSES_BY_BLOCKERS = {

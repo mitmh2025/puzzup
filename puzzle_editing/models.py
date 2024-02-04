@@ -3,6 +3,7 @@ import logging
 import random
 import re
 import statistics
+from collections.abc import Iterable
 from types import MappingProxyType
 
 import yaml
@@ -476,11 +477,12 @@ class Puzzle(models.Model):
     def __str__(self):
         return self.spoiler_free_title()
 
-    def save(self, *args, **kwargs):
+    def save(self, *args, **kwargs) -> None:
         super().save(*args, **kwargs)
         # Make sure lead author is always spoiled and is always an author (see update_spoiled below for the m2m version)
-        self.authors.add(self.lead_author)
-        self.spoiled.add(self.lead_author)
+        if self.lead_author:
+            self.authors.add(self.lead_author)
+            self.spoiled.add(self.lead_author)
 
     def get_absolute_url(self):
         return urls.reverse("puzzle_w_slug", kwargs={"id": self.id, "slug": self.slug})
@@ -938,10 +940,12 @@ class SupportRequest(models.Model):
             "support_by_puzzle_id", kwargs={"id": self.puzzle_id, "team": self.team}
         )
 
-    def get_emails(self):
+    def get_emails(self) -> list[str]:
         emails = {
             u.email
-            for u in User.objects.filter(groups__name=self.TEAM_TO_GROUP[self.team])
+            for u in User.objects.filter(
+                groups__name=self.TEAM_TO_GROUP[self.Team[self.team]]
+            )
             if u.email
         }
         if self.team_notes_updater and self.team_notes_updater.email:
@@ -1085,12 +1089,9 @@ class TestsolveSession(models.Model):
             ]
         )
 
-    def participants(self):
-        users = []
-        for p in self.participations.all():
-            p.user.current = p.ended is None
-            users.append(p.user)
-        return users
+    def participants(self) -> Iterable[User]:
+        for p in self.participations.select_related("user").all():
+            yield p.user
 
     def active_participants(self):
         return [p.user for p in self.participations.all() if p.ended is None]

@@ -13,7 +13,7 @@ BLOCKER_COLORS = {
 
 
 class Command(BaseCommand):
-    def handle(self, *args, **options):
+    def handle(self, *args, **options) -> None:
         nodes = []
         for s in status.ALL_STATUSES:
             blocker = status.BLOCKERS_AND_TRANSITIONS.get(s["value"], [status.NOBODY])[
@@ -29,9 +29,9 @@ class Command(BaseCommand):
             )
 
         edges = []
-        for s, (_, transitions) in status.BLOCKERS_AND_TRANSITIONS.items():
+        for status_name, (_, transitions) in status.BLOCKERS_AND_TRANSITIONS.items():
             for t, label in transitions:
-                edges.append(f'  {s} -> {t} [label="{label}"];')
+                edges.append(f'  {status_name} -> {t} [label="{label}"];')
 
         print("digraph {")
         print("\n".join(nodes))

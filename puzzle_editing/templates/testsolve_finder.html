@@ -12,7 +12,7 @@
     <div class="box">
 
         {% if solvers %}
-            {% if puzzles %}
+            {% if puzzle_data %}
                 <p>(Starting the session won't automatically add other people &mdash; you'll  still have to send them the link and ask them to join.)</p>
 
                 <table class="classic">
@@ -29,21 +29,21 @@
                             <th>{{ user|display_name }}</th>
                         {% endfor %}
                     </tr>
-                    {% for puzzle in puzzles %}
+                    {% for pdata in puzzle_data %}
                         <tr>
-                            <td>{{ puzzle.unspoiled_count }}</td>
+                            <td>{{ pdata.unspoiled_count }}</td>
                             <td>
-                                <button type="submit" name="start_session" value="{{ puzzle.id }}">
+                                <button type="submit" name="start_session" value="{{ pdata.puzzle.id }}">
                                     Start new session
                                 </button>
                             </td>
-                            <td>{{ puzzle.html_display }}</td>
-                            <td class="small-md">{{ puzzle.summary|markdown }}</td>
-                            <td>{% user_list puzzle.authors %}</td>
-                            <td>{% user_list puzzle.editors %}</td>
-                            <td>{{ puzzle.get_priority_display }}</td>
-                            <td>{{ puzzle.status_mtime | naturaltime }}</td>
-                            {% for user_data in puzzle.user_data %}
+                            <td>{{ pdata.puzzle.html_display }}</td>
+                            <td class="small-md">{{ pdata.puzzle.summary|markdown }}</td>
+                            <td>{% user_list pdata.puzzle.authors %}</td>
+                            <td>{% user_list pdata.puzzle.editors %}</td>
+                            <td>{{ pdata.puzzle.get_priority_display }}</td>
+                            <td>{{ pdata.puzzle.status_mtime | naturaltime }}</td>
+                            {% for user_data in pdata.user_data %}
                                 <td>{{ user_data }}</td>
                             {% endfor %}
                         </tr>

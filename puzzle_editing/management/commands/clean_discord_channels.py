@@ -15,7 +15,6 @@ class Command(BaseCommand):
         super().__init__(*a, **kw)
         self.logger = logging.getLogger("puzzle_editing.commands")
         self.dry_run = True
-        self.client = discord.get_client()
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -41,7 +40,7 @@ class Command(BaseCommand):
             "--all", action="store_true", help="Shorthand for setting all the modes"
         )
 
-    def organize_puzzles(self) -> None:
+    def organize_puzzles(self, client: discord.Client) -> None:
         """Fix up puzzle channels in discord.
 
         If sync is True, fix each puzzle channel's name and permissions, and
@@ -73,9 +72,11 @@ class Command(BaseCommand):
                 continue
 
             if not self.dry_run:
-                discord.sync_puzzle_channel(self.client, p)
+                discord.sync_puzzle_channel(client, p)
 
-    def organize_categories(self, delete_empty: bool, sort_cats: bool):
+    def organize_categories(
+        self, client: discord.Client, delete_empty: bool, sort_cats: bool
+    ) -> None:
         """Organize the status categories.
 
         If sort_cats is True, status categories will be sorted, by status order
@@ -117,9 +118,9 @@ class Command(BaseCommand):
                     }
                 )
             if not self.dry_run:
-                self.client._request(
+                client._request(
                     "patch",
-                    f"/guilds/{self.client.guild_id}/channels",
+                    f"/guilds/{client.guild_id}/channels",
                     json=new_order_request,
                 )
 
@@ -131,9 +132,9 @@ class Command(BaseCommand):
                 if self.dry_run:
                     self.logger.info(f"Would delete category {cat.name}")
                 else:
-                    self.client.delete_channel(cat.id)
+                    client.delete_channel(cat.id)
 
-    def handle(self, *args, **options):
+    def handle(self, *args, **options) -> None:
         delete_cats = options["delete_cats"] or options["all"]
         sort_cats = options["sort_cats"] or options["all"]
         self.dry_run = options["dryrun"]
@@ -151,7 +152,7 @@ class Command(BaseCommand):
             self.logger.error("No discord client found. Exiting.")
             return
         # Clean up each puzzle
-        self.organize_puzzles()
+        self.organize_puzzles(client)
         # Process categories
         if delete_cats or sort_cats:
-            self.organize_categories(delete_cats, sort_cats)
+            self.organize_categories(client, delete_cats, sort_cats)
