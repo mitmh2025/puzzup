@@ -4,6 +4,7 @@ import logging
 from django.core.management.base import BaseCommand
 
 from puzzle_editing import discord_integration as discord
+from puzzle_editing import status
 from puzzle_editing.models import DiscordCategoryCache, DiscordTextChannelCache, Puzzle
 
 
@@ -96,10 +97,12 @@ class Command(BaseCommand):
         # than the possible number of channels
         starting_position = 1000
         if sort_cats:
-            new_order = (
-                DiscordCategoryCache.objects.exclude(puzzle_status="")
-                .order_by("puzzle_status", "puzzle_status_index")
-                .all()
+            new_order = sorted(
+                DiscordCategoryCache.objects.exclude(puzzle_status="").all(),
+                key=lambda c: (
+                    status.get_status_rank(c.puzzle_status),
+                    c.puzzle_status_index,
+                ),
             )
             new_order_request = []
             for i, cat in enumerate(new_order):
