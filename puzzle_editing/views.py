@@ -1331,6 +1331,7 @@ def puzzle_edit(request, id) -> HttpResponse:
     if request.method == "POST":
         form = PuzzleInfoForm(user, request.POST, instance=puzzle)
         if form.is_valid():
+            new_authors = None
             if "authors" in form.changed_data:
                 old_authors = set(puzzle.authors.all())
                 new_authors = set(form.cleaned_data["authors"]) - old_authors
