@@ -386,19 +386,19 @@ class Puzzle(models.Model):
 
     summary = models.TextField(
         blank=True,
-        help_text="A **non-spoilery summary.** For potential testsolvers to get a sense if it'll be something they enjoy (without getting spoiled). Useful to mention: how long it'll take, how difficult it is, good for 1 solver or for a group, etc.",
+        help_text="Describe what people will see when they open the puzzle page with **NO SPOILERS**.  _Examples: 'A long list of crossword clues with several rebus puzzles below' or 'Puzzle looks like sheet music, but with emoji scattered throughout.'_",
     )
     description = models.TextField(
-        help_text="A **spoilery description** of how the puzzle works."
+        help_text='**Describe your puzzle idea** fully here, including "ahas" that solvers will have to solve the puzzle and the mechanics of extracting an answer.  What will solvers actually be doing in this puzzle, and what is fun/hard/interesting about it?  If you have constructed any examples as "proof of concept," or know of a similar puzzle to yours, describe that here.',
     )
     editor_notes = models.TextField(
         blank=True,
         verbose_name="Mechanics",
-        help_text="A **succinct list** of mechanics and themes used.",
+        help_text="A **succinct list** of mechanics and themes used. _Examples: Geoguessr, Sudoku, Taylor Swift music videos_",
     )
     notes = models.TextField(
         blank=True,
-        help_text="Notes and requests to the editors, like for a particular answer or inclusion in a particular round.",
+        help_text="State what answer constraints your puzzle has and what round you'd prefer it to go in (if applicable). Editors will do their best to honor these constraints and reach out to you if they can't be satisfied.",
     )
     flavor = models.TextField(
         blank=True,

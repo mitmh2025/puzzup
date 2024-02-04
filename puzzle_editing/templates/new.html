@@ -6,7 +6,14 @@
 {% block main %}
 
     <h1 class="title">New Puzzle</h1>
-    <p>Once you submit, PuzzUp will automatically create an associated channel in Discord. If a channel for this puzzle <i>already</i> exists in Discord, use the <code>/up create</code> command in that channel instead.</p>
+    <p>
+        <strong>Looking to submit a puzzle proposal?</strong> You found the
+        right place! Fill out this form describing your idea, and when you
+        submit, a page in Puzzup will be created for your puzzle. Your puzzle
+        will be automatically put in the “Initial Idea” state for the EICs to
+        review.
+    </p>
+    <p>Once you submit, PuzzUp will automatically create an associated channel in Discord.</p>
     <form action="{% url 'puzzle_new' %}" method="post">
         {% csrf_token %}
         {% for field in form %}

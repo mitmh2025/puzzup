@@ -481,6 +481,7 @@ class PuzzleInfoForm(forms.ModelForm):
         )
         labels = MappingProxyType(
             {
+                "name": "Puzzle Title",
                 "summary": "Non-spoilery summary",
                 "description": "Spoilery description",
             }
@@ -492,7 +493,7 @@ class PuzzleInfoForm(forms.ModelForm):
                 "authors_addl": forms.TextInput(attrs={"class": "input"}),
                 "codename": forms.TextInput(attrs={"class": "input"}),
                 "summary": MarkdownTextarea(attrs={"rows": 3}),
-                "description": MarkdownTextarea(attrs={"rows": 6}),
+                "description": MarkdownTextarea(attrs={"rows": 9}),
                 "editor_notes": forms.TextInput(attrs={"class": "input"}),
                 "notes": MarkdownTextarea(attrs={"rows": 6}),
                 "is_meta": forms.CheckboxInput(),
