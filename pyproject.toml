@@ -30,7 +30,7 @@ matplotlib = "^3.8.2"
 nh3 = "^0.2.15"
 numpy = "^1.26.3"
 Pillow = "^10.2.0"
-psycopg = {extras = ["binary"], version = "^3.1.17"}
+psycopg = {extras = ["binary"], version = "^3.1.18"}
 pydantic = "==1.9.0"
 pymdown-extensions = "^10.7"
 python-dotenv = "^1.0.1"
