@@ -1,14 +1,16 @@
 import asyncio
 import logging
 import sys
+from typing import TYPE_CHECKING
 
 import discord
 import discord.http
 from django.conf import settings
-from twisted.internet.defer import Deferred
-from twisted.python.failure import Failure
 
 from puzzle_editing.models import DiscordCategoryCache, DiscordTextChannelCache, User
+
+if TYPE_CHECKING:
+    from twisted.python.failure import Failure
 
 logger = logging.getLogger(__name__)
 
@@ -142,10 +144,12 @@ async def asyncio_main() -> None:
         await client.start(settings.DISCORD_BOT_TOKEN)
 
 
-def twisted_errback(e: Failure) -> None:
+def twisted_errback(e: "Failure") -> None:
     sys.excepthook(e.type, e.value, e.tb)
 
 
 def twisted_main() -> None:
+    from twisted.internet.defer import Deferred
+
     d = Deferred.fromFuture(asyncio.ensure_future(asyncio_main()))
     d.addErrback(twisted_errback)

@@ -64,7 +64,7 @@ stderr_logfile=/dev/stderr
 stderr_logfile_maxbytes=0
 
 [program:gunicorn]
-command=gunicorn -k gevent -w 4 puzzup.wsgi:application
+command=gunicorn -k gevent -w %(ENV_NPROC)s puzzup.wsgi:application
 autorestart=true
 stdout_logfile=/dev/stdout
 stdout_logfile_maxbytes=0
@@ -91,7 +91,7 @@ aws ssm get-parameter --output text --query Parameter.Value --with-decryption --
 mkdir -p credentials
 aws ssm get-parameter --output text --query Parameter.Value --with-decryption --name puzzup-drive-credentials > credentials/drive-credentials.json
 python manage.py migrate
-exec supervisord -c /etc/supervisord.conf
+exec NPROC="$(nproc --ignore=1)" supervisord -c /etc/supervisord.conf
 EOF
 
 EXPOSE 80
