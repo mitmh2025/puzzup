@@ -80,7 +80,7 @@ RUN --mount=type=cache,target=/root/.cache \
     poetry install --no-root --only main
 
 COPY . .
-RUN python manage.py collectstatic --noinput
+RUN DJANGO_SETTINGS_MODULE=settings.prod python manage.py collectstatic --noinput
 
 COPY --chmod=755 <<'EOF' /usr/src/app/start.sh
 #!/bin/bash
