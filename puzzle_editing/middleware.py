@@ -38,6 +38,6 @@ def discord_daemon_middleware(get_response):
 
     from . import discord_daemon
 
-    reactor.callWhenRunning(discord_daemon.daemon_main)
+    reactor.callWhenRunning(discord_daemon.twisted_main)
 
     return get_response

@@ -33,7 +33,6 @@ ALLOWED_HOSTS = [""]
 # Application definition
 
 INSTALLED_APPS = [
-    "daphne",
     "puzzle_editing.apps.PuzzleEditingConfig",
     "django.contrib.admin",
     "django.contrib.auth",
@@ -57,7 +56,6 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "puzzle_editing.middleware.timezone_middleware",
-    "puzzle_editing.middleware.discord_daemon_middleware",
 ]
 
 ROOT_URLCONF = "puzzup.urls"

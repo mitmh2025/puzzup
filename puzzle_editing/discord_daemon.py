@@ -134,7 +134,7 @@ class Client(discord.Client):
             ).adelete()
 
 
-async def async_main() -> None:
+async def asyncio_main() -> None:
     if not settings.DISCORD_BOT_TOKEN or not settings.DISCORD_GUILD_ID:
         return
 
@@ -142,10 +142,10 @@ async def async_main() -> None:
         await client.start(settings.DISCORD_BOT_TOKEN)
 
 
-def daemon_errback(e: Failure) -> None:
+def twisted_errback(e: Failure) -> None:
     sys.excepthook(e.type, e.value, e.tb)
 
 
-def daemon_main() -> None:
-    d = Deferred.fromFuture(asyncio.ensure_future(async_main()))
-    d.addErrback(daemon_errback)
+def twisted_main() -> None:
+    d = Deferred.fromFuture(asyncio.ensure_future(asyncio_main()))
+    d.addErrback(twisted_errback)

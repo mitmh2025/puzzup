@@ -42,6 +42,35 @@ server {
     }
 }
 EOF
+COPY <<'EOF' /etc/supervisord.conf
+[supervisord]
+nodaemon=true
+user=root
+
+[program:nginx]
+command=nginx -g "daemon off;"
+autorestart=true
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/stderr
+stderr_logfile_maxbytes=0
+
+[program:discord-daemon]
+command=python manage.py discord_daemon
+autorestart=true
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/stderr
+stderr_logfile_maxbytes=0
+
+[program:gunicorn]
+command=gunicorn -k gevent -w 4 puzzup.wsgi:application
+autorestart=true
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/stderr
+stderr_logfile_maxbytes=0
+EOF
 
 RUN --mount=type=cache,target=/root/.cache \
     curl -sSL https://install.python-poetry.org | python -
@@ -51,7 +80,7 @@ RUN --mount=type=cache,target=/root/.cache \
     poetry install --no-root --only main
 
 COPY . .
-RUN python manage.py collectstatic
+RUN python manage.py collectstatic --noinput
 
 COPY --chmod=755 <<'EOF' /usr/src/app/start.sh
 #!/bin/bash
@@ -62,8 +91,7 @@ aws ssm get-parameter --output text --query Parameter.Value --with-decryption --
 mkdir -p credentials
 aws ssm get-parameter --output text --query Parameter.Value --with-decryption --name puzzup-drive-credentials > credentials/drive-credentials.json
 python manage.py migrate
-nginx
-exec daphne puzzup.asgi:application
+exec supervisord -c /etc/supervisord.conf
 EOF
 
 EXPOSE 80

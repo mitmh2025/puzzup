@@ -18,6 +18,11 @@ if not SITE_PASSWORD:
 INSTALLED_APPS.append("debug_toolbar")
 MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
 
+# In dev, run the Discord daemon in the same process as the Django server
+# (in production, the daemon is run as a separate process)
+INSTALLED_APPS.insert(0, "daphne")
+MIDDLEWARE.append("puzzle_editing.middleware.discord_daemon_middleware")
+
 ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
 # Allow for local (per-user) override
