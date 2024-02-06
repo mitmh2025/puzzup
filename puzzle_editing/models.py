@@ -119,8 +119,8 @@ class User(AbstractUser):
         return any(g.name == "Editor" for g in self.groups.all())
 
     @property
-    def is_artist(self):
-        return any(g.name == "Art" for g in self.groups.all())
+    def is_art_lead(self):
+        return any(g.name == "Art Lead" for g in self.groups.all())
 
     @property
     def is_testsolve_coordinator(self):

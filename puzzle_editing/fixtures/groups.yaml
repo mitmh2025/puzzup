@@ -52,18 +52,6 @@
       - puzzle
 - model: auth.group
   fields:
-    name: Art
-    permissions: []
-- model: auth.group
-  fields:
-    name: Accessibility
-    permissions: []
-- model: auth.group
-  fields:
-    name: Tech
-    permissions: []
-- model: auth.group
-  fields:
     name: Art Lead
     permissions: []
 - model: auth.group

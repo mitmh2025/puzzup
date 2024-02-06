@@ -93,7 +93,7 @@
                 <h2>Puzzle Info</h2>
                 <h3>Summary</h3>
                 {{ puzzle.summary|markdown }}
-                {% if user.is_artist %}
+                {% if user.is_art_lead %}
                     <h3>Flavor</h3>
                     {{ puzzle.flavor|markdown }}
                     <form method="POST" id="change-flavor">
