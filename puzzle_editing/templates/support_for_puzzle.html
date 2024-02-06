@@ -10,7 +10,7 @@
     <h1 class='title'>Support requests for <a href="{% url 'puzzle' puzzle.id %}">{{ puzzle.name }}</a></h1>
     <div class="columns">
         {% for sup in support %}
-            <div class="column is-one-third">
+            <div class="column">
                 <div class="box">
                     <h2>{{ sup.display }}</h2>
                     {% if sup.obj %}

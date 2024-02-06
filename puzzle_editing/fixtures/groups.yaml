@@ -64,6 +64,10 @@
     permissions: []
 - model: auth.group
   fields:
+    name: Ops Lead
+    permissions: []
+- model: auth.group
+  fields:
     name: Postprodder
     permissions:
     - - change_puzzlepostprod

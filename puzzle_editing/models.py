@@ -878,12 +878,14 @@ class SupportRequest(models.Model):
     class Team(models.TextChoices):
         ART = ("ART", "🎨 Art")
         ACC = ("ACC", "🔎 Accessibility")
+        OPS = ("OPS", "🚧 Operations")
         TECH = ("TECH", "👩🏽‍💻 Tech")
 
     TEAM_TO_GROUP = MappingProxyType(
         {
             Team.ART: "Art Lead",
             Team.ACC: "Accessibility Lead",
+            Team.OPS: "Ops Lead",
             Team.TECH: "Tech Lead",
         }
     )
@@ -892,6 +894,7 @@ class SupportRequest(models.Model):
         {
             "Art Lead": Team.ART,
             "Accessibility Lead": Team.ACC,
+            "Ops Lead": Team.OPS,
             "Tech Lead": Team.TECH,
         }
     )

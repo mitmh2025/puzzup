@@ -47,7 +47,7 @@ urlpatterns = [
     path("puzzle/<int:id>/puzzle.yaml", views.puzzle_yaml, name="puzzle_yaml"),
     path("puzzle/<int:id>/escape", views.puzzle_escape, name="puzzle_escape"),
     re_path(
-        r"^puzzle/(?P<id>\d+)/support/(?P<team>ART|ACC|TECH)$",
+        r"^puzzle/(?P<id>\d+)/support/(?P<team>ART|ACC|OPS|TECH)$",
         views.support_by_puzzle_id,
         name="support_by_puzzle_id",
     ),
