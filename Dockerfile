@@ -91,7 +91,7 @@ aws ssm get-parameter --output text --query Parameter.Value --with-decryption --
 mkdir -p credentials
 aws ssm get-parameter --output text --query Parameter.Value --with-decryption --name puzzup-drive-credentials > credentials/drive-credentials.json
 python manage.py migrate
-exec NPROC="$(nproc --ignore=1)" supervisord -c /etc/supervisord.conf
+exec env NPROC="$(nproc --ignore=1)" supervisord -c /etc/supervisord.conf
 EOF
 
 EXPOSE 80
