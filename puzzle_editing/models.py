@@ -394,7 +394,7 @@ class Puzzle(models.Model):
     editor_notes = models.TextField(
         blank=True,
         verbose_name="Mechanics",
-        help_text="A **succinct list** of mechanics and themes used. _Examples: Geoguessr, Sudoku, Taylor Swift music videos_",
+        help_text="A **succinct list** of mechanics and themes used (can contain spoilers). _Examples: Geoguessr, Sudoku, Taylor Swift music videos_",
     )
     notes = models.TextField(
         blank=True,
