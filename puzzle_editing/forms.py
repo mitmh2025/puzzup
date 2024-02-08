@@ -469,7 +469,6 @@ class PuzzleInfoForm(forms.ModelForm):
         model = Puzzle
         fields = (
             "name",
-            "codename",
             "authors",
             "lead_author",
             "authors_addl",
@@ -491,7 +490,6 @@ class PuzzleInfoForm(forms.ModelForm):
                 "authors": forms.CheckboxSelectMultiple(),
                 "name": forms.TextInput(attrs={"class": "input"}),
                 "authors_addl": forms.TextInput(attrs={"class": "input"}),
-                "codename": forms.TextInput(attrs={"class": "input"}),
                 "summary": MarkdownTextarea(attrs={"rows": 3}),
                 "description": MarkdownTextarea(attrs={"rows": 9}),
                 "editor_notes": forms.TextInput(attrs={"class": "input"}),

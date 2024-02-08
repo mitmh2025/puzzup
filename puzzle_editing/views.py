@@ -458,7 +458,12 @@ def puzzle_new(request) -> HttpResponse:
                 status_change="II",
             )
 
-            return redirect(urls.reverse("mine"))
+            messages.info(
+                request,
+                f'This puzzle has been assigned the codename "{puzzle.codename}". You can use that instead of the title to refer to it without spoilers.',
+            )
+
+            return redirect(urls.reverse("puzzle", kwargs={"id": puzzle.id}))
         else:
             return render(request, "new.html", {"form": form})
     else:
