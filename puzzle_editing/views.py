@@ -88,7 +88,6 @@ from puzzle_editing.models import (
     PuzzleVisited,
     Round,
     SiteSetting,
-    StatusSubscription,
     SupportRequest,
     TestsolveGuess,
     TestsolveParticipation,
@@ -431,10 +430,7 @@ def puzzle_new(request) -> HttpResponse:
     if request.method == "POST":
         form = PuzzleInfoForm(user, request.POST)
         if form.is_valid():
-            puzzle: Puzzle = form.save(commit=False)
-            puzzle.status_mtime = datetime.datetime.now()
-            puzzle.save()
-            form.save_m2m()
+            puzzle: Puzzle = form.save()
 
             if c := discord.get_client():
                 discord.sync_puzzle_channel(c, puzzle)
@@ -731,7 +727,6 @@ def puzzle(request: AuthenticatedHttpRequest, id, slug=None):
         elif "change_status" in request.POST:
             check_permission("puzzle_editing.change_status_puzzle")
             new_status = request.POST["change_status"]
-            status_display = status.get_display(new_status)
             if new_status != puzzle.status:
                 puzzle.status = new_status
                 puzzle.save()
@@ -774,24 +769,6 @@ def puzzle(request: AuthenticatedHttpRequest, id, slug=None):
                         content="Puzzle status changed, automaticaly marking session as no longer joinable",
                     )
                     session.save()
-
-            subscriptions = (
-                StatusSubscription.objects.filter(status=new_status)
-                .exclude(user__email="")
-                .values_list("user__email", flat=True)
-            )
-            if subscriptions:
-                messaging.send_mail_wrapper(
-                    f"{puzzle.spoiler_free_title()} ➡ {status_display}",
-                    "emails/status_update_email",
-                    {
-                        "request": request,
-                        "puzzle": puzzle,
-                        "user": user,
-                        "status": status_display,
-                    },
-                    subscriptions,
-                )
 
         elif "change_priority" in request.POST:
             form = PuzzlePriorityForm(request.POST, instance=puzzle)

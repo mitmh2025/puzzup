@@ -792,6 +792,20 @@ django = ">=3.2.4"
 sqlparse = ">=0.2"
 
 [[package]]
+name = "django-dirtyfields"
+version = "1.9.2"
+description = "Tracking dirty fields on a Django model instance."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "django-dirtyfields-1.9.2.tar.gz", hash = "sha256:eb2dbed51c2a9bc23e84d19797f4cd074f59c935f8f39bb716d185dc6b86401a"},
+    {file = "django_dirtyfields-1.9.2-py3-none-any.whl", hash = "sha256:93b272eab993f813faabf3ea842ebfad63a03712e7213291aebdbddc5a012a5d"},
+]
+
+[package.dependencies]
+Django = ">=2.0"
+
+[[package]]
 name = "django-import-export"
 version = "3.3.7"
 description = "Django application and library for importing and exporting data with included admin integration."
@@ -3652,4 +3666,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.12,<3.13"
-content-hash = "12331e7dc298da9b757af7e98cbdcbcfa138108b3c6f2dbaf5c88983fb2bac2f"
+content-hash = "87ab6b17d6118ab93a1adf16f1e2ee8841849e1ecdf638b71f3f2b3a1d95e2d6"

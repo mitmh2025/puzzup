@@ -7,6 +7,7 @@ from collections.abc import Iterable
 from types import MappingProxyType
 
 import yaml
+from dirtyfields import DirtyFieldsMixin  # type: ignore
 from django import urls
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, UserManager
@@ -26,7 +27,7 @@ from django.utils.translation import gettext_lazy as _
 
 import puzzle_editing.discord_integration as discord
 import puzzle_editing.google_integration as google
-from puzzle_editing import status
+from puzzle_editing import messaging, status
 
 logger = logging.getLogger(__name__)
 
@@ -330,7 +331,7 @@ def generate_codename():
     return name
 
 
-class Puzzle(models.Model):
+class Puzzle(DirtyFieldsMixin, models.Model):
     """A puzzle, that which Puzzup keeps track of the writing process of."""
 
     name = models.CharField(max_length=500)
@@ -731,25 +732,43 @@ class Puzzle(models.Model):
         )
 
 
+@receiver(pre_save, sender=Puzzle)
+def pre_save_puzzle(sender, instance, created, **kwargs):
+    if created or "status" in instance.get_dirty_fields():
+        instance.status_mtime = timezone.now()
+        subscriptions = (
+            StatusSubscription.objects.filter(status=instance.status)
+            .exclude(user__email="")
+            .values_list("user__email", flat=True)
+        )
+        status_display = status.get_display(instance.status)
+        if subscriptions:
+            messaging.send_mail_wrapper(
+                f"{instance.spoiler_free_title()} ➡ {status_display}",
+                "emails/status_update_email",
+                {
+                    "settings": settings,
+                    "puzzle": instance,
+                    "status": status_display,
+                },
+                subscriptions,
+            )
+
+
 @receiver(post_save, sender=Puzzle)
 def post_save_puzzle(sender, instance, created, **kwargs):
-    changed = False
-
     discord.sync_puzzle_channel(discord.get_client(), instance)
 
     if google.enabled():
         gm = google.GoogleManager.instance()
         if not instance.content_google_doc_id:
             instance.content_google_doc_id = gm.create_puzzle_content_doc(instance)
-            changed = True
         if not instance.solution_google_doc_id:
             instance.solution_google_doc_id = gm.create_puzzle_solution_doc(instance)
-            changed = True
         if not instance.resource_google_folder_id:
             instance.resource_google_folder_id = gm.create_puzzle_resources_folder(
                 instance
             )
-            changed = True
 
     if instance.status == status.NEEDS_FACTCHECK and not getattr(
         instance, "factcheck", None
@@ -757,7 +776,7 @@ def post_save_puzzle(sender, instance, created, **kwargs):
         # Create a factcheck object the first time state changes to NEEDS_FACTCHECK
         PuzzleFactcheck(puzzle=instance).save()
 
-    if changed:
+    if instance.is_dirty():
         instance.save()
 
 
@@ -859,17 +878,6 @@ class PuzzleCredit(models.Model):
             "puzzle_other_credit_update",
             kwargs={"puzzle_id": self.puzzle_id, "id": self.id},
         )
-
-
-@receiver(pre_save, sender=Puzzle)
-def set_status_mtime(sender, instance, **_):
-    try:
-        obj = sender.objects.get(pk=instance.pk)
-    except sender.DoesNotExist:
-        pass  # Object is new
-    else:
-        if obj.status != instance.status:  # Field has changed
-            instance.status_mtime = timezone.now()
 
 
 class SupportRequest(models.Model):
