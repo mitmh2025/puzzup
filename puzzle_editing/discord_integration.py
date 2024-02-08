@@ -11,7 +11,6 @@ import requests
 from discord import PermissionOverwrite as DiscordPermissionOverrite
 from discord import Permissions
 from django.conf import settings
-from django.db import IntegrityError
 from django.db.models import Q
 
 from puzzle_editing import status
@@ -226,13 +225,13 @@ def _set_puzzle_channel_category(
             # Need to make the category
             name = f"{settings.DISCORD_CATEGORY_PREFIX or ""}{status.get_display(puzzle.status)}{"" if i == 0 else f"-{i}"}"
             new_category = c.create_category(name)
-            cache = m.DiscordCategoryCache(
+            cache, _ = m.DiscordCategoryCache.objects.get_or_create(
                 id=int(new_category["id"]),
-                name=new_category["name"],
-                position=new_category["position"],
+                defaults={
+                    "name": new_category["name"],
+                    "position": new_category["position"],
+                },
             )
-            with contextlib.suppress(IntegrityError):
-                cache.save(force_insert=True)
             category_id = cache.id
 
         # Try to move the channel to the category
@@ -276,19 +275,19 @@ def sync_puzzle_channel(c: Client | None, puzzle: m.Puzzle) -> None:
     # This will race with discord_daemon and that's fine - we want it to
     # overwrite us
     if changed:
-        with contextlib.suppress(IntegrityError):
-            cache = m.DiscordTextChannelCache(
-                id=channel_id,
-                name=channel["name"],
-                position=channel["position"],
-                topic=channel["topic"],
-                category_id=category_id,
-                permission_overwrites=[
+        m.DiscordTextChannelCache.objects.get_or_create(
+            id=channel_id,
+            defaults={
+                "name": channel["name"],
+                "position": channel["position"],
+                "topic": channel["topic"] or "",
+                "category_id": category_id,
+                "permission_overwrites": [
                     PermissionOverwrite.from_api(o).to_cache()
                     for o in channel["permission_overwrites"]
                 ],
-            )
-            cache.save(force_insert=True)
+            },
+        )
 
     if puzzle.discord_channel_id != channel_id:
         puzzle.discord_channel_id = channel_id
