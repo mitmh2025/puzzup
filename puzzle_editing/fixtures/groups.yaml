@@ -25,6 +25,9 @@
     - - unspoil_puzzle
       - puzzle_editing
       - puzzle
+    - - change_round
+      - puzzle_editing
+      - round
     - - change_puzzlefactcheck
       - puzzle_editing
       - puzzlefactcheck
