@@ -487,7 +487,7 @@ def mine(request):
 
 @permission_required("puzzle_editing.list_puzzle", raise_exception=True)
 def all_puzzles(request):
-    puzzles = Puzzle.objects.all().prefetch_related("authors").order_by("name")
+    puzzles = Puzzle.objects.all().prefetch_related("authors").order_by("id")
     return render(request, "all.html", {"puzzles": puzzles})
 
 
