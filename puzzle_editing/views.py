@@ -356,7 +356,7 @@ def oauth2_link_discord(request):
         if response.status_code != 200:
             messages.error(
                 request,
-                "Discord login failed: you must be in our Discord server to link your account.",
+                "Discord login failed: you're not in our Discord server. If you think you are, try going to https://discord.com/app and logging in, then try logging in here again.",
             )
             return redirect("/account")
 
