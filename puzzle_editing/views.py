@@ -2465,7 +2465,11 @@ def byround(request):
             }
         )
 
-    unassigned = Puzzle.objects.filter(answers__isnull=True).order_by("name")
+    unassigned = (
+        Puzzle.objects.filter(answers__isnull=True)
+        .exclude(status__in=(status.DEFERRED, status.DEAD))
+        .order_by("name")
+    )
 
     return render(
         request,
