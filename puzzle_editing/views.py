@@ -6,6 +6,7 @@ import operator
 import os
 import secrets
 from collections import defaultdict
+from collections.abc import Iterable
 from dataclasses import dataclass
 from functools import reduce
 from typing import TypedDict
@@ -2325,19 +2326,22 @@ def flavor(request):
 
 @group_required("EIC")
 def eic(request, template="awaiting_editor.html"):
+    def puzzles_for_status(status: str) -> Iterable[Puzzle]:
+        return (
+            Puzzle.objects.filter(status=status)
+            .order_by("status_mtime")
+            .prefetch_related("answers", "tags", "authors")
+        )
+
     return render(
         request,
         template,
         {
-            "awaiting_answer": Puzzle.objects.filter(
-                status=status.AWAITING_ANSWER
-            ).order_by("status_mtime"),
-            "awaiting_answer_flexible": Puzzle.objects.filter(
-                status=status.AWAITING_ANSWER_FLEXIBLE
-            ).order_by("status_mtime"),
-            "initial_idea": Puzzle.objects.filter(status=status.INITIAL_IDEA).order_by(
-                "status_mtime"
+            "awaiting_answer": puzzles_for_status(status.AWAITING_ANSWER),
+            "awaiting_answer_flexible": puzzles_for_status(
+                status.AWAITING_ANSWER_FLEXIBLE
             ),
+            "initial_idea": puzzles_for_status(status.INITIAL_IDEA),
         },
     )
 

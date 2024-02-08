@@ -33,9 +33,9 @@ logger = logging.getLogger(__name__)
 
 
 class PuzzupUserManager(UserManager):
-    def get_queryset(self, *args, **kwargs):
+    def get(self, *args, **kwargs):
         # Prefetches the permission groups
-        return super().get_queryset(*args, **kwargs).prefetch_related("groups")
+        return super().prefetch_related("groups").get(*args, **kwargs)
 
 
 class CustomUsernameValidator(UnicodeUsernameValidator):
