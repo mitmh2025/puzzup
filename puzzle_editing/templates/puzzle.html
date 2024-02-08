@@ -354,7 +354,7 @@
                     Resources
                 </h3>
                 {% if puzzle.resource_google_folder_id %}
-                    <a href="https://drive.google.com/drive/folders/{puzzle.resource_google_folder_id}" target="_blank">View resource folder in Google Drive</a>.
+                    <a href="https://drive.google.com/drive/folders/{{ puzzle.resource_google_folder_id }}" target="_blank">View resource folder in Google Drive</a>.
                     You can use this folder for any additional materials, resources, documents, etc. that you need while writing. (These will not be visible to testsolvers)
                 {% else %}
                     <div class="empty">(no solution yet)</div>
