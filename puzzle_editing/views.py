@@ -922,6 +922,7 @@ def puzzle(request: AuthenticatedHttpRequest, id, slug=None):
 
     unspoiled_users = (
         User.objects.exclude(pk__in=puzzle.spoiled.all())
+        .exclude(groups__name="EIC")
         .filter(is_active=True)
         .exclude(testsolve_participations__session__puzzle=puzzle)
         .annotate(testsolve_count=Count("testsolve_participations"))

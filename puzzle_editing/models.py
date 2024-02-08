@@ -1445,9 +1445,9 @@ class TestsolveGuess(models.Model):
         )
 
 
-def is_spoiled_on(user, puzzle):
+def is_spoiled_on(user: User, puzzle: Puzzle) -> bool:
     # should use prefetch_related("spoiled") when using this
-    return user in puzzle.spoiled.all()
+    return user.is_eic or user in puzzle.spoiled.all()
 
 
 def is_author_on(user, puzzle):
