@@ -15,6 +15,7 @@ import os
 from pathlib import Path
 
 import dj_database_url
+from django.contrib import messages
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -113,6 +114,15 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTH_USER_MODEL = "puzzle_editing.User"
 
+# Override message tags so we get classes that work with Bulma
+
+MESSAGE_TAGS = {
+    messages.ERROR: "is-danger",
+    messages.WARNING: "is-warning",
+    messages.INFO: "is-info",
+    messages.SUCCESS: "is-success",
+    messages.DEBUG: "is-info",
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
