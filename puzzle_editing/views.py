@@ -433,7 +433,6 @@ def puzzle_new(request) -> HttpResponse:
             puzzle: Puzzle = form.save()
 
             if c := discord.get_client():
-                discord.sync_puzzle_channel(c, puzzle)
                 author_tags = discord.mention_users(puzzle.authors.all(), False)
                 c.post_message(
                     puzzle.discord_channel_id,
@@ -731,7 +730,6 @@ def puzzle(request: AuthenticatedHttpRequest, id, slug=None):
                 puzzle.status = new_status
                 puzzle.save()
                 if c:
-                    discord.sync_puzzle_channel(c, puzzle)
                     message = status.get_message_for_status(new_status, puzzle)
                     c.post_message(puzzle.discord_channel_id, message)
 
@@ -873,7 +871,6 @@ def puzzle(request: AuthenticatedHttpRequest, id, slug=None):
                 puzzle.status = status_change
                 puzzle.save()
                 if c:
-                    discord.sync_puzzle_channel(c, puzzle)
                     message = status.get_message_for_status(status_change, puzzle)
                     c.post_message(puzzle.discord_channel_id, message)
             if comment_form.is_valid():
@@ -1413,7 +1410,6 @@ def puzzle_people(request, id):
             form.save()
             if added:
                 c = discord.get_client()
-                discord.sync_puzzle_channel(c, puzzle)
                 discord.announce_ppl(c, puzzle.discord_channel_id, **added)
 
             if form.changed_data:

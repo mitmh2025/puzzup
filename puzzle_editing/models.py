@@ -479,11 +479,14 @@ class Puzzle(DirtyFieldsMixin, models.Model):
         return self.spoiler_free_title()
 
     def save(self, *args, **kwargs) -> None:
+        status_changed = "status" in self.get_dirty_fields()
         super().save(*args, **kwargs)
         # Make sure lead author is always spoiled and is always an author (see update_spoiled below for the m2m version)
         if self.lead_author:
             self.authors.add(self.lead_author)
             self.spoiled.add(self.lead_author)
+        if status_changed:
+            send_status_notifications(self)
 
     def get_absolute_url(self):
         return urls.reverse("puzzle_w_slug", kwargs={"id": self.id, "slug": self.slug})
@@ -732,43 +735,63 @@ class Puzzle(DirtyFieldsMixin, models.Model):
         )
 
 
-@receiver(pre_save, sender=Puzzle)
-def pre_save_puzzle(sender, instance, created, **kwargs):
-    if created or "status" in instance.get_dirty_fields():
-        instance.status_mtime = timezone.now()
-        subscriptions = (
-            StatusSubscription.objects.filter(status=instance.status)
-            .exclude(user__email="")
-            .values_list("user__email", flat=True)
+def send_status_notifications(puzzle: Puzzle) -> None:
+    if puzzle.is_meta:
+        meta_filter = (
+            StatusSubscription.MetaFilter.ALL,
+            StatusSubscription.MetaFilter.META_ONLY,
         )
-        status_display = status.get_display(instance.status)
-        if subscriptions:
-            messaging.send_mail_wrapper(
-                f"{instance.spoiler_free_title()} ➡ {status_display}",
-                "emails/status_update_email",
-                {
-                    "settings": settings,
-                    "puzzle": instance,
-                    "status": status_display,
-                },
-                subscriptions,
-            )
+    else:
+        meta_filter = (
+            StatusSubscription.MetaFilter.ALL,
+            StatusSubscription.MetaFilter.NON_META_ONLY,
+        )
+    subscriptions = (
+        StatusSubscription.objects.filter(
+            status=puzzle.status, meta_filter__in=meta_filter
+        )
+        .exclude(user__email="")
+        .values_list("user__email", flat=True)
+    )
+    status_display = status.get_display(puzzle.status)
+    if subscriptions:
+        messaging.send_mail_wrapper(
+            f"{puzzle.spoiler_free_title()} ➡ {status_display}",
+            "emails/status_update_email",
+            {
+                "settings": settings,
+                "puzzle": puzzle,
+                "status": status_display,
+            },
+            subscriptions,
+        )
+
+
+@receiver(pre_save, sender=Puzzle)
+def pre_save_puzzle(sender, instance, **kwargs):
+    if "status" in instance.get_dirty_fields():
+        instance.status_mtime = timezone.now()
 
 
 @receiver(post_save, sender=Puzzle)
 def post_save_puzzle(sender, instance, created, **kwargs):
+    changed = False
+
     discord.sync_puzzle_channel(discord.get_client(), instance)
 
     if google.enabled():
         gm = google.GoogleManager.instance()
         if not instance.content_google_doc_id:
             instance.content_google_doc_id = gm.create_puzzle_content_doc(instance)
+            changed = True
         if not instance.solution_google_doc_id:
             instance.solution_google_doc_id = gm.create_puzzle_solution_doc(instance)
+            changed = True
         if not instance.resource_google_folder_id:
             instance.resource_google_folder_id = gm.create_puzzle_resources_folder(
                 instance
             )
+            changed = True
 
     if instance.status == status.NEEDS_FACTCHECK and not getattr(
         instance, "factcheck", None
@@ -776,7 +799,7 @@ def post_save_puzzle(sender, instance, created, **kwargs):
         # Create a factcheck object the first time state changes to NEEDS_FACTCHECK
         PuzzleFactcheck(puzzle=instance).save()
 
-    if instance.is_dirty():
+    if changed:
         instance.save()
 
 
@@ -1030,8 +1053,19 @@ class StatusSubscription(models.Model):
     )
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
+    class MetaFilter(models.TextChoices):
+        ALL = "A", "All"
+        META_ONLY = "M", "Meta Only"
+        NON_META_ONLY = "N", "Non-Meta Only"
+
+    meta_filter = models.CharField(
+        max_length=1,
+        choices=MetaFilter.choices,
+        default=MetaFilter.ALL,
+    )
+
     def __str__(self):
-        return f"{self.user} subscription to {status.get_display(self.status)}"
+        return f"{self.user} subscription ({self.get_meta_filter_display()}) to {status.get_display(self.status)}"
 
 
 class PuzzleVisited(models.Model):
