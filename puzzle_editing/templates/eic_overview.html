@@ -33,7 +33,7 @@
                         {% if answer %}{{ answer.round.name }}{% else %}(unassigned){% endif %}
                     </td>
                     <td sorttable_customkey="{{ puzzle.is_meta|yesno:"0,1" }}">{% if puzzle.is_meta %}✔{% endif %}</td>
-                    <td class="answer" sorttable_customkey="{{ puzzle.answer }}">
+                    <td class="answer" sorttable_customkey="{{ answer.answer }}">
                         {% if answer %}
                             {{ puzzle.is_meta|yesno:"Ⓜ️ ," }}
                             <a href="{% url 'edit_answer' answer.id %}">
