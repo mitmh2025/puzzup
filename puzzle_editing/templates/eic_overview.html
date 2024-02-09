@@ -16,6 +16,7 @@
                 <th>Meta</th>
                 <th>Answer</th>
                 <th>Status</th>
+                <th>ID</th>
                 <th>Title</th>
                 <th>Author(s)</th>
                 <th>Editor(s)</th>
@@ -44,7 +45,8 @@
                     <td sorttable_customkey="{{ puzzle.get_status_rank }}" data-tippy-content="{{ puzzle.get_status_display }}">
                         {{ puzzle.get_status_emoji }}
                     </td>
-                    <td sorttable_customkey="{{ puzzle.name }}"><a href="{{ puzzle.puzzle_url }}">{{ puzzle.name }}</a></td>
+                    <td>{{ puzzle.id }}</td>
+                    <td sorttable_customkey="{{ puzzle.name }}" data-tippy-content="{{ puzzle.spoiler_free_name }}"><a href="{{ puzzle.puzzle_url }}">{{ puzzle.name }}</a></td>
                     <td>{% for author in puzzle.authors.all %}{{ author }}{{ forloop.last|yesno:",&#44; "|safe }}{% endfor %}</td>
                     <td>{% for editor in puzzle.editors.all %}{{ editor }}{{ forloop.last|yesno:",&#44; "|safe }}{% endfor %}</td>
                     <td>{{ puzzle.editor_notes }}</td>
