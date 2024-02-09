@@ -261,6 +261,10 @@ def sync_puzzle_channel(c: Client | None, puzzle: m.Puzzle) -> None:
         return
 
     channel_id, updates = _build_puzzle_channel_updates(puzzle)
+    if not channel_id and puzzle.status in (status.DEFERRED, status.DEAD):
+        # don't create a new channel if we don't already have one
+        return
+
     changed = False
     if channel_id:
         if updates:
