@@ -2372,9 +2372,10 @@ def eic_overview(request) -> HttpResponse:
 
     puzzles: list[tuple[Puzzle, PuzzleAnswer | None, datetime.datetime | None]] = []
 
-    for p in Puzzle.objects.prefetch_related(
+    puzzle_query = Puzzle.objects.prefetch_related(
         "answers__round", "authors", "editors", "tags"
-    ):
+    ).exclude(status__in=(status.DEFERRED, status.DEAD))
+    for p in puzzle_query:
         answers = list(p.answers.all())
         if answers:
             for a in answers:
