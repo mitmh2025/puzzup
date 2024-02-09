@@ -903,6 +903,25 @@ body.singleround h2 .round-link {
   flex-direction: column;
 }
 
+/* bystatus */
+.eic label:has(> input.collapse)::before {
+  display: inline-block;
+  width: 1em;
+  content: "▼"
+}
+.eic label:has(> input.collapse:checked)::before {
+  content: "▶"
+}
+.eic input.collapse {
+  display: none;
+}
+.eic .box:has(input.collapse:checked) h4 {
+  margin-bottom: 0;
+}
+.eic .box:has(input.collapse:checked) .table-container {
+  display: none
+}
+
 /* django */
 .errorlist {
   color: var(--error-color);

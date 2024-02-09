@@ -9,9 +9,13 @@
 {% block main %}
     <h1>All Puzzles by Status</h1>
 
-    {% for status, puzzle_group in puzzles.items %}
+    {% for status, puzzle_group in puzzles %}
         <div class="box">
-            <h4>{{ status }} [{{ puzzle_group|length }} puzzle{{ puzzle_group|length|pluralize }}]</h4>
+            <h4>
+                <label><input type="checkbox" class="collapse"{% if status in hidden %} checked{% endif %}></label>
+                {{ puzzle_group.0.get_status_display }}
+                [{{ puzzle_group|length }} puzzle{{ puzzle_group|length|pluralize }}]
+            </h4>
             <div class='table-container'>
                 <table class="table is-striped classic sortable">
                     <tr align="left">

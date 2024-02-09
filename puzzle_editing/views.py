@@ -490,30 +490,22 @@ def all_puzzles(request):
 
 @permission_required("puzzle_editing.list_puzzle", raise_exception=True)
 def bystatus(request) -> HttpResponse:
-    all_puzzles = (
-        Puzzle.objects.exclude(
-            status__in=[
-                status.INITIAL_IDEA,
-                status.DEFERRED,
-                status.DEAD,
-            ]
-        )
-        .prefetch_related("authors", "tags")
-        .order_by("name")
-    )
+    all_puzzles = Puzzle.objects.prefetch_related("authors", "tags").order_by("name")
 
     puzzles_by_status: dict[str, list[Puzzle]] = defaultdict(list)
     for puzzle in all_puzzles:
         puzzles_by_status[puzzle.status].append(puzzle)
 
+    puzzles = sorted(
+        puzzles_by_status.items(), key=lambda t: status.get_status_rank(t[0])
+    )
+
     return render(
         request,
         "bystatus.html",
         {
-            "puzzles": {
-                status.get_display(s): puzzles
-                for s, puzzles in puzzles_by_status.items()
-            }
+            "puzzles": puzzles,
+            "hidden": {status.INITIAL_IDEA, status.DEFERRED, status.DEAD},
         },
     )
 
