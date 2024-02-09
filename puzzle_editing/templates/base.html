@@ -55,7 +55,8 @@
                 </a>
                 <div class="navbar-dropdown">
                   {% if request.user.is_superuser or request.user|has_group:"EIC" %}
-                    {% nav_link current_path 'eic' '🎩 Editors-In-Chief inbox' %}
+                    {% nav_link current_path 'eic_inbox' '🎩 Editors-In-Chief inbox' %}
+                    {% nav_link current_path 'eic_overview' '🗺️ Hunt overview' %}
                     {% nav_link current_path 'editor_overview' '👁 Editor overview' %}
                     <hr class="navbar-divider">
                   {% endif %}

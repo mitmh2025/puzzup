@@ -85,7 +85,9 @@ urlpatterns = [
     path("postprod/all", views.postprod_all, name="postprod_all"),
     path("factcheck", views.factcheck, name="factcheck"),
     path("flavor", views.flavor, name="flavor"),
-    path("eic", views.eic, name="eic"),
+    path("eic", RedirectView.as_view(pattern_name="eic_inbox"), name="eic"),
+    path("eic/inbox", views.eic, name="eic_inbox"),
+    path("eic/overview", views.eic_overview, name="eic_overview"),
     path(
         "needs_editor", views.needs_editor, name="needs_editor"
     ),  # leftover, we're not using yet

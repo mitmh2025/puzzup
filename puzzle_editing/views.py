@@ -2347,6 +2347,52 @@ def eic(request, template="awaiting_editor.html"):
 
 
 @group_required("EIC")
+def eic_overview(request) -> HttpResponse:
+    def sort_key(t: tuple[Puzzle, PuzzleAnswer | None, datetime.datetime | None]):
+        p, a, _ = t
+        # answer/round before no answer/round
+        round_present_key = 0 if a else 1
+        round_key = a.round.name if a else None
+        # metas before feeders
+        meta_key = 0 if p.is_meta else 1
+
+        return (round_present_key, round_key, meta_key, -p.get_status_rank(), p.name)
+
+    last_visits = dict(PuzzleVisited.objects.values_list("puzzle", "date"))
+    last_comments = dict(
+        Puzzle.objects.exclude(comments__isnull=True).values_list(
+            "id", Max("comments__date")
+        )
+    )
+    unread = {
+        id
+        for id in set(last_comments.keys())
+        if id not in last_visits or last_comments[id] > last_visits[id]
+    }
+
+    puzzles: list[tuple[Puzzle, PuzzleAnswer | None, datetime.datetime | None]] = []
+
+    for p in Puzzle.objects.prefetch_related(
+        "answers__round", "authors", "editors", "tags"
+    ):
+        answers = list(p.answers.all())
+        if answers:
+            for a in answers:
+                puzzles.append((p, a, last_comments.get(p.id)))
+        else:
+            puzzles.append((p, None, last_comments.get(p.id)))
+
+    return render(
+        request,
+        "eic_overview.html",
+        {
+            "puzzles": sorted(puzzles, key=sort_key),
+            "unread": unread,
+        },
+    )
+
+
+@group_required("EIC")
 def editor_overview(request) -> HttpResponse:
     active_statuses = [
         status.INITIAL_IDEA,

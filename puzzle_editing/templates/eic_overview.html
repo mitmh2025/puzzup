@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load answer %}
+
+{% block bodyclass %}awaiting-editor{% endblock %}
+
+{% block title %}Editors-In-Chief Hunt Overview{% endblock %}
+
+{% block main %}
+
+    <p>🚨 SPOILERS BELOW</p>
+
+    <div style="overflow-x: scroll">
+        <table class="table is-striped sortable">
+            <tr align="left">
+                <th>Round</th>
+                <th>Meta</th>
+                <th>Answer</th>
+                <th>Status</th>
+                <th>Title</th>
+                <th>Author(s)</th>
+                <th>Editor(s)</th>
+                <th>Mechanics</th>
+                <th>Last comment</th>
+                <th>Testsolves</th>
+            </tr>
+            {% for puzzle, answer, last_comment in puzzles %}
+                <tr class="puzzle-row {% if puzzle.id in unread %}unvisited{% endif %}">
+                    <td
+                        sorttable_customkey="{% if answer %}0-{{ answer.round.name }}{% else %}1{% endif %}"
+                        {% if not answer %} class="empty"{% endif %}
+                    >
+                        {% if answer %}{{ answer.round.name }}{% else %}(unassigned){% endif %}
+                    </td>
+                    <td sorttable_customkey="{{ puzzle.is_meta|yesno:"0,1" }}">{% if puzzle.is_meta %}✔{% endif %}</td>
+                    <td class="answer" sorttable_customkey="{{ puzzle.answer }}">
+                        {% if answer %}
+                            {{ puzzle.is_meta|yesno:"Ⓜ️ ," }}
+                            <a href="{% url 'edit_answer' answer.id %}">
+                                {% formatted_answer answer %}
+                            </a>
+                            {% if answer.flexible %} (Flex){% endif %}
+                        {% endif %}
+                    </td>
+                    <td sorttable_customkey="{{ puzzle.get_status_rank }}" data-tippy-content="{{ puzzle.get_status_display }}">
+                        {{ puzzle.get_status_emoji }}
+                    </td>
+                    <td sorttable_customkey="{{ puzzle.name }}"><a href="{{ puzzle.puzzle_url }}">{{ puzzle.name }}</a></td>
+                    <td>{% for author in puzzle.authors.all %}{{ author }}{{ forloop.last|yesno:",&#44; "|safe }}{% endfor %}</td>
+                    <td>{% for editor in puzzle.editors.all %}{{ editor }}{{ forloop.last|yesno:",&#44; "|safe }}{% endfor %}</td>
+                    <td>{{ puzzle.editor_notes }}</td>
+                    {% if last_comment %}
+                        <td sorttable_customkey="{{ last_comment.timestamp }}" class="timestamp">{{ last_comment|timesince }} ago</td>
+                    {% else %}
+                        <td sorttable_customkey="0">—</td>
+                    {% endif %}
+                    <td>{{ puzzle.logistics_clean_testsolve_count }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+{% endblock %}
