@@ -958,9 +958,6 @@ def puzzle(request: AuthenticatedHttpRequest, id, slug=None):
         )
         is_author = is_author_on(user, puzzle)
         is_editor = is_editor_on(user, puzzle)
-        can_manage_discord = (
-            is_author or is_editor or user.has_perm("puzzle_editing.change_round")
-        )
         can_unspoil = user.has_perm("puzzle_editing.unspoil_puzzle")
 
         return render(
@@ -980,7 +977,6 @@ def puzzle(request: AuthenticatedHttpRequest, id, slug=None):
                 "all_statuses": status.ALL_STATUSES,
                 "is_author": is_author,
                 "is_editor": is_editor,
-                "can_manage_discord": can_manage_discord,
                 "can_unspoil": can_unspoil,
                 "is_factchecker": is_factchecker_on(user, puzzle),
                 "is_postprodder": is_postprodder_on(user, puzzle),
