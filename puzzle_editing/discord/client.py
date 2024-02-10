@@ -88,6 +88,7 @@ class Client:
                 "Discord request returned error code %s: %s",
                 content.get("code", "Unknown"),
                 content.get("message", ""),
+                exc_info=True,
             )
         resp.raise_for_status()
         return content
