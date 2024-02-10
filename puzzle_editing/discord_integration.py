@@ -239,7 +239,6 @@ def _set_puzzle_channel_category(
             c.update_channel(puzzle.discord_channel_id, {"parent_id": category_id})
             return
         except requests.HTTPError as e:
-            breakpoint()
             msg = e.response.json()
             pids = msg.get("errors", {}).get("parent_id", {})
             errs = pids.get("_errors", [])
