@@ -1,3 +1,4 @@
+import asyncio
 import datetime
 import re
 import zoneinfo
@@ -12,7 +13,6 @@ from django.db.models import Count, Q
 from django.db.models.functions import Lower
 from django.forms.models import ModelChoiceIterator
 from django.utils.text import normalize_newlines
-from googleapiclient.errors import HttpError
 
 from puzzle_editing.google_integration import GoogleManager
 from puzzle_editing.models import (
@@ -629,8 +629,17 @@ class PuzzlePostprodForm(forms.ModelForm):
                 raise ValidationError(msg)
 
         try:
-            return GoogleManager.instance().get_gdoc_html(cleaned_id)
-        except HttpError as e:
+            if gm := GoogleManager.instance():
+
+                async def get_gdoc_html():
+                    async with gm.make_aiogoogle as aiogoogle:
+                        return await gm.get_gdoc_html(aiogoogle, cleaned_id)
+
+                return asyncio.run(get_gdoc_html())
+            else:
+                msg = "Google Drive integration is not enabled. Please contact a Tech Lead."
+                raise ValidationError(msg)
+        except Exception as e:
             msg = "Could not find Google doc with corresponding ID! Please make sure it is in our Google Drive folder."
             raise ValidationError(msg) from e
 

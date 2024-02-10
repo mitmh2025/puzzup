@@ -11,6 +11,7 @@ authors = ["betaveros", "mitchgu", "jakob223", "dvorak42", "fortenforge", "Sandy
 
 [tool.poetry.dependencies]
 python = ">=3.12,<3.13"
+aiogoogle = "^5.6.0"
 asgiref = "^3.7.2"
 beautifulsoup4 = "^4.12.3"
 discord-interactions = "^0.4.0"
@@ -22,7 +23,6 @@ django-dirtyfields = "^1.9.2"
 django-import-export = "^3.3.7"
 django-ses = "^3.5.2"
 gitpython = "^3.1.41"
-google-api-python-client = "2.116.0"
 gunicorn = {extras = ["gevent"], version = "^21.2.0"}
 invoke = "^2.2.0"
 ipython = "^8.21.0"
@@ -44,8 +44,6 @@ whitenoise = "^6.6.0"
 daphne = "^4.0.0"
 django-stubs = {extras = ["compatible-mypy"], version = "^4.2.7"}
 djhtml = "^3.0.6"
-google-api-python-client-stubs = "^1.23.0"
-google-auth-stubs = "^0.2.0"
 mypy = "<1.8.0"
 pre-commit = "^3.6.0"
 pylint = "^3.0.3"
