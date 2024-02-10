@@ -1071,7 +1071,7 @@ def post_save_factcheck(
 
         async def make_factchecking_sheet() -> str:
             async with gm.make_aiogoogle() as aiogoogle:
-                return await gm.create_factchecking_sheet(aiogoogle, instance)
+                return await gm.create_factchecking_sheet(aiogoogle, instance.puzzle)
 
         instance.google_sheet_id = asyncio.run(make_factchecking_sheet())
         changed = True
