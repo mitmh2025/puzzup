@@ -484,11 +484,11 @@ class Puzzle(DirtyFieldsMixin, models.Model):
 
     def save(self, *args, **kwargs) -> None:
         status_changed = "status" in self.get_dirty_fields()
-        super().save(*args, **kwargs)
         # Make sure lead author is always spoiled and is always an author (see update_spoiled below for the m2m version)
         if self.lead_author:
             self.authors.add(self.lead_author)
             self.spoiled.add(self.lead_author)
+        super().save(*args, **kwargs)
         if status_changed:
             send_status_notifications(self)
 
