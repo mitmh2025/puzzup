@@ -17,6 +17,9 @@ urlpatterns = [
     path("check", views.check_metadata, name="check_metadata"),
     path("puzzle/new", views.puzzle_new, name="puzzle_new"),
     path("puzzle/<int:id>", views.puzzle, name="puzzle"),
+    path("puzzle/<int:id>/content", views.puzzle_content, name="puzzle_content"),
+    path("puzzle/<int:id>/solution", views.puzzle_solution, name="puzzle_solution"),
+    path("puzzle/<int:id>/resource", views.puzzle_resource, name="puzzle_resource"),
     path("puzzle/<int:id>/hints", views.puzzle_hints, name="puzzle_hints"),
     path("puzzle/<int:id>/feedback", views.puzzle_feedback, name="puzzle_feedback"),
     path(
@@ -69,6 +72,12 @@ urlpatterns = [
     path("testsolve_history", views.testsolve_history, name="testsolve_history"),
     path("testsolve_finder", views.testsolve_finder, name="testsolve_finder"),
     path("testsolve/<int:id>", views.testsolve_one, name="testsolve_one"),
+    path(
+        "testsolve/<int:id>/puzzle_content",
+        views.testsolve_puzzle_content,
+        name="testsolve_puzzle_content",
+    ),
+    path("testsolve/<int:id>/sheet", views.testsolve_sheet, name="testsolve_sheet"),
     path(
         "testsolve/<int:id>/feedback",
         views.testsolve_feedback,

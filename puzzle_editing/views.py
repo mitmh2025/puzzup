@@ -18,7 +18,7 @@ from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.models import Permission
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.db.models import (
     Avg,
     BooleanField,
@@ -436,15 +436,31 @@ def puzzle_new(request) -> HttpResponse:
             if c := discord.get_client():
                 discord.sync_puzzle_channel(c, puzzle)
                 author_tags = discord.mention_users(puzzle.authors.all(), False)
-                c.post_message(
+                message = c.post_message(
                     puzzle.discord_channel_id,
-                    f"This puzzle has been created in status **{status.get_display(puzzle.status)}**!\n"
-                    f"Access it at {external_puzzle_url(request, puzzle)}\n"
-                    f"Write your puzzle here: https://docs.google.com/document/u/0/d/{puzzle.content_google_doc_id}/edit\n"
-                    f"Write your solution here: https://docs.google.com/document/u/0/d/{puzzle.solution_google_doc_id}/edit\n"
-                    f"Keep any additional resources you need to help with writing here: https://drive.google.com/drive/folders/{puzzle.resource_google_folder_id}?authuser=0\n"
-                    f"Author(s): {', '.join(author_tags)}",
+                    {
+                        "embeds": [
+                            {
+                                "type": "rich",
+                                "description": (
+                                    f"This puzzle has been created in status **{status.get_display(puzzle.status)}**! Here are some useful links:\n"
+                                    "\n"
+                                    f"* [PuzzUp entry]({external_puzzle_url(request, puzzle)})\n"
+                                    f"* Here's a Google Doc where you can write your puzzle content: [Puzzle content]({request.build_absolute_uri(urls.reverse('puzzle_content', kwargs={'id': puzzle.id}))})\n"
+                                    f"* And another Google Doc for your your here: [Puzzle solution]({request.build_absolute_uri(urls.reverse('puzzle_solution', kwargs={'id': puzzle.id}))})\n"
+                                    f"* Finally, a Google Drive folder where you can put any additional resources: [Puzzle resources]({request.build_absolute_uri(urls.reverse('puzzle_resource', kwargs={'id': puzzle.id}))})\n"
+                                ),
+                                "fields": [
+                                    {
+                                        "name": "Author(s)",
+                                        "value": ", ".join(author_tags),
+                                    },
+                                ],
+                            }
+                        ],
+                    },
                 )
+                c.pin_message(puzzle.discord_channel_id, message["id"])
             add_comment(
                 request=request,
                 puzzle=puzzle,
@@ -1036,6 +1052,39 @@ def puzzle(request: AuthenticatedHttpRequest, id, slug=None):
         )
 
 
+@login_required
+def puzzle_content(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
+    puzzle = get_object_or_404(Puzzle, id=id)
+    if not is_spoiled_on(request.user, puzzle):
+        raise PermissionDenied
+    url = puzzle.get_content_url(request.user)
+    if not url:
+        raise ObjectDoesNotExist
+    return redirect(url)
+
+
+@login_required
+def puzzle_solution(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
+    puzzle = get_object_or_404(Puzzle, id=id)
+    if not is_spoiled_on(request.user, puzzle):
+        raise PermissionDenied
+    url = puzzle.get_solution_url(request.user)
+    if not url:
+        raise ObjectDoesNotExist
+    return redirect(url)
+
+
+@login_required
+def puzzle_resource(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
+    puzzle = get_object_or_404(Puzzle, id=id)
+    if not is_spoiled_on(request.user, puzzle):
+        raise PermissionDenied
+    url = puzzle.get_resource_url(request.user)
+    if not url:
+        raise ObjectDoesNotExist
+    return redirect(url)
+
+
 @permission_required("puzzle_editing.change_round", raise_exception=True)
 def puzzle_answers(request, id):
     puzzle = get_object_or_404(Puzzle, id=id)
@@ -1622,6 +1671,46 @@ def testsolve_main(request):
             participation = TestsolveParticipation(session=session, user=user)
             participation.save()
 
+            if (c := discord.get_client()) and session.discord_thread_id:
+                puzzle_content_url = request.build_absolute_uri(
+                    urls.reverse("testsolve_puzzle_content", kwargs={"id": session.id})
+                )
+                sheet_url = request.build_absolute_uri(
+                    urls.reverse("testsolve_sheet", kwargs={"id": session.id})
+                )
+                author_tags = discord.mention_users(puzzle.authors.all(), False)
+                editor_tags = discord.mention_users(puzzle.editors.all(), False)
+                message = c.post_message(
+                    session.discord_thread_id,
+                    {
+                        "embeds": [
+                            {
+                                "type": "rich",
+                                "description": (
+                                    f"New testsolve session created for {puzzle.name}.\n"
+                                    "\n"
+                                    f"We've created a few documents for you to work with:\n"
+                                    f"* Here is a **read-only copy** of the puzzle for you to testsolve: [Google Doc]({puzzle_content_url})\n"
+                                    f"* Here is a Google Sheet to work in: [Google Sheet]({sheet_url})"
+                                    "\n"
+                                    "We've also included the authors and editors so that they can monitor the thread and intervene if necessary. Good luck!"
+                                ),
+                                "fields": [
+                                    {
+                                        "name": "Authors",
+                                        "value": ", ".join(author_tags),
+                                    },
+                                    {
+                                        "name": "Editors",
+                                        "value": ", ".join(editor_tags),
+                                    },
+                                ],
+                            }
+                        ]
+                    },
+                )
+                c.pin_message(session.discord_thread_id, message["id"])
+
             add_comment(
                 request=request,
                 puzzle=puzzle,
@@ -2048,6 +2137,28 @@ def testsolve_one(request, id) -> HttpResponse:
     }
 
     return render(request, "testsolve_one.html", context)
+
+
+@login_required
+@require_testsolving_enabled
+def testsolve_puzzle_content(
+    request: AuthenticatedHttpRequest, id: int
+) -> HttpResponse:
+    session = get_object_or_404(TestsolveSession, id=id)
+    url = session.get_puzzle_copy_url(request.user)
+    if not url:
+        raise ObjectDoesNotExist
+    return redirect(url)
+
+
+@login_required
+@require_testsolving_enabled
+def testsolve_sheet(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
+    session = get_object_or_404(TestsolveSession, id=id)
+    url = session.get_sheet_url(request.user)
+    if not url:
+        raise ObjectDoesNotExist
+    return redirect(url)
 
 
 @require_POST

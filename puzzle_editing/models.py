@@ -4,6 +4,7 @@ import logging
 import random
 import re
 import statistics
+import urllib.parse
 from collections.abc import Iterable
 from types import MappingProxyType
 
@@ -581,6 +582,33 @@ class Puzzle(DirtyFieldsMixin, models.Model):
         emails -= {""}
 
         return list(emails)
+
+    def get_content_url(self, user: User | None = None) -> str | None:
+        if not self.content_google_doc_id:
+            return None
+
+        url = f"https://docs.google.com/document/u/0/d/{urllib.parse.quote(self.content_google_doc_id)}/edit"
+        if user and user.is_authenticated:
+            url += f"?{urllib.parse.urlencode({'authuser': user.email})}"
+        return url
+
+    def get_solution_url(self, user: User | None = None) -> str | None:
+        if not self.solution_google_doc_id:
+            return None
+
+        url = f"https://docs.google.com/document/u/0/d/{urllib.parse.quote(self.solution_google_doc_id)}/edit"
+        if user and user.is_authenticated:
+            url += f"?{urllib.parse.urlencode({'authuser': user.email})}"
+        return url
+
+    def get_resource_url(self, user: User | None = None) -> str | None:
+        if not self.resource_google_folder_id:
+            return None
+
+        url = f"https://drive.google.com/drive/u/0/folders/{urllib.parse.quote(self.resource_google_folder_id)}"
+        if user and user.is_authenticated:
+            url += f"?{urllib.parse.urlencode({'authuser': user.email})}"
+        return url
 
     def has_postprod(self):
         try:
@@ -1225,9 +1253,25 @@ class TestsolveSession(models.Model):
 
         return list(emails)
 
+    def get_puzzle_copy_url(self, user: User | None = None) -> str | None:
+        if not self.puzzle_copy_google_doc_id:
+            return None
+        url = f"https://docs.google.com/document/u/0/d/{urllib.parse.quote(self.puzzle_copy_google_doc_id)}/edit"
+        if user and user.is_authenticated:
+            url += f"?{urllib.parse.urlencode({'authuser': user.email})}"
+        return url
+
+    def get_sheet_url(self, user: User | None = None) -> str | None:
+        if not self.google_sheets_id:
+            return None
+        url = f"https://docs.google.com/spreadsheets/u/0/d/{urllib.parse.quote(self.google_sheets_id)}/edit"
+        if user and user.is_authenticated:
+            url += f"?{urllib.parse.urlencode({'authuser': user.email})}"
+        return url
+
 
 @receiver(post_save, sender=TestsolveSession)
-def create_testsolve_thread(
+def post_save_testsolve_session(
     sender, instance: TestsolveSession, created: bool, **kwargs
 ):
     if not created:
@@ -1245,40 +1289,14 @@ def create_testsolve_thread(
         except Exception as e:
             logger.exception("Failed to create Google sheet", exc_info=e)
 
-    discord_thread_id = ""
     try:
         c = discord.get_client()
         if c:
-            puzzle = instance.puzzle
-
             discord.make_testsolve_thread(c, instance)
-
-            author_tags = discord.mention_users(puzzle.authors.all(), False)
-            editor_tags = discord.mention_users(puzzle.editors.all(), False)
-            c.post_message(
-                instance.discord_thread_id,
-                f"New testsolve session created for {puzzle.name}.\n"
-                # This is a hack to auto-add authors and editors to the thread
-                # by tagging them (to get around Discord rate limits).
-                f"Author(s): {', '.join(author_tags)}\n"
-                f"Editor(s): {', '.join(editor_tags)}",
-            )
-
-            if content_id and sheet_id:
-                c.post_message(
-                    instance.discord_thread_id,
-                    f"Here is a **read-only copy** of the puzzle for you to testsolve: https://docs.google.com/document/u/0/d/{content_id}\n"
-                    f"Here is a Google Sheet to work in: https://docs.google.com/spreadsheets/u/0/d/{sheet_id}",
-                )
-
-            discord_thread_id = instance.discord_thread_id
     except Exception as e:
         logger.exception("Failed to create Discord thread", exc_info=e)
 
     changed = False
-    if discord_thread_id:
-        instance.discord_thread_id = discord_thread_id
-        changed = True
     if sheet_id:
         instance.puzzle_copy_google_doc_id = content_id
         instance.google_sheets_id = sheet_id
