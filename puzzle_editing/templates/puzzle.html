@@ -330,7 +330,7 @@
                 </h3>
                 {% if puzzle.has_postprod %}<b>See <a href="{{ puzzle.postprod_url }}">the postprodded puzzle</a>.</b><br/>{% endif %}
                 {% if puzzle.content_google_doc_id %}
-                    <a href="https://docs.google.com/document/d/{{ puzzle.content_google_doc_id }}/edit" target="_blank">Edit content in Google Docs</a>
+                    <a href="https://docs.google.com/document/u/0/d/{{ puzzle.content_google_doc_id }}/edit" target="_blank">Edit content in Google Docs</a>
                 {% else %}
                     <div class="empty">(no puzzle yet)</div>
                 {% endif %}
@@ -342,7 +342,7 @@
                 </h3>
                 {% if puzzle.has_postprod %}<b>See <a href="{{ puzzle.postprod_solution_url }}">the postprodded solution</a>.</b><br/>{% endif %}
                 {% if puzzle.solution_google_doc_id %}
-                    <a href="https://docs.google.com/document/d/{{ puzzle.solution_google_doc_id }}/edit" target="_blank">Edit solution in Google Docs</a>
+                    <a href="https://docs.google.com/document/u/0/d/{{ puzzle.solution_google_doc_id }}/edit" target="_blank">Edit solution in Google Docs</a>
                 {% else %}
                     <div class="empty">(no solution yet)</div>
                 {% endif %}
@@ -354,7 +354,7 @@
                     Resources
                 </h3>
                 {% if puzzle.resource_google_folder_id %}
-                    <a href="https://drive.google.com/drive/folders/{{ puzzle.resource_google_folder_id }}" target="_blank">View resource folder in Google Drive</a>.
+                    <a href="https://drive.google.com/drive/folders/{{ puzzle.resource_google_folder_id }}?authuser=0" target="_blank">View resource folder in Google Drive</a>.
                     You can use this folder for any additional materials, resources, documents, etc. that you need while writing. (These will not be visible to testsolvers)
                 {% else %}
                     <div class="empty">(no solution yet)</div>
@@ -497,7 +497,7 @@
                 <h3>Factcheck</h3>
                 {% if puzzle.has_factcheck %}
                     <p>
-                        <a href="https://docs.google.com/spreadsheets/d/{{ puzzle.factcheck.google_sheet_id }}/edit" target="_blank">View factcheck sheet</a><br>
+                        <a href="https://docs.google.com/spreadsheets/u/0/d/{{ puzzle.factcheck.google_sheet_id }}/edit" target="_blank">View factcheck sheet</a><br>
                     </p>
                     <button type="button" class="button is-small is-light toggle-show" data-target="factcheck-form" data-rehide="Hide editing">Edit</button>
                     <form id="factcheck-form" method="post" class="hidden">

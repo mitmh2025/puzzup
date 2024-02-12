@@ -440,9 +440,9 @@ def puzzle_new(request) -> HttpResponse:
                     puzzle.discord_channel_id,
                     f"This puzzle has been created in status **{status.get_display(puzzle.status)}**!\n"
                     f"Access it at {external_puzzle_url(request, puzzle)}\n"
-                    f"Write your puzzle here: https://docs.google.com/document/d/{puzzle.content_google_doc_id}/edit\n"
-                    f"Write your solution here: https://docs.google.com/document/d/{puzzle.solution_google_doc_id}/edit\n"
-                    f"Keep any additional resources you need to help with writing here: https://drive.google.com/drive/folders/{puzzle.resource_google_folder_id}\n"
+                    f"Write your puzzle here: https://docs.google.com/document/u/0/d/{puzzle.content_google_doc_id}/edit\n"
+                    f"Write your solution here: https://docs.google.com/document/u/0/d/{puzzle.solution_google_doc_id}/edit\n"
+                    f"Keep any additional resources you need to help with writing here: https://drive.google.com/drive/folders/{puzzle.resource_google_folder_id}?authuser=0\n"
                     f"Author(s): {', '.join(author_tags)}",
                 )
             add_comment(

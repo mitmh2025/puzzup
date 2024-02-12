@@ -1267,8 +1267,8 @@ def create_testsolve_thread(
             if content_id and sheet_id:
                 c.post_message(
                     instance.discord_thread_id,
-                    f"Here is a **read-only copy** of the puzzle for you to testsolve: https://docs.google.com/document/d/{content_id}\n"
-                    f"Here is a Google Sheet to work in: https://docs.google.com/spreadsheets/d/{sheet_id}",
+                    f"Here is a **read-only copy** of the puzzle for you to testsolve: https://docs.google.com/document/u/0/d/{content_id}\n"
+                    f"Here is a Google Sheet to work in: https://docs.google.com/spreadsheets/u/0/d/{sheet_id}",
                 )
 
             discord_thread_id = instance.discord_thread_id
