@@ -57,7 +57,7 @@
                     <h2>Puzzle</h2>
                     {% if session.puzzle.has_postprod %}<b>👉 <a href="{{ session.puzzle.postprod_url }}">the postprodded puzzle</a> on staging.</b>{% endif %}
                     {% if session.puzzle_copy_google_doc_id %}
-                        <a href="https://docs.google.com/document/u/0/d/{{ session.puzzle_copy_google_doc_id }}/edit" target="_blank">View content in Google Docs</a>
+                        <a href="https://docs.google.com/document/u/0/d/{{ session.puzzle_copy_google_doc_id }}/edit{% if user.email %}?authuser={{ user.email }}{% endif %}" target="_blank">View content in Google Docs</a>
                     {% else %}
                         <div class="empty">(no puzzle yet)</div>
                     {% endif %}
@@ -65,7 +65,7 @@
                     <hr/>
                     {% if session.google_sheets_id %}
                         <div>
-                            <a href="https://docs.google.com/spreadsheets/u/0/d/{{ session.google_sheets_id }}">
+                            <a href="https://docs.google.com/spreadsheets/u/0/d/{{ session.google_sheets_id }}{% if user.email %}?authuser={{ user.email }}{% endif %}">
                                 Link to Spreadsheet
                             </a>
                         </div>
