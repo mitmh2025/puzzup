@@ -10,6 +10,13 @@ USE_X_FORWARDED_PORT = True
 
 ALLOWED_HOSTS = ["puzzup.letswriteahunt.com"]
 
+
+def before_send_transaction(event, hint):
+    if "user" not in event or not event["user"]:
+        return None
+    return event
+
+
 sentry_sdk.init(
     dsn="https://d3e924ca08ac12b462b61e5e17c73523@o4506595254599680.ingest.sentry.io/4506595264954368",
     integrations=[DjangoIntegration()],
@@ -20,4 +27,5 @@ sentry_sdk.init(
     # If you wish to associate users to errors (assuming you are using
     # django.contrib.auth) you may enable sending PII data.
     send_default_pii=True,
+    before_send_transaction=before_send_transaction,
 )
