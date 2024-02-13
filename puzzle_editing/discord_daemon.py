@@ -40,17 +40,28 @@ class Client(discord.Client):
         await puzzup_user.asave()
 
     async def on_member_join(self, member: discord.Member) -> None:
+        if member.guild.id != self.guild_id:
+            return
+
         await self.cache_user(member)
 
     async def on_member_update(
         self, before: discord.Member, after: discord.Member
     ) -> None:
+        if after.guild.id != self.guild_id:
+            return
+
         await self.cache_user(after)
 
     async def on_user_update(self, before: discord.User, after: discord.User) -> None:
+        if after.id != self.guild_id:
+            return
+
         await self.cache_user(after)
 
     async def cache_category(self, category: discord.CategoryChannel) -> None:
+        if category.guild.id != self.guild_id:
+            return
         await DiscordCategoryCache.objects.aupdate_or_create(
             id=str(category.id),
             defaults={
@@ -83,6 +94,9 @@ class Client(discord.Client):
         )
 
     async def on_guild_channel_create(self, channel: discord.abc.GuildChannel) -> None:
+        if channel.guild.id != self.guild_id:
+            return
+
         if isinstance(channel, discord.CategoryChannel):
             await self.cache_category(channel)
         elif isinstance(channel, discord.TextChannel):
@@ -91,12 +105,18 @@ class Client(discord.Client):
     async def on_guild_channel_update(
         self, before: discord.abc.GuildChannel, after: discord.abc.GuildChannel
     ) -> None:
+        if after.guild.id != self.guild_id:
+            return
+
         if isinstance(after, discord.CategoryChannel):
             await self.cache_category(after)
         elif isinstance(after, discord.TextChannel):
             await self.cache_text_channel(after)
 
     async def on_guild_channel_delete(self, channel: discord.abc.GuildChannel) -> None:
+        if channel.guild.id != self.guild_id:
+            return
+
         if isinstance(channel, discord.CategoryChannel):
             await DiscordCategoryCache.objects.filter(id=str(channel.id)).adelete()
         elif isinstance(channel, discord.TextChannel):
