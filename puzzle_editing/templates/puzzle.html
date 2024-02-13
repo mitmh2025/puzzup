@@ -342,7 +342,7 @@
                 </h3>
                 {% if puzzle.has_postprod %}<b>See <a href="{{ puzzle.postprod_solution_url }}">the postprodded solution</a>.</b><br/>{% endif %}
                 {% if puzzle.solution_google_doc_id %}
-                    <a href="{% url 'puzzle_solution' puzzle.id }}" target="_blank">Edit solution in Google Docs</a>
+                    <a href="{% url 'puzzle_solution' puzzle.id %}" target="_blank">Edit solution in Google Docs</a>
                 {% else %}
                     <div class="empty">(no solution yet)</div>
                 {% endif %}
