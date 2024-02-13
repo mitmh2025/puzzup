@@ -89,7 +89,6 @@ class Client:
                 content.get("code", "Unknown"),
                 content.get("message", ""),
                 exc_info=True,
-                extra=content,
             )
         resp.raise_for_status()
         return content
