@@ -50,7 +50,7 @@ class Client:
     A barebones discord API library.
     """
 
-    _api_base_url = "https://discord.com/api/v9"
+    _api_base_url = "https://discord.com/api/v10"
 
     def __init__(
         self,
