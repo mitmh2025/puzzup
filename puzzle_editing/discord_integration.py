@@ -275,13 +275,14 @@ def _sync_puzzle_info_post(c: Client | None, puzzle: m.Puzzle) -> None:
 
     author_tags = mention_users(puzzle.authors.all(), False)
     message_content = {
+        "content": "",
         "embeds": [
             {
                 "type": "rich",
                 "description": (
                     f"This puzzle has been created in status **{status.get_display(puzzle.status)}**! Here are some useful links:\n"
                     "\n"
-                    f"* [PuzzUp entry]({urls.reverse("puzzle", kwargs={"id": puzzle.id})})\n"
+                    f"* [PuzzUp entry]({settings.PUZZUP_URL}{urls.reverse("puzzle", kwargs={"id": puzzle.id})})\n"
                     f"* Here's a Google Doc where you can write your puzzle content: [Puzzle content]({settings.PUZZUP_URL}{urls.reverse('puzzle_content', kwargs={'id': puzzle.id})})\n"
                     f"* And another Google Doc for your your here: [Puzzle solution]({settings.PUZZUP_URL}{urls.reverse('puzzle_solution', kwargs={'id': puzzle.id})})\n"
                     f"* Finally, a Google Drive folder where you can put any additional resources: [Puzzle resources]({settings.PUZZUP_URL}{urls.reverse('puzzle_resource', kwargs={'id': puzzle.id})})\n"
