@@ -1,18 +1,10 @@
 from functools import wraps
 
-from django import urls
 from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
 from django.core.exceptions import PermissionDenied
-from django.http import HttpRequest
 
 from . import models as m
-
-
-def external_puzzle_url(request: HttpRequest, puzzle: m.Puzzle) -> str:
-    """Get an external URL for a puzzle."""
-    pth = urls.reverse("puzzle", kwargs={"id": puzzle.id})
-    return request.build_absolute_uri(pth)
 
 
 def group_required(*group_names):

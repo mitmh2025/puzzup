@@ -105,7 +105,6 @@ from settings.base import SITE_PASSWORD
 
 from .view_helpers import (
     auto_postprodding_required,
-    external_puzzle_url,
     group_required,
     require_testsolving_enabled,
 )
@@ -435,32 +434,7 @@ def puzzle_new(request) -> HttpResponse:
 
             if c := discord.get_client():
                 discord.sync_puzzle_channel(c, puzzle)
-                author_tags = discord.mention_users(puzzle.authors.all(), False)
-                message = c.post_message(
-                    puzzle.discord_channel_id,
-                    {
-                        "embeds": [
-                            {
-                                "type": "rich",
-                                "description": (
-                                    f"This puzzle has been created in status **{status.get_display(puzzle.status)}**! Here are some useful links:\n"
-                                    "\n"
-                                    f"* [PuzzUp entry]({external_puzzle_url(request, puzzle)})\n"
-                                    f"* Here's a Google Doc where you can write your puzzle content: [Puzzle content]({request.build_absolute_uri(urls.reverse('puzzle_content', kwargs={'id': puzzle.id}))})\n"
-                                    f"* And another Google Doc for your your here: [Puzzle solution]({request.build_absolute_uri(urls.reverse('puzzle_solution', kwargs={'id': puzzle.id}))})\n"
-                                    f"* Finally, a Google Drive folder where you can put any additional resources: [Puzzle resources]({request.build_absolute_uri(urls.reverse('puzzle_resource', kwargs={'id': puzzle.id}))})\n"
-                                ),
-                                "fields": [
-                                    {
-                                        "name": "Author(s)",
-                                        "value": ", ".join(author_tags),
-                                    },
-                                ],
-                            }
-                        ],
-                    },
-                )
-                c.pin_message(puzzle.discord_channel_id, message["id"])
+
             add_comment(
                 request=request,
                 puzzle=puzzle,

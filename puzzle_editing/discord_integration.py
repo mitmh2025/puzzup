@@ -10,6 +10,7 @@ from typing import Any
 import requests
 from discord import PermissionOverwrite as DiscordPermissionOverrite
 from discord import Permissions
+from django import urls
 from django.conf import settings
 from django.db.models import Q
 
@@ -254,6 +255,59 @@ def _set_puzzle_channel_category(
     raise DiscordError(msg)
 
 
+def _find_puzzle_info_post(c: Client, channel: str) -> str | None:
+    pins = c.get_channel_pins(channel)
+    for pin in pins:
+        if pin["author"]["id"] == settings.DISCORD_CLIENT_ID:
+            return pin["id"]
+
+    messages = c.get_channel_messages(channel, after="0", limit=1)
+    for message in messages:
+        if message["author"]["id"] == settings.DISCORD_CLIENT_ID:
+            return message["id"]
+
+    return None
+
+
+def _sync_puzzle_info_post(c: Client | None, puzzle: m.Puzzle) -> None:
+    if not c or not puzzle.discord_channel_id:
+        return
+
+    author_tags = mention_users(puzzle.authors.all(), False)
+    message_content = {
+        "embeds": [
+            {
+                "type": "rich",
+                "description": (
+                    f"This puzzle has been created in status **{status.get_display(puzzle.status)}**! Here are some useful links:\n"
+                    "\n"
+                    f"* [PuzzUp entry]({urls.reverse("puzzle", kwargs={"id": puzzle.id})})\n"
+                    f"* Here's a Google Doc where you can write your puzzle content: [Puzzle content]({settings.PUZZUP_URL}{urls.reverse('puzzle_content', kwargs={'id': puzzle.id})})\n"
+                    f"* And another Google Doc for your your here: [Puzzle solution]({settings.PUZZUP_URL}{urls.reverse('puzzle_solution', kwargs={'id': puzzle.id})})\n"
+                    f"* Finally, a Google Drive folder where you can put any additional resources: [Puzzle resources]({settings.PUZZUP_URL}{urls.reverse('puzzle_resource', kwargs={'id': puzzle.id})})\n"
+                ),
+                "fields": [
+                    {
+                        "name": "Author(s)",
+                        "value": ", ".join(author_tags),
+                    },
+                ],
+            }
+        ],
+    }
+
+    message_id: str | None = puzzle.discord_info_message_id or _find_puzzle_info_post(
+        c, puzzle.discord_channel_id
+    )
+    if message_id:
+        c.edit_message(puzzle.discord_channel_id, message_id, message_content)
+    else:
+        message_id = c.post_message(puzzle.discord_channel_id, message_content)["id"]
+    if message_id:
+        c.pin_message(puzzle.discord_channel_id, message_id)
+        puzzle.discord_info_message_id = message_id
+
+
 def sync_puzzle_channel(c: Client | None, puzzle: m.Puzzle) -> None:
     """Ensure that a channel exists for the puzzle with the right configuration."""
     if not c:
@@ -292,6 +346,7 @@ def sync_puzzle_channel(c: Client | None, puzzle: m.Puzzle) -> None:
             },
         )
 
+    _sync_puzzle_info_post(c, puzzle)
     if puzzle.discord_channel_id != channel_id:
         puzzle.discord_channel_id = channel_id
         puzzle.save()

@@ -1,6 +1,7 @@
 import logging
 import re
 from typing import Any
+from urllib.parse import urlencode
 
 import requests
 
@@ -140,6 +141,13 @@ class Client:
         pth = f"/channels/{channel_id}/messages"
         return self._request("post", pth, payload)
 
+    def edit_message(
+        self, channel_id: str, message_id: str, payload: dict[str, Any]
+    ) -> JsonDict:
+        return self._request(
+            "patch", f"/channels/{channel_id}/messages/{message_id}", payload
+        )
+
     def delete_message(self, channel_id: str, message_id: str):
         """Delete a message"""
         self._request("delete", f"/channels/{channel_id}/messages/{message_id}")
@@ -149,6 +157,30 @@ class Client:
 
     def pin_message(self, channel_id: str, message_id: str):
         self._request("put", f"/channels/{channel_id}/pins/{message_id}")
+
+    def get_channel_pins(self, channel_id: str) -> list[JsonDict]:
+        return self._request("get", f"/channels/{channel_id}/pins")
+
+    def get_channel_messages(
+        self,
+        channel_id: str,
+        before: str | None = None,
+        after: str | None = None,
+        around: str | None = None,
+        limit: int = 50,
+    ) -> list[JsonDict]:
+        params: dict[str, Any] = {}
+        if before:
+            params["before"] = before
+        if after:
+            params["after"] = after
+        if around:
+            params["around"] = around
+        if limit:
+            params["limit"] = limit
+        return self._request(
+            "get", f"/channels/{channel_id}/messages?{urlencode(params)}"
+        )
 
     def set_channel_permission(
         self, channel_id: str, entity_id: str, permission: JsonDict

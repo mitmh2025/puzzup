@@ -350,6 +350,10 @@ class Puzzle(DirtyFieldsMixin, models.Model):
         max_length=19,
         blank=True,
     )
+    discord_info_message_id = models.CharField(
+        max_length=19,
+        blank=True,
+    )
 
     authors = models.ManyToManyField(User, related_name="authored_puzzles", blank=True)
     lead_author = models.ForeignKey(
