@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load answer %}
+{% load markdown %}
 
 {% block bodyclass %}awaiting-editor{% endblock %}
 
@@ -21,6 +22,7 @@
                 <th>Author(s)</th>
                 <th>Editor(s)</th>
                 <th>Mechanics</th>
+                <th>Private Notes</th>
                 <th>Last comment</th>
                 <th>Testsolves</th>
             </tr>
@@ -50,6 +52,7 @@
                     <td>{% for author in puzzle.authors.all %}{{ author }}{{ forloop.last|yesno:",&#44; "|safe }}{% endfor %}</td>
                     <td>{% for editor in puzzle.editors.all %}{{ editor }}{{ forloop.last|yesno:",&#44; "|safe }}{% endfor %}</td>
                     <td>{{ puzzle.editor_notes }}</td>
+                    <td>{{ puzzle.private_notes|markdown }}</td>
                     {% if last_comment %}
                         <td sorttable_customkey="{{ last_comment.timestamp }}" class="timestamp">{{ last_comment|timesince }} ago</td>
                     {% else %}

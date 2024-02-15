@@ -410,6 +410,11 @@ class Puzzle(DirtyFieldsMixin, models.Model):
         blank=True,
         help_text="State what answer constraints your puzzle has and what round you'd prefer it to go in (if applicable). Editors will do their best to honor these constraints and reach out to you if they can't be satisfied.",
     )
+    private_notes = models.TextField(
+        blank=True,
+        verbose_name="Private notes",
+        help_text="Private notes about this puzzle, visible only to the EICs",
+    )
     flavor = models.TextField(
         blank=True,
         help_text="Puzzle flavor used by creative team to motivate round art, such as 'puzzle consists of performers swallowing swords' or 'puzzle is themed as a ride through a tunnel of love'.",

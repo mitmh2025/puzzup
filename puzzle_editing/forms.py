@@ -456,6 +456,8 @@ class PuzzleInfoForm(forms.ModelForm):
         )
         self.fields["notes"].label = "Answer & Round requests"
         self.fields["authors_addl"].label = "Additional authors"
+        if not user.is_eic:
+            del self.fields["private_notes"]
 
     def clean(self):
         cleaned_data = super().clean()
@@ -476,6 +478,7 @@ class PuzzleInfoForm(forms.ModelForm):
             "description",
             "editor_notes",
             "notes",
+            "private_notes",
             "is_meta",
         )
         labels = MappingProxyType(
@@ -494,6 +497,7 @@ class PuzzleInfoForm(forms.ModelForm):
                 "description": MarkdownTextarea(attrs={"rows": 9}),
                 "editor_notes": forms.TextInput(attrs={"class": "input"}),
                 "notes": MarkdownTextarea(attrs={"rows": 6}),
+                "private_notes": MarkdownTextarea(attrs={"rows": 3}),
                 "is_meta": forms.CheckboxInput(),
             }
         )

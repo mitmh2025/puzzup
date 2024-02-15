@@ -1333,14 +1333,16 @@ def puzzle_edit(request, id) -> HttpResponse:
             form.save()
 
             if form.changed_data:
-                add_comment(
-                    request=request,
-                    puzzle=puzzle,
-                    author=user,
-                    is_system=True,
-                    send_email=False,
-                    content=get_changed_data_message(form),
-                )
+                content = get_changed_data_message(form)
+                if content:
+                    add_comment(
+                        request=request,
+                        puzzle=puzzle,
+                        author=user,
+                        is_system=True,
+                        send_email=False,
+                        content=content,
+                    )
                 c = discord.get_client()
                 discord.sync_puzzle_channel(c, puzzle)
                 if new_authors:
@@ -1370,6 +1372,10 @@ def get_changed_data_message(form):
     lines = []
 
     for field in form.changed_data:
+        # No comment for private notes
+        if field == "private_notes":
+            continue
+
         if isinstance(form.fields[field], UserMultipleChoiceField):
             users = form.cleaned_data[field]
             field_name = field.replace("_", " ")

@@ -14,6 +14,7 @@
                 <th>Description</th>
                 <th>Mechanics</th>
                 <th>Requests</th>
+                <th>Private Notes</th>
                 <th>Last Status Change</th>
             </tr>
             {% for puzzle in puzzles %}
@@ -42,6 +43,7 @@
                         </td>
                         <td class="small-md">{{ puzzle.editor_notes }}</td>
                         <td class="small-md">{{ puzzle.notes|markdown }}</td>
+                        <td class="small-md">{{ puzzle.private_notes|markdown }}</td>
                         <td class="timestamp" sorttable_customkey="{{ puzzle.status_mtime.timestamp }}">{{ puzzle.status_mtime | naturaltime }}</td>
                     {% endif %}
                 </tr>

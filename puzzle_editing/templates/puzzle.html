@@ -253,6 +253,16 @@
                         </div>
                     </div>
                 {% endif %}
+                {% if user.is_eic and puzzle.private_notes %}
+                    <div class="columns">
+                        <div class="column is-one-quarter">
+                            <h4>Private Notes</h4>
+                        </div>
+                        <div class="column">
+                            {{ puzzle.private_notes|markdown }}
+                        </div>
+                    </div>
+                {% endif %}
                 {% if puzzle.is_meta %}
                     <div class="columns">
                         <div class="column">

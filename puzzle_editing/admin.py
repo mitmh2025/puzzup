@@ -55,6 +55,7 @@ class PuzzleAdmin(admin.ModelAdmin):
         "description",
         "editor_notes",
         "notes",
+        "private_notes",
         "flavor",
         "tags__name",
         "content",

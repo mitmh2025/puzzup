@@ -175,6 +175,7 @@ def puzzle_list(
 
     return {
         "perms": perms,
+        "user": user,
         "limit": limit,
         "puzzles": make_puzzle_data(
             puzzles,

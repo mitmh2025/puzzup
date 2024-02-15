@@ -44,6 +44,9 @@
                 {% if show_editors %}
                     <th>Editors</th>
                 {% endif %}
+                {% if user.is_eic %}
+                    <th>Private Notes</th>
+                {% endif %}
                 <th>Updated</th>
                 <th>Commented</th>
                 <th>Meta</th>
@@ -89,6 +92,9 @@
                         {% endif %}
                         {% if show_editors %}
                             <td>{{ puzzle.opt_editors|length }} / {{ puzzle.needed_editors }}: {{ puzzle.editors_html }}</td>
+                        {% endif %}
+                        {% if user.is_eic %}
+                            <td>{{ puzzle.private_notes|markdown }}</td>
                         {% endif %}
                         <td sorttable_customkey="{{ puzzle.last_updated.timestamp }}" class="timestamp">{{ puzzle.last_updated|timesince }} ago</td>
                         {% if puzzle.last_comment_date %}
