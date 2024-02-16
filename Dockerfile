@@ -64,7 +64,7 @@ stderr_logfile=/dev/stderr
 stderr_logfile_maxbytes=0
 
 [program:gunicorn]
-command=gunicorn -k gevent -w %(ENV_NPROC)s puzzup.wsgi:application
+command=gunicorn -k gevent -w %(ENV_NPROC)s puzzup_2025.wsgi:application
 autorestart=true
 stdout_logfile=/dev/stdout
 stdout_logfile_maxbytes=0
