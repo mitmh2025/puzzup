@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     "import_export",
 ]
 
-ASGI_APPLICATION = "puzzup.asgi.application"
+ASGI_APPLICATION = "puzzup_2025.asgi.application"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -59,7 +59,7 @@ MIDDLEWARE = [
     "puzzle_editing.middleware.timezone_middleware",
 ]
 
-ROOT_URLCONF = "puzzup.urls"
+ROOT_URLCONF = "puzzup_2025.urls"
 
 TEMPLATES = [
     {
@@ -80,7 +80,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "puzzup.wsgi.application"
+WSGI_APPLICATION = "puzzup_2025.wsgi.application"
 
 
 # Database
