@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import contextlib
 import itertools
+import time
 import typing
 from collections.abc import Iterable
 from enum import Enum
@@ -12,7 +13,7 @@ from discord import PermissionOverwrite as DiscordPermissionOverrite
 from discord import Permissions
 from django import urls
 from django.conf import settings
-from django.db.models import Q
+from django.db.models import Count, Q
 
 from puzzle_editing import status
 from puzzle_editing.discord.client import (
@@ -211,9 +212,11 @@ def _set_puzzle_channel_category(
     will try category-1, then category-2, etc. until it finds one that has
     space.
     """
-    categories = m.DiscordCategoryCache.objects.filter(
-        puzzle_status=puzzle.status
-    ).in_bulk()
+    categories = (
+        m.DiscordCategoryCache.objects.filter(puzzle_status=puzzle.status)
+        .annotate(text_channels_count=Count("text_channels"))
+        .in_bulk()
+    )
     if current_category_id and current_category_id in categories:
         # We're already in the right category
         return
@@ -235,6 +238,10 @@ def _set_puzzle_channel_category(
             )
             category_id = cache.id
 
+        if category and category.text_channels_count >= 50:
+            # This category seems full, try the next one
+            continue
+
         # Try to move the channel to the category
         try:
             c.update_channel(puzzle.discord_channel_id, {"parent_id": category_id})
@@ -245,7 +252,8 @@ def _set_puzzle_channel_category(
             errs = pids.get("_errors", [])
             max_ch_code = "CHANNEL_PARENT_MAX_CHANNELS"
             if errs and errs[0].get("code") == max_ch_code:
-                # This channel has too many children, so keep going
+                # This channel has too many children, so keep going, but sleep to try and avoid rate limits
+                time.sleep(0.1)
                 continue
             # Something else went wrong, just raise it.
             raise
