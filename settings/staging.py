@@ -1,4 +1,7 @@
+from typing import Any
+
 import sentry_sdk
+from django.core.exceptions import DisallowedHost
 from sentry_sdk.integrations.django import DjangoIntegration
 
 from settings.base import *  # noqa: F403
@@ -18,6 +21,14 @@ def before_send_transaction(event, hint):
     return event
 
 
+def before_send(event: dict[str, Any], hint: dict[str, Any]) -> dict[str, Any] | None:
+    if "exc_info" in hint:
+        exc_type, exc_value, tb = hint["exc_info"]
+        if isinstance(exc_value, DisallowedHost):
+            return None
+    return event
+
+
 sentry_sdk.init(
     dsn="https://d3e924ca08ac12b462b61e5e17c73523@o4506595254599680.ingest.sentry.io/4506595264954368",
     integrations=[DjangoIntegration()],
@@ -29,5 +40,6 @@ sentry_sdk.init(
     # django.contrib.auth) you may enable sending PII data.
     send_default_pii=True,
     environment="staging",
+    before_send=before_send,
     before_send_transaction=before_send_transaction,
 )
