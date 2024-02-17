@@ -212,10 +212,12 @@ Puzzup integrates a fair bit with Discord, allowing for channels to be managed. 
 
 You will need to create a [Discord application here](https://discord.com/developers/applications).
 
-- Set this application's **Interactions endpoint URL** to `https://your-puzzup-url/slashcommands`
-- Under the OAuth2 section of your application, add this redirect url `http://your-puzzup-url/account/oauth2/discord`
 - Enable a bot for your application.
 - Enable the Privileged Gateway Intents for your bot. This gives the bot certain permissions such as viewing the list of all members in the server.
+
+If you want to use slash commands (see below):
+- Set this application's **Interactions endpoint URL** to `https://your-puzzup-url/slashcommands`
+- Under the OAuth2 section of your application, add this redirect url `http://your-puzzup-url/account/oauth2/discord`
 
 Make a note of:
 
@@ -241,7 +243,7 @@ https://discord.com/api/oauth2/authorize?client_id=YOUR_CLIENT_ID&permissions=36
 - Manage threads - needed to see private threads
 - Commands - needed for your users to be able to invoke the below slash commands
 
-Finally, make a `POST` request to `https://discord.com/api/v9/applications/YOUR_APPLICATION_CLIENT_ID/guilds/YOUR_GUILD_ID/commands` with the below JSON payload, authorised with your bot token (Authorization: Bot BOT_TOKEN)
+Finally, if you want support for slash commands (other features work fine without this step), make a `POST` request to `https://discord.com/api/v9/applications/YOUR_APPLICATION_CLIENT_ID/guilds/YOUR_GUILD_ID/commands` with the below JSON payload, authorised with your bot token (Authorization: Bot BOT_TOKEN)
 
 Alternately, you can instead make the `POST` request to `https://discord.com/api/v9/applications/YOUR_APPLICATION_CLIENT_ID/commands` and then wait up to an hour for commands to propagate. This will enable your commands globally, but there's really no need for this.
 
