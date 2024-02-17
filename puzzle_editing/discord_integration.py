@@ -288,7 +288,7 @@ def _sync_puzzle_info_post(c: Client | None, puzzle: m.Puzzle) -> None:
             {
                 "type": "rich",
                 "description": (
-                    f"{puzzle.name} has been created in status **{status.get_display(puzzle.status)}**! Here are some useful links:\n"
+                    f'"{puzzle.name}" has been created in status **{status.get_display(puzzle.status)}**! Here are some useful links:\n'
                     "\n"
                     f"* [PuzzUp entry]({settings.PUZZUP_URL}{urls.reverse("puzzle", kwargs={"id": puzzle.id})})\n"
                     f"* Here's a Google Doc where you can write your puzzle content: [Puzzle content]({settings.PUZZUP_URL}{urls.reverse('puzzle_content', kwargs={'id': puzzle.id})})\n"
