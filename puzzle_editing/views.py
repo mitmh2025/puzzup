@@ -3194,9 +3194,13 @@ def users_statuses(request):
 
 @login_required
 @permission_required("puzzle_editing.list_puzzle", raise_exception=True)
-def user(request, username: str):
+def user(request: AuthenticatedHttpRequest, username: str) -> HttpResponse:
     them = get_object_or_404(User, username=username)
-    if request.user.is_superuser and request.method == "POST":
+    can_make_editor = (request.user.is_superuser or request.user.is_eic) and not (
+        them.is_superuser or them.is_eic
+    )
+
+    if can_make_editor and request.method == "POST":
         perm = Permission.objects.filter(name="Can change round").first()
         if not perm:
             msg = "Permission not found"
@@ -3211,6 +3215,7 @@ def user(request, username: str):
         "user.html",
         {
             "them": them,
+            "can_make_editor": can_make_editor,
             "testsolving_sessions": TestsolveSession.objects.filter(
                 participations__user=them.id
             ).order_by("started"),
