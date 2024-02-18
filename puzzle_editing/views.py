@@ -17,7 +17,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required, permission_required
-from django.contrib.auth.models import Permission
+from django.contrib.auth.models import Group
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.db.models import (
     Avg,
@@ -3201,14 +3201,14 @@ def user(request: AuthenticatedHttpRequest, username: str) -> HttpResponse:
     )
 
     if can_make_editor and request.method == "POST":
-        perm = Permission.objects.filter(name="Can change round").first()
-        if not perm:
-            msg = "Permission not found"
+        group = Group.objects.get(name="Editor")
+        if not group:
+            msg = "Group not found"
             raise Exception(msg)
         if "remove-editor" in request.POST:
-            them.user_permissions.remove(perm)
+            them.groups.remove(group)
         elif "make-editor" in request.POST:
-            them.user_permissions.add(perm)
+            them.groups.add(group)
 
     return render(
         request,
