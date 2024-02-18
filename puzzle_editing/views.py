@@ -17,7 +17,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required, permission_required
-from django.contrib.auth.models import Permission
+from django.contrib.auth.models import Group
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.db.models import (
     Avg,
@@ -3194,23 +3194,28 @@ def users_statuses(request):
 
 @login_required
 @permission_required("puzzle_editing.list_puzzle", raise_exception=True)
-def user(request, username: str):
+def user(request: AuthenticatedHttpRequest, username: str) -> HttpResponse:
     them = get_object_or_404(User, username=username)
-    if request.user.is_superuser and request.method == "POST":
-        perm = Permission.objects.filter(name="Can change round").first()
-        if not perm:
-            msg = "Permission not found"
+    can_make_editor = (request.user.is_superuser or request.user.is_eic) and not (
+        them.is_superuser or them.is_eic
+    )
+
+    if can_make_editor and request.method == "POST":
+        group = Group.objects.get(name="Editor")
+        if not group:
+            msg = "Group not found"
             raise Exception(msg)
         if "remove-editor" in request.POST:
-            them.user_permissions.remove(perm)
+            them.groups.remove(group)
         elif "make-editor" in request.POST:
-            them.user_permissions.add(perm)
+            them.groups.add(group)
 
     return render(
         request,
         "user.html",
         {
             "them": them,
+            "can_make_editor": can_make_editor,
             "testsolving_sessions": TestsolveSession.objects.filter(
                 participations__user=them.id
             ).order_by("started"),
