@@ -45,7 +45,7 @@ daphne = "^4.1.0"
 django-stubs = {extras = ["compatible-mypy"], version = "^4.2.7"}
 djhtml = "^3.0.6"
 mypy = "<1.8.0"
-pre-commit = "^3.6.1"
+pre-commit = "^3.6.2"
 pylint = "^3.0.3"
 pylint-django = "^2.5.5"
 pylsp-mypy = "^0.6.8"
