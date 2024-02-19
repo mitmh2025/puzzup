@@ -17,7 +17,9 @@
                     {% for tag in tags %}
                         <th>[{{tag.name}}]</th>
                     {% endfor %}
-                    <th>Others</th>
+                    {% if tags %}
+                        <th>Others</th>
+                    {% endif %}
                 </tr>
                 {% for s in status %}
                     <tr>
@@ -26,7 +28,9 @@
                         {% for tag in tags %}
                             <td>{{ s|get_item:tag.name }}</td>
                         {% endfor %}
-                        <td>{{ s.rest_count }}</td>
+                        {% if tags %}
+                            <td>{{ s.rest_count }}</td>
+                        {% endif %}
                     </tr>
                 {% endfor %}
             </table>

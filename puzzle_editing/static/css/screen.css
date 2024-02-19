@@ -1,4 +1,5 @@
 @charset "UTF-8";
+
 /* Bulma Utilities */
 @keyframes spinAround {
   from {
@@ -996,4 +997,14 @@ body.singleround h2 .round-link {
   margin-bottom: 0.3em;
 }
 
-/*# sourceMappingURL=screen.css.map */
+.dynamic-width {
+  min-width: 95vw;
+}
+
+.eic-inbox-table {
+  table-layout: fixed;
+}
+
+.puzzle-desc, .puzzle-mech, .puzzle-req .puzzle-notes {
+  overflow-wrap: break-word;
+}
