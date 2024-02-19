@@ -6,9 +6,6 @@
     - - list_puzzle
       - puzzle_editing
       - puzzle
-    - - change_round
-      - puzzle_editing
-      - round
     - - change_testsolvesession
       - puzzle_editing
       - testsolvesession
