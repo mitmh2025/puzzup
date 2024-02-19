@@ -2782,7 +2782,7 @@ def support_by_puzzle(request, id):
         request,
         "support_for_puzzle.html",
         {
-            "title": f"Support requests for {puzzle.name}",
+            "title": f"Support requests for {puzzle.codename}",
             "type": "puzzle",
             "support": support,
             "puzzle": puzzle,
