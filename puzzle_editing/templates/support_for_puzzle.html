@@ -7,7 +7,7 @@
 
 {% block outer_main %}
 
-    <h1 class='title'>Support requests for <a href="{% url 'puzzle' puzzle.id %}">{{ puzzle.name }}</a></h1>
+    <h1 class='title'>Support requests for <a href="{% url 'puzzle' puzzle.id %}">{{ puzzle.codename }}</a></h1>
     <div class="columns">
         {% for sup in support %}
             <div class="column">

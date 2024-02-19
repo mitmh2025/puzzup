@@ -2825,7 +2825,7 @@ def support_by_puzzle_id(request, id, team):
                 support.save()
                 new_notes = support.team_notes
                 messaging.send_mail_wrapper(
-                    f"{support.get_team_display()} team support request update for {support.puzzle.name}",
+                    f"{support.get_team_display()} team support request update for {support.puzzle.codename}",
                     "emails/support_update",
                     {
                         "request": request,
@@ -2854,7 +2854,7 @@ def support_by_puzzle_id(request, id, team):
                 support.save()
                 new_notes = support.author_notes
                 messaging.send_mail_wrapper(
-                    f"{support.get_team_display()} team support request update for {support.puzzle.name}",
+                    f"{support.get_team_display()} team support request update for {support.puzzle.codename}",
                     "emails/support_update",
                     {
                         "request": request,
