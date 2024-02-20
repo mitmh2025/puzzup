@@ -309,7 +309,15 @@ def _sync_puzzle_info_post(c: Client | None, puzzle: m.Puzzle) -> None:
         c, puzzle.discord_channel_id
     )
     if message_id:
-        c.edit_message(puzzle.discord_channel_id, message_id, message_content)
+        try:
+            c.edit_message(puzzle.discord_channel_id, message_id, message_content)
+        except requests.HTTPError as e:
+            msg = e.response.json()
+            if msg.get("code") == 30046:
+                # We've edited this message too many times
+                pass
+            else:
+                raise
     else:
         message_id = c.post_message(puzzle.discord_channel_id, message_content)["id"]
     if message_id:
