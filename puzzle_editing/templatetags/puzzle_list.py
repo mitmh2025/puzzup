@@ -54,6 +54,10 @@ def make_puzzle_data(puzzles, user, do_query_filter_in, show_factcheck=False):
     for puzzle in puzzles:
         puzzle.prefetched_important_tag_names = []
 
+        # EICs are implicitly spoiled for all puzzles
+        if user.is_eic:
+            puzzle.is_spoiled = True
+
     puzzle_ids = [puzzle.id for puzzle in puzzles]
     id_to_index = {puzzle.id: i for i, puzzle in enumerate(puzzles)}
 
@@ -163,6 +167,7 @@ def puzzle_list(
     show_round=False,
     show_flavor=False,
     show_factcheck=False,
+    eic_inbox_view=False,
 ) -> Mapping[str, Any]:
     req = context["request"]
     perms = context["perms"]
@@ -199,4 +204,5 @@ def puzzle_list(
         "show_round": show_round,
         "show_flavor": show_flavor,
         "show_factcheck": show_factcheck,
+        "eic_inbox_view": eic_inbox_view,
     }
