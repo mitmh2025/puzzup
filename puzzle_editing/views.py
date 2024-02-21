@@ -710,6 +710,8 @@ def puzzle(request: AuthenticatedHttpRequest, id, slug=None):
         elif "change_status" in request.POST:
             check_permission("puzzle_editing.change_status_puzzle")
             new_status = request.POST["change_status"]
+            add_system_comment_here("", status_change=new_status)
+
             if new_status != puzzle.status:
                 puzzle.status = new_status
                 puzzle.save()
@@ -717,8 +719,6 @@ def puzzle(request: AuthenticatedHttpRequest, id, slug=None):
                     discord.sync_puzzle_channel(c, puzzle)
                     message = status.get_message_for_status(new_status, puzzle)
                     c.post_message(puzzle.discord_channel_id, message)
-
-            add_system_comment_here("", status_change=new_status)
 
             if puzzle.status in [status.DEAD, status.DEFERRED]:
                 puzzle.answers.clear()
