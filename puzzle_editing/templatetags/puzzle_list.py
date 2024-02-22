@@ -191,6 +191,7 @@ def puzzle_list(
         except ValueError:
             limit = 50
 
+    # Extra spoiler protection against incorrect puzzle_list configuration
     if (
         show_title
         and not user.is_eic
