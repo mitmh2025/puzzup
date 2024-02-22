@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% load puzzle_list %}
 {% load testsolve_session_list %}
 {% load markdown %}
 {% block main %}
@@ -10,7 +9,7 @@
         <div class="box">
             <p class="title is-4"><p class="title is-4">Your queue as editor</p>
                 <div class="content">
-                    {% puzzle_list blocked_on_editor_puzzles request.user with_new_link=True %}
+                    {% include "puzzle_list_presets/user_puzzle_list.html" with user=request.user puzzles=blocked_on_editor_puzzles %}
                 </div>
             </div>
     {% endif %}
@@ -25,14 +24,14 @@
     {% if factchecking %}
         <div class="box">
             <p class="title is-4">Puzzles you are factchecking</p>
-            {% puzzle_list factchecking request.user %}
+            {% include "puzzle_list_presets/user_puzzle_list.html" with user=request.user puzzles=factchecking %}
         </div>
     {% endif %}
 
     {% if postprodding %}
         <div class="box">
             <p class="title is-4">Puzzles you are postprodding</p>
-            {% puzzle_list postprodding request.user %}
+            {% include "puzzle_list_presets/user_puzzle_list.html" with user=request.user puzzles=postprodding %}
         </div>
     {% endif %}
 
@@ -45,7 +44,7 @@
                     </div>
                 </div>
                 <div class="content">
-                    {% puzzle_list inbox_puzzles request.user %}
+                    {% include "puzzle_list_presets/user_puzzle_list.html" with user=request.user puzzles=inbox_puzzles %}
                 </div>
             </div>
         </div>

@@ -44,7 +44,7 @@
 
     <div class="box">
         <h2>Puzzles assigned this answer:</h2>
-        {% puzzle_list answer.puzzles request.user %}
+        {% include "puzzle_list_presets/editor_puzzle_list.html" with user=request.user puzzles=answer.puzzles %}
     </div>
 
     <div class="box">

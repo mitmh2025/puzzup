@@ -1,8 +1,0 @@
-{% load user_list %}
-{% load markdown %}
-{% load humanize %}
-{% load puzzle_list %}
-
-<h2>{{ title }}</h2>
-
-{% puzzle_list puzzles request.user eic_inbox_view=True %}

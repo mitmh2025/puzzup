@@ -14,7 +14,7 @@
             Puzzles you are factchecking
         </h2>
 
-        {% puzzle_list factchecking request.user show_round=True%}
+        {% include "puzzle_list_presets/editor_inbox_puzzle_list.html" with user=request.user puzzles=factchecking %}
     </div>
 
     <div class="box">
@@ -23,13 +23,13 @@
             Puzzles that need factchecking
         </h2>
 
-        {% puzzle_list needs_factchecking request.user show_round=True show_factcheck=True %}
+        {% include "puzzle_list_presets/editor_inbox_puzzle_list.html" with user=request.user puzzles=needs_factchecking %}
     </div>
 
     <h2>
         Puzzles that need fact-checking on final day
     </h2>
-    {% puzzle_list needs_final_day_factcheck request.user show_round=True show_factcheck=True %}
+    {% include "puzzle_list_presets/editor_inbox_puzzle_list.html" with user=request.user puzzles=final_day_factchecking %}
     </div>
 
 {% endblock %}

@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% load markdown %}
-{% load puzzle_list %}
 
 {% block title %}Tag: {{ tag.name }}{% endblock %}
 
@@ -15,6 +14,6 @@
 
     <div class="box">
         <h2>{{ count_label }} tagged with {{ tag.name }}</h2>
-        {% puzzle_list tag.puzzles request.user %}
+        {% include "puzzle_list_presets/user_puzzle_list.html" with user=request.user puzzles=tag.puzzles %}
     </div>
 {% endblock %}
