@@ -1,0 +1,14 @@
+{{ puzzle.is_meta|yesno:"Ⓜ️ ," }}
+<br>
+
+{% for a in answers %}
+    <a href="{% url 'edit_answer' a.id %}">
+        {% if answer.whitespace_sensitive %}
+            <pre>{{ a.answer }}</pre>
+        {% else %}
+            <code>{{ a.answer }}</code>
+        {% endif %}
+        {% if a.flexible %} (Flex){% endif %}
+        <br>
+    </a>
+{% endfor %}
