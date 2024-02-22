@@ -191,6 +191,14 @@ def puzzle_list(
         except ValueError:
             limit = 50
 
+    if (
+        show_title
+        and not user.is_eic
+        and not all(user.is_spoiled_on(p) for p in puzzles)
+    ):
+        show_title = False
+        show_codename = True
+
     return {
         "perms": perms,
         "user": user,
