@@ -2546,6 +2546,7 @@ def editor_overview(request) -> HttpResponse:
 
 
 @login_required
+@group_required("EIC")
 def needs_editor(request):
     needs_editors = Puzzle.objects.annotate(
         remaining_des=(F("needed_editors") - Count("editors"))
