@@ -25,7 +25,7 @@ django-ses = "^3.5.2"
 gitpython = "^3.1.42"
 gunicorn = {extras = ["gevent"], version = "^21.2.0"}
 invoke = "^2.2.0"
-ipython = "^8.21.0"
+ipython = "^8.22.1"
 markdown = "^3.5.2"
 matplotlib = "^3.8.3"
 nh3 = "^0.2.15"
