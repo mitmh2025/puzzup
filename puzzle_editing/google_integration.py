@@ -114,6 +114,17 @@ class GoogleManager:
             )
         )
 
+    async def _make_file_public_file_organizer(
+        self, aiogoogle: Aiogoogle, file_id: str
+    ) -> None:
+        await aiogoogle.as_service_account(
+            self.drive.permissions.create(
+                fileId=file_id,
+                json={"role": "fileOrganizer", "type": "anyone"},
+                supportsAllDrives=True,
+            )
+        )
+
     async def _create_file(
         self, aiogoogle: Aiogoogle, name: str, parent: str, type: str
     ) -> str:
@@ -164,7 +175,7 @@ class GoogleManager:
             type=TYPE_FOLDER,
             parent=self.puzzle_resources_folder_id,
         )
-        await self._make_file_public_edit(aiogoogle, resources_id)
+        await self._make_file_public_file_organizer(aiogoogle, resources_id)
         return resources_id
 
     async def create_testsolving_folder(
