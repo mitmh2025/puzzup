@@ -15,9 +15,9 @@
         {% endif %}
     {% endif %}
 
-    {% regroup feedback by session.puzzle as puzzle_list %}
+    {% regroup feedback by session.puzzle as p_list %}
 
-    {% for puzzle in puzzle_list %}
+    {% for puzzle in p_list %}
         {% if bulk == False %}
             <h2>Testsolve feedback for <a href="{% url 'puzzle' puzzle.grouper.id %}">{{ puzzle.grouper.spoilery_title }}</a></h2>
         {% endif %}

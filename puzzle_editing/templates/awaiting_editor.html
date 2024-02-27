@@ -8,8 +8,13 @@
 
     <p>🚨 SPOILERS BELOW</p>
 
-    {% include "_editor_list.html" with user=user puzzles=awaiting_answer title="🤷🏽‍♀️ Awaiting Answer Assignment" %}
-    {% include "_editor_list.html" with user=user puzzles=awaiting_answer_flexible title="⏳ Puzzle Written, Waiting for Round" %}
-    {% include "_editor_list.html" with user=user puzzles=initial_idea title="🥚 Needs editors" %}
+    <h2>🤷🏽‍♀️ Awaiting Answer Assignment</h2>
+    {% include "puzzle_list_presets/editor_inbox_puzzle_list.html" with user=request.user puzzles=awaiting_answer %}
+
+    <h2>⏳ Puzzle Written, Waiting for Round</h2>
+    {% include "puzzle_list_presets/editor_inbox_puzzle_list.html" with user=request.user puzzles=awaiting_answer_flexible %}
+
+    <h2>🥚 Needs editors</h2>
+    {% include "puzzle_list_presets/editor_inbox_puzzle_list.html" with user=request.user puzzles=initial_idea %}
 
 {% endblock %}

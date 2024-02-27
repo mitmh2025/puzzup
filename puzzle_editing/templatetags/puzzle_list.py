@@ -6,7 +6,7 @@ from django import template
 from django.db.models import Exists, Max, OuterRef, Subquery
 
 from puzzle_editing import status
-from puzzle_editing.models import PuzzleTag, PuzzleVisited, User
+from puzzle_editing.models import PuzzleTag, PuzzleVisited, User, is_spoiled_on
 
 register = template.Library()
 
@@ -53,6 +53,10 @@ def make_puzzle_data(puzzles, user, do_query_filter_in, show_factcheck=False):
 
     for puzzle in puzzles:
         puzzle.prefetched_important_tag_names = []
+
+        # EICs are implicitly spoiled for all puzzles
+        if user.is_eic:
+            puzzle.is_spoiled = True
 
     puzzle_ids = [puzzle.id for puzzle in puzzles]
     id_to_index = {puzzle.id: i for i, puzzle in enumerate(puzzles)}
@@ -159,10 +163,25 @@ def puzzle_list(
     with_new_link=False,
     show_last_status_change=True,
     show_summary=True,
+    show_description=False,
     show_editors=True,
     show_round=False,
     show_flavor=False,
     show_factcheck=False,
+    show_id=False,
+    show_emoji=False,
+    show_meta=False,
+    show_answer=False,
+    show_status_text=False,
+    show_status_emoji=False,
+    show_title=False,
+    show_codename=False,
+    show_mechanics=False,
+    show_private_notes=False,
+    show_last_comment=False,
+    show_testsolves=False,
+    show_last_update=False,
+    show_requests=False,
 ) -> Mapping[str, Any]:
     req = context["request"]
     perms = context["perms"]
@@ -172,6 +191,16 @@ def puzzle_list(
             limit = int(req.GET["limit"])
         except ValueError:
             limit = 50
+
+    # Extra spoiler protection against incorrect puzzle_list configuration
+    if not user.is_eic and not all(is_spoiled_on(user, p) for p in puzzles):
+        if show_title:
+            show_id = False
+            show_title = False
+            show_codename = True
+        if show_description:
+            show_description = False
+            show_summary = True
 
     return {
         "perms": perms,
@@ -195,8 +224,23 @@ def puzzle_list(
         "random_id": "%016x" % random.randrange(16**16),
         "show_last_status_change": show_last_status_change,
         "show_summary": show_summary,
+        "show_description": show_description,
         "show_editors": show_editors,
         "show_round": show_round,
         "show_flavor": show_flavor,
         "show_factcheck": show_factcheck,
+        "show_testsolves": show_testsolves,
+        "show_meta": show_meta,
+        "show_id": show_id,
+        "show_emoji": show_emoji,
+        "show_answer": show_answer,
+        "show_status_text": show_status_text,
+        "show_status_emoji": show_status_emoji,
+        "show_title": show_title,
+        "show_codename": show_codename,
+        "show_mechanics": show_mechanics,
+        "show_private_notes": show_private_notes,
+        "show_last_comment": show_last_comment,
+        "show_last_update": show_last_update,
+        "show_requests": show_requests,
     }

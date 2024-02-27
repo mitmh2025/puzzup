@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% load puzzle_list %}
 
 {% block title %}Puzzle flavor & art{% endblock %}
 
@@ -14,7 +13,7 @@
             Puzzles that need flavor approved
         </h2>
 
-        {% puzzle_list needs_flavor_approved show_last_status_change=False show_round=True show_flavor=True show_summary=False user=request.user %}
+        {% include "puzzle_list_presets/flavor_puzzle_list.html" with user=request.user puzzles=needs_flavor_approved %}
     </div>
 
     <div class="box">
@@ -23,7 +22,7 @@
             Puzzles that are missing flavor
         </h2>
 
-        {% puzzle_list needs_flavor show_last_status_change=False show_round=True user=request.user %}
+        {% include "puzzle_list_presets/flavor_puzzle_list.html" with user=request.user puzzles=needs_flavor %}
     </div>
 
     <div class="box">
@@ -32,7 +31,7 @@
             Puzzles that have flavor approved
         </h2>
 
-        {% puzzle_list has_flavor_approved show_last_status_change=False show_round=True show_flavor=True show_summary=False user=request.user %}
+        {% include "puzzle_list_presets/flavor_puzzle_list.html" with user=request.user puzzles=has_flavor_approved %}
     </div>
 
 {% endblock %}
