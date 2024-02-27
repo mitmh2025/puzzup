@@ -6,7 +6,7 @@ from django import template
 from django.db.models import Exists, Max, OuterRef, Subquery
 
 from puzzle_editing import status
-from puzzle_editing.models import PuzzleTag, PuzzleVisited, User
+from puzzle_editing.models import PuzzleTag, PuzzleVisited, User, is_spoiled_on
 
 register = template.Library()
 
@@ -163,6 +163,7 @@ def puzzle_list(
     with_new_link=False,
     show_last_status_change=True,
     show_summary=True,
+    show_description=False,
     show_editors=True,
     show_round=False,
     show_flavor=False,
@@ -179,7 +180,7 @@ def puzzle_list(
     show_private_notes=False,
     show_last_comment=False,
     show_testsolves=False,
-    show_last_updated=False,
+    show_last_update=False,
     show_requests=False,
 ) -> Mapping[str, Any]:
     req = context["request"]
@@ -192,13 +193,14 @@ def puzzle_list(
             limit = 50
 
     # Extra spoiler protection against incorrect puzzle_list configuration
-    if (
-        show_title
-        and not user.is_eic
-        and not all(user.is_spoiled_on(p) for p in puzzles)
-    ):
-        show_title = False
-        show_codename = True
+    if not user.is_eic and not all(is_spoiled_on(user, p) for p in puzzles):
+        if show_title:
+            show_id = False
+            show_title = False
+            show_codename = True
+        if show_description:
+            show_description = False
+            show_summary = True
 
     return {
         "perms": perms,
@@ -222,6 +224,7 @@ def puzzle_list(
         "random_id": "%016x" % random.randrange(16**16),
         "show_last_status_change": show_last_status_change,
         "show_summary": show_summary,
+        "show_description": show_description,
         "show_editors": show_editors,
         "show_round": show_round,
         "show_flavor": show_flavor,
@@ -238,6 +241,6 @@ def puzzle_list(
         "show_mechanics": show_mechanics,
         "show_private_notes": show_private_notes,
         "show_last_comment": show_last_comment,
-        "show_last_updated": show_last_updated,
+        "show_last_update": show_last_update,
         "show_requests": show_requests,
     }

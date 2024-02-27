@@ -34,10 +34,6 @@
                     <th>Answer</th>
                 {% endif %}
 
-                {% if show_status_text or show_status_emoji %}
-                    <th>Status</th>
-                {% endif %}
-
                 {% if show_id %}
                     <th>ID</th>
                 {% endif %}
@@ -50,10 +46,18 @@
                     <th>Title</th>
                 {% endif %}
 
-                <th>Author(s))</th>
+                {% if show_status_text or show_status_emoji %}
+                    <th>Status</th>
+                {% endif %}
+
+                {% if show_last_status_change %}
+                    <th>Last Status Change</th>
+                {% endif %}
+
+                <th>Author(s)</th>
 
                 {% if show_editors %}
-                    <th>Editor(s))</th>
+                    <th>Editor(s)</th>
                 {% endif %}
 
                 {% if show_factcheck %}
@@ -74,7 +78,7 @@
 
                 {% if show_flavor %}
                     <th>Flavor</th>
-                    <th>Approved</th>
+                    <th>Approved</th>k
                 {% endif %}
 
                 {% if show_requests %}
@@ -89,10 +93,6 @@
                     <th>Commented</th>
                 {% endif %}
 
-                {% if show_last_status_change %}
-                    <th>Last Status Change</th>
-                {% endif %}
-
                 {% if show_last_update %}
                     <th>Updated</th>
                 {% endif %}
@@ -101,7 +101,7 @@
                     <th>Testsolves</th>
                 {% endif %}
 
-                {% if show_is_meta %}
+                {% if show_meta %}
                     <th>Meta</th>
                 {% endif %}
 
@@ -143,12 +143,6 @@
                             </td>
                         {% endif %}
 
-                        {% if show_status_text %}
-                            <td sorttable_customkey="{{ puzzle.get_status_rank }}"><span class="tag">{{ puzzle.get_status_emoji }} {{ puzzle.get_status_display }}</span></td>
-                        {% elif show_status_emoji %}
-                            <td sorttable_customkey="{{ puzzle.get_status_rank }}" data-tippy-content="{{ puzzle.get_status_display }}">{{ puzzle.get_status_emoji }}</td>
-                        {% endif %}
-
                         {% if show_id %}
                             <td>{{ puzzle.id }}</td>
                         {% endif %}
@@ -159,6 +153,16 @@
 
                         {% if show_title %}
                             <td sorttable_customkey="{{ puzzle.name }}" data-tippy-content="{{ puzzle.spoiler_free_name }}"><a href="{{ puzzle.puzzle_url }}" class="puzzle-link">{{ puzzle.name }}</a></td>
+                        {% endif %}
+
+                        {% if show_status_text %}
+                            <td sorttable_customkey="{{ puzzle.get_status_rank }}"><span class="tag">{{ puzzle.get_status_emoji }} {{ puzzle.get_status_display }}</span></td>
+                        {% elif show_status_emoji %}
+                            <td sorttable_customkey="{{ puzzle.get_status_rank }}" data-tippy-content="{{ puzzle.get_status_display }}">{{ puzzle.get_status_emoji }}</td>
+                        {% endif %}
+
+                        {% if show_last_status_change %}
+                            <td class="timestamp" sorttable_customkey="{{ puzzle.status_mtime.timestamp }}">{{ puzzle.status_mtime | naturaltime }}</td>
                         {% endif %}
 
                         <td>{% user_list puzzle.authors linkify=True %}</td>
@@ -204,10 +208,6 @@
                             {% endif %}
                         {% endif %}
 
-                        {% if show_last_status_change %}
-                            <td class="timestamp" sorttable_customkey="{{ puzzle.status_mtime.timestamp }}">{{ puzzle.status_mtime | naturaltime }}</td>
-                        {% endif %}
-
                         {% if show_last_update %}
                             <td sorttable_customkey="{{ puzzle.last_updated.timestamp }}" class="timestamp">{{ puzzle.last_updated|timesince }} ago</td>
                         {% endif %}
@@ -216,7 +216,7 @@
                             <td>{{ puzzle.logistics_clean_testsolve_count }}</td>
                         {% endif %}
 
-                        {% if show_is_meta %}
+                        {% if show_meta %}
                             <td sorttable_customkey="{{ puzzle.is_meta|yesno:"0,1" }}">{% if puzzle.is_meta %}✔{% endif %}</td>
                         {% endif %}
 
