@@ -43,7 +43,7 @@
 
     <div class="box">
         <h2>Puzzles assigned this answer:</h2>
-        {% include "puzzle_list_presets/editor_puzzle_list.html" with user=request.user puzzles=answer.puzzles %}
+        {% include "puzzle_list_presets/editor_puzzle_list.html" with user=request.user puzzles=answer.puzzles.all %}
     </div>
 
     <div class="box">

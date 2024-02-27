@@ -14,6 +14,6 @@
 
     <div class="box">
         <h2>{{ count_label }} tagged with {{ tag.name }}</h2>
-        {% include "puzzle_list_presets/user_puzzle_list.html" with user=request.user puzzles=tag.puzzles %}
+        {% include "puzzle_list_presets/user_puzzle_list.html" with user=request.user puzzles=tag.puzzles.all %}
     </div>
 {% endblock %}

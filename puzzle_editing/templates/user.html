@@ -26,24 +26,24 @@
 
     <div class="box">
         <h2>Puzzles {{them.display_name | default:them}} is authoring</h2>
-        {% include "puzzle_list_presets/user_puzzle_list.html" with user=request.user puzzles=them.authored_puzzles %}
+        {% include "puzzle_list_presets/user_puzzle_list.html" with user=request.user puzzles=them.authored_puzzles.all %}
     </div>
 
     {% if them.editing_puzzles %}
         <div class="box">
             <h2>Puzzles {{them.display_name | default:them}} is editing</h2>
-            {% include "puzzle_list_presets/user_puzzle_list.html" with user=request.user puzzles=them.editing_puzzles %}
+            {% include "puzzle_list_presets/user_puzzle_list.html" with user=request.user puzzles=them.editing_puzzles.all %}
         </div>
     {% endif %}
 
     <div class="box">
         <h2>Puzzles {{them.display_name | default:them}} is factchecking</h2>
-        {% include "puzzle_list_presets/user_puzzle_list.html" with user=request.user puzzles=them.factchecking_puzzles %}
+        {% include "puzzle_list_presets/user_puzzle_list.html" with user=request.user puzzles=them.factchecking_puzzles.all %}
     </div>
 
     <div class="box">
         <h2>Puzzles {{them.display_name | default:them}} is postprodding</h2>
-        {% include "puzzle_list_presets/user_puzzle_list.html" with user=request.user puzzles=them.postprodding_puzzles %}
+        {% include "puzzle_list_presets/user_puzzle_list.html" with user=request.user puzzles=them.postprodding_puzzles.alls %}
     </div>
 
     <div class="box">
