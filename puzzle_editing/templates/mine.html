@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% load puzzle_list %}
 
 {% block title %}
     Your Puzzles
@@ -9,12 +8,12 @@
     <h1>Your Puzzles</h1>
 
     <div class="box">
-        {% puzzle_list puzzles request.user %}
+        {% include "puzzle_list_presets/user_puzzle_list.html" with user=request.user puzzles=puzzles %}
     </div>
 
     <div class="box">
         <h2>Editing Puzzles</h2>
-        {% puzzle_list editing_puzzles request.user %}
+        {% include "puzzle_list_presets/user_puzzle_list.html" with user=request.user puzzles=editing_puzzles %}
     </div>
 
 {% endblock %}

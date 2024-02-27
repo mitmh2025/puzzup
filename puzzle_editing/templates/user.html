@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 {% load markdown %}
 {% block title %}{{them}}'s Puzzles{% endblock %}
-{% load puzzle_list %}
 {% load testsolve_session_list %}
 {% block main %}
     <h1>{{them.display_name | default:them}}</h1>
@@ -27,24 +26,24 @@
 
     <div class="box">
         <h2>Puzzles {{them.display_name | default:them}} is authoring</h2>
-        {% puzzle_list them.authored_puzzles request.user %}
+        {% include "puzzle_list_presets/user_puzzle_list.html" with user=request.user puzzles=them.authored_puzzles %}
     </div>
 
     {% if them.editing_puzzles %}
         <div class="box">
             <h2>Puzzles {{them.display_name | default:them}} is editing</h2>
-            {% puzzle_list them.editing_puzzles request.user %}
+            {% include "puzzle_list_presets/user_puzzle_list.html" with user=request.user puzzles=them.editing_puzzles %}
         </div>
     {% endif %}
 
     <div class="box">
         <h2>Puzzles {{them.display_name | default:them}} is factchecking</h2>
-        {% puzzle_list them.factchecking_puzzles request.user %}
+        {% include "puzzle_list_presets/user_puzzle_list.html" with user=request.user puzzles=them.factchecking_puzzles %}
     </div>
 
     <div class="box">
         <h2>Puzzles {{them.display_name | default:them}} is postprodding</h2>
-        {% puzzle_list them.postprodding_puzzles request.user %}
+        {% include "puzzle_list_presets/user_puzzle_list.html" with user=request.user puzzles=them.postprodding_puzzles %}
     </div>
 
     <div class="box">

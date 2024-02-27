@@ -2431,48 +2431,26 @@ def eic(request, template="awaiting_editor.html"):
 
 @group_required("EIC")
 def eic_overview(request) -> HttpResponse:
-    def sort_key(t: tuple[Puzzle, PuzzleAnswer | None, datetime.datetime | None]):
-        p, a, _ = t
+    def sort_key(p: Puzzle):
         # answer/round before no answer/round
-        round_present_key = 0 if a else 1
-        round_key = a.round.name if a else None
+
+        # round_present_key = 0 if p.has_answer else 1
+        # round_key = p.round.name if p and p.has_answer and p.round else ""
         # metas before feeders
-        meta_key = 0 if p.is_meta else 1
+        # meta_key = 0 if p.is_meta else 1
 
-        return (round_present_key, round_key, meta_key, -p.get_status_rank(), p.name)
-
-    last_visits = dict(PuzzleVisited.objects.values_list("puzzle", "date"))
-    last_comments = dict(
-        Puzzle.objects.exclude(comments__isnull=True).values_list(
-            "id", Max("comments__date")
-        )
-    )
-    unread = {
-        id
-        for id in set(last_comments.keys())
-        if id not in last_visits or last_comments[id] > last_visits[id]
-    }
-
-    puzzles: list[tuple[Puzzle, PuzzleAnswer | None, datetime.datetime | None]] = []
+        # return (round_present_key, round_key, meta_key, -p.get_status_rank(), p.name)
+        return
 
     puzzle_query = Puzzle.objects.prefetch_related(
         "answers", "answers__round", "authors", "editors", "tags"
     ).exclude(status__in=(status.DEFERRED, status.DEAD))
-    for p in puzzle_query:
-        answers = list(p.answers.all())
-        if answers:
-            for a in answers:
-                puzzles.append((p, a, last_comments.get(p.id)))
-        else:
-            puzzles.append((p, None, last_comments.get(p.id)))
+    # TODO add an order_by that matches sort_key's ordering
 
     return render(
         request,
         "eic_overview.html",
-        {
-            "puzzles": sorted(puzzles, key=sort_key),
-            "unread": unread,
-        },
+        {"puzzles": puzzle_query},
     )
 
 

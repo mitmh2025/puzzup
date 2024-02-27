@@ -1,6 +1,7 @@
 {% load user_list %}
 {% load markdown %}
 {% load humanize %}
+{% load answer_list %}
 
 {% if puzzles %}
     <input id="hide-dead-{{ random_id }}" type="checkbox" class="hide-dead" checked> <label
@@ -21,89 +22,205 @@
     <div class='table-container'>
         <table class="table is-striped classic sortable">
             <tr align="left">
-                <th>🤔</th>
+                {% if show_emoji %}
+                    <th>🤔</th>
+                {% endif %}
+
                 {% if show_round %}
                     <th>Round</th>
                 {% endif %}
-                <th>ID/Name</th>
-                <th>Status</th>
+
+                {% if show_answer %}
+                    <th>Answer</th>
+                {% endif %}
+
+                {% if show_id %}
+                    <th>ID</th>
+                {% endif %}
+
+                {% if show_codename %}
+                    <th>ID:Codename</th>
+                {% endif %}
+
+                {% if show_title %}
+                    <th>Title</th>
+                {% endif %}
+
+                {% if show_status_text or show_status_emoji %}
+                    <th>Status</th>
+                {% endif %}
+
                 {% if show_last_status_change %}
                     <th>Last Status Change</th>
                 {% endif %}
-                <th>Authors</th>
+
+                <th>Author(s)</th>
+
+                {% if show_editors %}
+                    <th>Editor(s)</th>
+                {% endif %}
+
                 {% if show_factcheck %}
                     <th>Factcheckers</th>
                 {% endif %}
+
                 {% if show_summary %}
                     <th>Summary</th>
                 {% endif %}
+
+                {% if show_description %}
+                    <th>Description</th>
+                {% endif %}
+
+                {% if show_mechanics %}
+                    <th>Mechanics</th>
+                {% endif %}
+
                 {% if show_flavor %}
                     <th>Flavor</th>
-                    <th>Approved</th>
+                    <th>Approved</th>k
                 {% endif %}
-                {% if show_editors %}
-                    <th>Editors</th>
+
+                {% if show_requests %}
+                    <th>Requests</th>
                 {% endif %}
-                {% if user.is_eic %}
+
+                {% if show_private_notes and user.is_eic %}
                     <th>Private Notes</th>
                 {% endif %}
-                <th>Updated</th>
-                <th>Commented</th>
-                <th>Meta</th>
-                {% if perms.puzzle_editing.unspoil_puzzle %}
+
+                {% if show_last_comment %}
+                    <th>Commented</th>
+                {% endif %}
+
+                {% if show_last_update %}
+                    <th>Updated</th>
+                {% endif %}
+
+                {% if show_testsolves %}
+                    <th>Testsolves</th>
+                {% endif %}
+
+                {% if show_meta %}
+                    <th>Meta</th>
+                {% endif %}
+
+                {% if perms.puzzle_editing.unspoil_puzzle and not user.is_eic %}
                     <th>🏃</th>
                 {% endif %}
             </tr>
             {% for puzzle in puzzles %}
                 <tr
                     class="puzzle-row {% if puzzle.status == dead_status %}dead{% elif puzzle.status == deferred_status %}deferred{% elif puzzle.status in past_needs_solution_statuses %}past_needs_solution{% endif %} {% if puzzle.is_spoiled %}spoiled {% if not puzzle.last_visited_date or puzzle.last_comment_date and puzzle.last_comment_date > puzzle.last_visited_date %}unvisited{% endif %}{% endif %} {% if puzzle.has_answer %}answered{%endif%} {% if show_factcheck and puzzle.factcheckers.count > 0 %}factchecker{%endif%}">
-                    {% if puzzle.is_author %}
-                        <td sorttable_customkey="1" data-tippy-content="You are an author">📝</td>
-                    {% elif puzzle.is_editing %}
-                        <td sorttable_customkey="2" data-tippy-content="You are an editor">💬</td>
-                    {% elif puzzle.is_factchecking %}
-                        <td sorttable_customkey="3" data-tippy-content="You are a factchecker">🛂</td>
-                    {% elif puzzle.is_postprodding %}
-                        <td sorttable_customkey="4" data-tippy-content="You are a factchecker">🖼️</td>
-                    {% elif puzzle.is_spoiled %}
-                        <td sorttable_customkey="98" data-tippy-content="You are spoiled">👀</td>
-                    {% else %}
-                        <td sorttable_customkey="99" data-tippy-content="You are not spoiled">❓</td>
-                    {% endif %}
-                    {% if show_round %}
-                        <td class="{% if not puzzle.round_name %}empty{% endif %}">{{ puzzle.round_name | default:"None"}}</td>
-                    {% endif %}
-                    <td sorttable_customkey="{{ puzzle.id }}">{{ puzzle.html_link }}</td>
+
                     {% if limit is None or forloop.counter0 < limit %}
-                        <td sorttable_customkey="{{ puzzle.get_status_rank }}"><span class="tag">{{ puzzle.get_status_emoji }} {{ puzzle.get_status_display }}</span></td>
+                        {% if show_emoji %}
+                            {% if puzzle.is_author %}
+                                <td sorttable_customkey="1" data-tippy-content="You are an author">📝</td>
+                            {% elif puzzle.is_editing %}
+                                <td sorttable_customkey="2" data-tippy-content="You are an editor">💬</td>
+                            {% elif puzzle.is_factchecking %}
+                                <td sorttable_customkey="3" data-tippy-content="You are a factchecker">🛂</td>
+                            {% elif puzzle.is_postprodding %}
+                                <td sorttable_customkey="4" data-tippy-content="You are a factchecker">🖼️</td>
+                            {% elif puzzle.is_spoiled %}
+                                <td sorttable_customkey="98" data-tippy-content="You are spoiled">👀</td>
+                            {% else %}
+                                <td sorttable_customkey="99" data-tippy-content="You are not spoiled">❓</td>
+                            {% endif %}
+                        {% endif %}
+
+                        {% if show_round %}
+                            <td class="{% if not puzzle.round_name %}empty{% endif %}">{{ puzzle.round_name | default:"(unassigned)"}}</td>
+                        {% endif %}
+
+                        {% if show_answer %}
+                            <!-- TODO: for now, just show all answers for a given puzzle -->
+                            <td class="answer" sorttable_customkey="{{ puzzle.answer }}">
+                                {% if puzzle.answer %}
+                                    {% formatted_answer_list puzzle %}
+                                {% endif %}
+                            </td>
+                        {% endif %}
+
+                        {% if show_id %}
+                            <td>{{ puzzle.id }}</td>
+                        {% endif %}
+
+                        {% if show_codename %}
+                            <td sorttable_customkey="{{ puzzle.id }}">{{ puzzle.html_link }}</td>
+                        {% endif %}
+
+                        {% if show_title %}
+                            <td sorttable_customkey="{{ puzzle.name }}" data-tippy-content="{{ puzzle.spoiler_free_name }}"><a href="{{ puzzle.puzzle_url }}" class="puzzle-link">{{ puzzle.name }}</a></td>
+                        {% endif %}
+
+                        {% if show_status_text %}
+                            <td sorttable_customkey="{{ puzzle.get_status_rank }}"><span class="tag">{{ puzzle.get_status_emoji }} {{ puzzle.get_status_display }}</span></td>
+                        {% elif show_status_emoji %}
+                            <td sorttable_customkey="{{ puzzle.get_status_rank }}" data-tippy-content="{{ puzzle.get_status_display }}">{{ puzzle.get_status_emoji }}</td>
+                        {% endif %}
+
                         {% if show_last_status_change %}
                             <td class="timestamp" sorttable_customkey="{{ puzzle.status_mtime.timestamp }}">{{ puzzle.status_mtime | naturaltime }}</td>
                         {% endif %}
-                        <td>{{ puzzle.authors_html }}</td>
+
+                        <td>{% user_list puzzle.authors linkify=True %}</td>
+
+                        {% if show_editors %}
+                            <td>{{ puzzle.opt_editors|length }} / {{ puzzle.needed_editors }}: {{ puzzle.editors_html }}</td>
+                        {% endif %}
+
                         {% if show_factcheck %}
                             <td>{{ puzzle.factcheck_html }}</td>
                         {% endif %}
+
                         {% if show_summary %}
                             <td class="small-md">{{ puzzle.summary|markdown }}</td>
                         {% endif %}
+
+                        {% if show_description %}
+                            <td class="small-md puzzle-desc">{{ puzzle.description|markdown }}</td>
+                        {% endif %}
+
+                        {% if show_mechanics %}
+                            <td class="small-md puzzle-mech">{{ puzzle.editor_notes }}</td>
+                        {% endif %}
+
                         {% if show_flavor %}
                             <td class="small-md">{{ puzzle.flavor|markdown }}</td>
                             <td class="small-md" sorttable_customkey="{{ puzzle.flavor_approved_time.timestamp }}">{{ puzzle.flavor_approved_time | naturaltime }}</td>
                         {% endif %}
-                        {% if show_editors %}
-                            <td>{{ puzzle.opt_editors|length }} / {{ puzzle.needed_editors }}: {{ puzzle.editors_html }}</td>
+
+                        {% if show_requests %}
+                            <td class="small-md puzzle-req">{{ puzzle.notes|markdown }}</td>
                         {% endif %}
-                        {% if user.is_eic %}
+
+                        {% if show_private_notes and user.is_eic %}
                             <td>{{ puzzle.private_notes|markdown }}</td>
                         {% endif %}
-                        <td sorttable_customkey="{{ puzzle.last_updated.timestamp }}" class="timestamp">{{ puzzle.last_updated|timesince }} ago</td>
-                        {% if puzzle.last_comment_date %}
-                            <td sorttable_customkey="{{ puzzle.last_comment_date.timestamp }}" class="timestamp">{{ puzzle.last_comment_date|timesince }} ago</td>
-                        {% else %}
-                            <td sorttable_customkey="0">—</td>
+
+                        {% if show_last_comment %}
+                            {% if puzzle.last_comment_date %}
+                                <td sorttable_customkey="{{ puzzle.last_comment_date.timestamp }}" class="timestamp">{{ puzzle.last_comment_date|timesince }} ago</td>
+                            {% else %}
+                                <td sorttable_customkey="0">—</td>
+                            {% endif %}
                         {% endif %}
-                        <td>{% if puzzle.is_meta %}✔{% endif %}</td>
-                        {% if perms.puzzle_editing.unspoil_puzzle %}
+
+                        {% if show_last_update %}
+                            <td sorttable_customkey="{{ puzzle.last_updated.timestamp }}" class="timestamp">{{ puzzle.last_updated|timesince }} ago</td>
+                        {% endif %}
+
+                        {% if show_testsolves %}
+                            <td>{{ puzzle.logistics_clean_testsolve_count }}</td>
+                        {% endif %}
+
+                        {% if show_meta %}
+                            <td sorttable_customkey="{{ puzzle.is_meta|yesno:"0,1" }}">{% if puzzle.is_meta %}✔{% endif %}</td>
+                        {% endif %}
+
+                        {% if perms.puzzle_editing.unspoil_puzzle and not user.is_eic %}
                             <td><a href="{% url 'puzzle_escape' puzzle.id %}">🏃</a></td>
                         {% endif %}
                     {% endif %}
