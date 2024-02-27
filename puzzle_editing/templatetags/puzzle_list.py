@@ -206,6 +206,7 @@ def puzzle_list(
         "perms": perms,
         "user": user,
         "limit": limit,
+        "linkify_authors": user.has_perm("puzzle_editing.list_puzzle"),
         "puzzles": make_puzzle_data(
             puzzles,
             user,
