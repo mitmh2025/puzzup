@@ -194,9 +194,9 @@ def _build_puzzle_channel_updates(
             uid, PermissionOverwrite(uid, PermissionOverwriteType.user)
         )
         if uid in must_see:
-            overwrite.permission.update(view_channel=True)
+            overwrite.permission.update(view_channel=True, manage_messages=True)
         elif uid not in can_see:
-            overwrite.permission.update(view_channel=False)
+            overwrite.permission.update(view_channel=False, manage_messages=False)
     updates["permission_overwrites"] = [o.to_api() for o in overwrites.values()]
 
     return (current.id if current else None, updates)
