@@ -204,6 +204,8 @@ def puzzle_list(
         if show_mechanics:
             show_mechanics = False
             show_summary = True
+        if show_requests:
+            show_requests = False
 
     return {
         "perms": perms,
