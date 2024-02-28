@@ -43,7 +43,7 @@
 
     <div class="box">
         <h2>Puzzles {{them.display_name | default:them}} is postprodding</h2>
-        {% include "puzzle_list_presets/user_puzzle_list.html" with user=request.user puzzles=them.postprodding_puzzles.alls %}
+        {% include "puzzle_list_presets/user_puzzle_list.html" with user=request.user puzzles=them.postprodding_puzzles.all %}
     </div>
 
     <div class="box">
