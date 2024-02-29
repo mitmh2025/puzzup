@@ -1005,6 +1005,6 @@ body.singleround h2 .round-link {
   table-layout: fixed;
 }
 
-.puzzle-desc, .puzzle-mech, .puzzle-req .puzzle-notes {
-  overflow-wrap: break-word;
+.puzzle-summary, .puzzle-desc, .puzzle-mech, .puzzle-req .puzzle-notes {
+  overflow-wrap: anywhere;
 }
