@@ -208,7 +208,7 @@
                     <div class="column is-one-quarter">
                         <h4>Summary</h4>
                     </div>
-                    <div class="column">
+                    <div class="column puzzle-summary">
                         {{ puzzle.summary|markdown|default:"--" }}
                     </div>
                 </div>
@@ -216,7 +216,8 @@
                     <div class="column is-one-quarter">
                         <h4>Description</h4>
                     </div>
-                    <div class="column">
+                    <div class="column puzzle-desc">
+                        ????
                         {{ puzzle.description|markdown }}
                     </div>
                 </div>
@@ -224,7 +225,7 @@
                     <div class="column is-one-quarter">
                         <h4>Mechanics</h4>
                     </div>
-                    <div class="column">
+                    <div class="column puzzle-mech">
                         {{ puzzle.editor_notes|default:"--" }}
                     </div>
                 </div>
@@ -244,7 +245,7 @@
                     </div>
                 {% endif %}
                 {% if puzzle.notes %}
-                    <div class="columns">
+                    <div class="columns puzzle-req">
                         <div class="column is-one-quarter">
                             <h4>Requests</h4>
                         </div>
@@ -254,7 +255,7 @@
                     </div>
                 {% endif %}
                 {% if user.is_eic and puzzle.private_notes %}
-                    <div class="columns">
+                    <div class="columns puzzle-notes">
                         <div class="column is-one-quarter">
                             <h4>Private Notes</h4>
                         </div>
