@@ -1,6 +1,8 @@
 import asyncio
 import datetime
+import os
 import re
+import zipfile
 import zoneinfo
 from functools import partial
 from types import MappingProxyType
@@ -970,3 +972,21 @@ class TestsolveParticipantPicker(forms.Form):
         )
 
     add_testsolvers = forms.CheckboxSelectMultiple()
+
+
+class UploadField(forms.FileField):
+    def validate(self, value):
+        with zipfile.ZipFile(value) as zf:
+            common_prefix = os.path.commonpath(zf.namelist())
+            if not (zipfile.Path(zf, common_prefix) / "index.html").exists():
+                msg = "The ZIP file must contain an index.html file."
+                raise ValidationError(msg)
+
+
+class UploadForm(forms.Form):
+    file = UploadField(
+        required=True,
+        max_length=100,  # confusingly this is filename length, not file size
+        widget=forms.ClearableFileInput(attrs={"accept": "application/zip,.zip"}),
+        help_text="Upload a ZIP file containing the puzzle content. Note that the filename should not contain anything sensitive. It should have an index.html file at the root. Please try to keep the file to 10MB or less.",
+    )

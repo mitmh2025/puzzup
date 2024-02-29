@@ -132,6 +132,9 @@ urlpatterns = [
     path("slashcommands", slashcommands.slashCommandHandler),
 ]
 
+if settings.UPLOAD_S3_BUCKET:
+    urlpatterns.append(path("upload", views.upload, name="upload"))
+
 if settings.DEBUG:
     import debug_toolbar  # type: ignore
 
