@@ -1559,23 +1559,23 @@ def is_spoiled_on(user: User, puzzle: Puzzle) -> bool:
     return user.is_eic or user in puzzle.spoiled.all()
 
 
-def is_author_on(user, puzzle):
+def is_author_on(user: User, puzzle: Puzzle) -> bool:
     return user in puzzle.authors.all()
 
 
-def is_editor_on(user, puzzle):
+def is_editor_on(user: User, puzzle: Puzzle) -> bool:
     return user in puzzle.editors.all()
 
 
-def is_factchecker_on(user, puzzle):
+def is_factchecker_on(user: User, puzzle: Puzzle) -> bool:
     return user in puzzle.factcheckers.all()
 
 
-def is_postprodder_on(user, puzzle):
+def is_postprodder_on(user: User, puzzle: Puzzle) -> bool:
     return user in puzzle.postprodders.all()
 
 
-def get_user_role(user, puzzle):
+def get_user_role(user: User, puzzle: Puzzle) -> str | None:
     if is_author_on(user, puzzle):
         return "author"
     elif is_editor_on(user, puzzle):
