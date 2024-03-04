@@ -59,6 +59,8 @@ types-requests = "^2.31.0.20240218"
 fix = true
 line-length = 88
 extend-exclude = ["puzzle_editing/migrations"]
+
+[tool.ruff.lint]
 # By default, includes E (pycodestyle error), F (pyflakes)
 extend-select = [
     "W",
