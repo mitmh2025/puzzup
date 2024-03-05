@@ -6,7 +6,7 @@ from django import template
 from django.db.models import Exists, Max, OuterRef, Subquery
 
 from puzzle_editing import status
-from puzzle_editing.models import PuzzleTag, PuzzleVisited, User, is_spoiled_on
+from puzzle_editing.models import PuzzleTag, PuzzleVisited, User
 
 register = template.Library()
 
@@ -37,7 +37,7 @@ def make_puzzle_data(puzzles, user, do_query_filter_in, show_factcheck=False):
                 )
             ),
         )
-        .prefetch_related("answers")
+        .prefetch_related("answers", "authors")
         # This prefetch is super slow.
         # .prefetch_related("authors", "editors",
         #     Prefetch(
@@ -46,7 +46,6 @@ def make_puzzle_data(puzzles, user, do_query_filter_in, show_factcheck=False):
         #         to_attr="prefetched_important_tags",
         #     ),
         # )
-        .defer("description", "notes", "editor_notes")
     )
 
     puzzles = list(puzzles)
@@ -192,8 +191,15 @@ def puzzle_list(
         except ValueError:
             limit = 50
 
+    puzzle_data = make_puzzle_data(
+        puzzles,
+        user,
+        do_query_filter_in=req.path != "/all",
+        show_factcheck=show_factcheck,
+    )
+
     # Extra spoiler protection against incorrect puzzle_list configuration
-    if not user.is_eic and not all(is_spoiled_on(user, p) for p in puzzles):
+    if all(p.is_spoiled for p in puzzle_data):
         if show_title:
             show_id = False
             show_title = False
@@ -212,12 +218,7 @@ def puzzle_list(
         "user": user,
         "limit": limit,
         "linkify_authors": user.has_perm("puzzle_editing.list_puzzle"),
-        "puzzles": make_puzzle_data(
-            puzzles,
-            user,
-            do_query_filter_in=req.path != "/all",
-            show_factcheck=show_factcheck,
-        ),
+        "puzzles": puzzle_data,
         "new_puzzle_link": with_new_link,
         "dead_status": status.DEAD,
         "deferred_status": status.DEFERRED,
