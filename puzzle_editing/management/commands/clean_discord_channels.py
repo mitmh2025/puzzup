@@ -1,6 +1,7 @@
 import datetime
 import logging
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
@@ -70,6 +71,25 @@ class Command(BaseCommand):
                         p.discord_channel_id = ""
                         p.save()
                     continue
+
+            if (
+                p.discord_channel_id
+                and len(set(p.authors.all()) | set(p.editors.all())) <= 1
+            ):
+                # If there have been no non-bot messages, then we can delete the channel
+                messages = client.get_channel_messages(p.discord_channel_id)
+                if all(
+                    m["author"]["id"] == settings.DISCORD_CLIENT_ID for m in messages
+                ):
+                    if self.dry_run:
+                        self.logger.info(
+                            f"Would delete channel for single-author puzzle {p.name}"
+                        )
+                    else:
+                        client.delete_channel(p.discord_channel_id)
+                        p.discord_channel_id = ""
+                        p.save()
+                continue
 
             if (
                 p.discord_channel_id
