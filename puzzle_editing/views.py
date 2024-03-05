@@ -727,8 +727,11 @@ def puzzle(request: AuthenticatedHttpRequest, id, slug=None):
                 puzzle.save()
                 if c:
                     discord.sync_puzzle_channel(c, puzzle)
-                    message = status.get_discord_message_for_status(new_status, puzzle)
-                    c.post_message(puzzle.discord_channel_id, message)
+                    if puzzle.discord_channel_id:
+                        message = status.get_discord_message_for_status(
+                            new_status, puzzle
+                        )
+                        c.post_message(puzzle.discord_channel_id, message)
 
             if puzzle.status in [status.DEAD, status.DEFERRED]:
                 puzzle.answers.clear()
@@ -800,7 +803,8 @@ def puzzle(request: AuthenticatedHttpRequest, id, slug=None):
             check_permission("puzzle_editing.change_puzzlefactcheck")
             puzzle.factcheckers.add(user)
             discord.sync_puzzle_channel(c, puzzle)
-            discord.announce_ppl(c, puzzle.discord_channel_id, factcheckers=[user])
+            if puzzle.discord_channel_id:
+                discord.announce_ppl(c, puzzle.discord_channel_id, factcheckers=[user])
             add_system_comment_here("Added factchecker " + str(user))
         elif "remove_factchecker" in request.POST:
             check_permission("puzzle_editing.change_puzzlefactcheck")
@@ -867,10 +871,11 @@ def puzzle(request: AuthenticatedHttpRequest, id, slug=None):
                 puzzle.save()
                 if c:
                     discord.sync_puzzle_channel(c, puzzle)
-                    message = status.get_discord_message_for_status(
-                        status_change, puzzle
-                    )
-                    c.post_message(puzzle.discord_channel_id, message)
+                    if puzzle.discord_channel_id:
+                        message = status.get_discord_message_for_status(
+                            status_change, puzzle
+                        )
+                        c.post_message(puzzle.discord_channel_id, message)
             if comment_form.is_valid():
                 add_comment(
                     request=request,
@@ -1364,7 +1369,7 @@ def puzzle_edit(request, id) -> HttpResponse:
                     )
                 c = discord.get_client()
                 discord.sync_puzzle_channel(c, puzzle)
-                if new_authors:
+                if puzzle.discord_channel_id and new_authors:
                     discord.announce_ppl(
                         c, puzzle.discord_channel_id, authors=new_authors
                     )
@@ -1451,7 +1456,8 @@ def puzzle_people(request, id):
             if added:
                 c = discord.get_client()
                 discord.sync_puzzle_channel(c, puzzle)
-                discord.announce_ppl(c, puzzle.discord_channel_id, **added)
+                if puzzle.discord_channel_id:
+                    discord.announce_ppl(c, puzzle.discord_channel_id, **added)
 
             if form.changed_data:
                 add_comment(
