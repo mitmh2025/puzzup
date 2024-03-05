@@ -727,7 +727,7 @@ def puzzle(request: AuthenticatedHttpRequest, id, slug=None):
                 puzzle.save()
                 if c:
                     discord.sync_puzzle_channel(c, puzzle)
-                    message = status.get_message_for_status(new_status, puzzle)
+                    message = status.get_discord_message_for_status(new_status, puzzle)
                     c.post_message(puzzle.discord_channel_id, message)
 
             if puzzle.status in [status.DEAD, status.DEFERRED]:
@@ -867,7 +867,9 @@ def puzzle(request: AuthenticatedHttpRequest, id, slug=None):
                 puzzle.save()
                 if c:
                     discord.sync_puzzle_channel(c, puzzle)
-                    message = status.get_message_for_status(status_change, puzzle)
+                    message = status.get_discord_message_for_status(
+                        status_change, puzzle
+                    )
                     c.post_message(puzzle.discord_channel_id, message)
             if comment_form.is_valid():
                 add_comment(

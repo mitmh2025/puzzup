@@ -1,7 +1,8 @@
-import contextlib
+import datetime
 import logging
 
 from django.core.management.base import BaseCommand
+from django.utils import timezone
 
 from puzzle_editing import discord_integration as discord
 from puzzle_editing import status
@@ -49,26 +50,45 @@ class Command(BaseCommand):
         puzzles = Puzzle.objects.all()
         self.logger.info(f"Organizing {len(puzzles)} puzzles...")
         for p in puzzles:
-            cached_channel = None
-            if p.discord_channel_id:
-                with contextlib.suppress(DiscordTextChannelCache.DoesNotExist):
-                    cached_channel = DiscordTextChannelCache.objects.get(
-                        id=p.discord_channel_id
-                    )
-            if not cached_channel:
-                # channel id is empty OR points to an id that doesn't exist
-                if p.discord_channel_id:
-                    self.logger.warning(
-                        (
-                            f"Puzzle {p.id} ({p.name}) has bad channel id"
-                            f" ({p.discord_channel_id})"
-                        ),
-                    )
+            if p.discord_channel_id and p.status == status.DEAD:
+                status_change_comment = (
+                    p.comments.filter(status_change=status.DEAD)
+                    .order_by("-date")
+                    .first()
+                )
+                if (
+                    status_change_comment
+                    and status_change_comment.date
+                    < timezone.now() - datetime.timedelta(days=7)
+                ):
                     if self.dry_run:
-                        self.logger.warning("Refusing to fix in dryrun mode.")
+                        self.logger.info(
+                            f"Would delete channel for dead puzzle {p.name}"
+                        )
                     else:
+                        client.delete_channel(p.discord_channel_id)
                         p.discord_channel_id = ""
                         p.save()
+                    continue
+
+            if (
+                p.discord_channel_id
+                and not DiscordTextChannelCache.objects.filter(
+                    id=p.discord_channel_id
+                ).exists()
+            ):
+                # channel id is empty OR points to an id that doesn't exist
+                self.logger.warning(
+                    (
+                        f"Puzzle {p.id} ({p.name}) has bad channel id"
+                        f" ({p.discord_channel_id})"
+                    ),
+                )
+                if self.dry_run:
+                    self.logger.warning("Refusing to fix in dryrun mode.")
+                else:
+                    p.discord_channel_id = ""
+                    p.save()
                 continue
 
             if not self.dry_run:
