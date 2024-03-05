@@ -286,10 +286,14 @@
                             ❌ Discord is disabled
                         {% elif not discord.channel %}
                             ❌ Not linked to Discord
-                            <form method="POST">
-                                {% csrf_token %}
-                                <input class="button is-small" type="submit" name="resync-discord" value="Fix out-of-sync channel">
-                            </form>
+                            {% if discord.can_create %}
+                                <form method="POST">
+                                    {% csrf_token %}
+                                    <input class="button is-small" type="submit" name="resync-discord" value="Fix out-of-sync channel">
+                                </form>
+                            {% else %}
+                                <br /><br />(We&apos;ll automatically create a Discord channel once this puzzle has more than one author or editor.)
+                            {% endif %}
                         {% else %}
                             <a href="{{discord.channel.url}}">#{{discord.channel.name}}</a>
                             <br/>
@@ -339,11 +343,16 @@
                 <h3>
                     Puzzle
                 </h3>
-                {% if puzzle.has_postprod %}<b>See <a href="{{ puzzle.postprod_url }}">the postprodded puzzle</a>.</b><br/>{% endif %}
+                {% if puzzle.has_postprod %}<p><b>See <a href="{{ puzzle.postprod_url }}">the postprodded puzzle</a>.</b></p>{% endif %}
                 {% if puzzle.content_google_doc_id %}
-                    <a href="{% url 'puzzle_content' puzzle.id %}" target="_blank">Edit content in Google Docs</a>
+                    <p><a href="{% url 'puzzle_content' puzzle.id %}" target="_blank">Edit content in Google Docs</a></p>
                 {% else %}
                     <div class="empty">(no puzzle yet)</div>
+                {% endif %}
+                {% if uploads_enabled %}
+                    <p>
+                        If your puzzle can&apos;t be represented in a Google Doc (due to interactivity, etc.), you can create a ZIP file with a webpage and <a href="{% url 'upload' %}">upload it here</a>. (Note that you will still need to provide a link to the upload in your Google Doc.)
+                    </p>
                 {% endif %}
             </div>
 

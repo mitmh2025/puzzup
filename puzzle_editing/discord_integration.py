@@ -331,7 +331,13 @@ def sync_puzzle_channel(c: Client | None, puzzle: m.Puzzle) -> None:
         return
 
     channel_id, updates = _build_puzzle_channel_updates(puzzle)
-    if not channel_id and puzzle.status in (status.DEFERRED, status.DEAD):
+
+    skip_create = False
+    if puzzle.status in (status.DEFERRED, status.DEAD):
+        skip_create = True
+    if len(set(puzzle.authors.all()) | set(puzzle.editors.all())) <= 1:
+        skip_create = True
+    if not channel_id and skip_create:
         # don't create a new channel if we don't already have one
         return
 

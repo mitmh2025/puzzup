@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}File Uploads{% endblock %}
+
+{% block main %}
+    <h1>File Uploads</h1>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {% for field in form %}
+            <div class="columns">
+                <div class="column is-one-fifth">
+                    <label class="label">{{ field.label }}</label>
+                </div>
+                <div class="column is-two-fifths">
+                    <div class="control">
+                        {{ field }}
+                        {% if field.help_text %}
+                            <p class="help">{{ field.help_text|safe }}</p>
+                        {% endif %}
+                        {{ field.errors }}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+
+
+        <div class="columns">
+            <div class="column is-one-fifth">
+            </div>
+            <div class="column is-two-fifths">
+                <input class="button is-primary" type="submit" value="Upload">
+            </div>
+        </div>
+    </form>
+
+    {% if files %}
+        <h2>Previously Uploaded Files</h2>
+
+        <table class="table classic sortable">
+            <thead>
+                <tr>
+                    <th>File</th>
+                    <th>Uploaded</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for file in files %}
+                    <tr>
+                        <td><a href="https://{{ file.bucket }}.s3.amazonaws.com/{{ file.prefix }}/index.html">{{ file.filename }}</a></td>
+                        <td>{{ file.uploaded }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+{% endblock %}

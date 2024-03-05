@@ -1,6 +1,10 @@
 # Just a fake enum and namespace to keep status-related things in. If we use a
 # real Enum, Django weirdly doesn't want to display the human-readable version.
 
+from datetime import timedelta
+
+from django.utils import timezone
+
 INITIAL_IDEA = "II"
 IN_DEVELOPMENT = "ID"
 AWAITING_ANSWER = "AA"
@@ -258,11 +262,19 @@ ALL_STATUSES = [
 ]
 
 
-def get_message_for_status(status, puzzle):
+def get_discord_message_for_status(status, puzzle):
     additional_msg = ""
     if status == AWAITING_POSTPROD_APPROVAL:
         postprod_url = puzzle.postprod_url
         if postprod_url:
             additional_msg = f"\nView the postprod at {postprod_url}"
+    elif status == DEAD:
+        additional_msg = (
+            "\n\nNote: Because this puzzle has been marked as dead, and because Discord channels "
+            "are a semi-precious resource, we are going to delete this channel at some point in "
+            "the future. If there's anything you'd like to save from this channel, please do it "
+            f"before <t:{int((timezone.now() + timedelta(days=7)).timestamp())}:f>. We may not "
+            "delete the channel at that moment, but at some point afterwards it will be deleted."
+        )
 
     return f"This puzzle is now **{get_display(status)}**." + additional_msg

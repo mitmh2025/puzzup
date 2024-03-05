@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/2.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.2/ref/settings/
 """
+
 import datetime
 import json
 import os
@@ -247,6 +248,8 @@ PUZZLE_SOLUTION_FOLDER_ID = os.environ.get("PUZZLE_SOLUTION_FOLDER_ID")
 PUZZLE_RESOURCES_FOLDER_ID = os.environ.get("PUZZLE_RESOURCES_FOLDER_ID")
 FACTCHECKING_FOLDER_ID = os.environ.get("FACTCHECKING_FOLDER_ID")
 FACTCHECKING_TEMPLATE_ID = os.environ.get("FACTCHECKING_TEMPLATE_ID")
+
+UPLOAD_S3_BUCKET = os.environ.get("UPLOAD_S3_BUCKET")
 
 # Discord integration
 DISCORD_GUILD_ID = os.environ.get("DISCORD_GUILD_ID")
