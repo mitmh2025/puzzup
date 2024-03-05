@@ -1731,3 +1731,16 @@ class DiscordTextChannelCache(models.Model):
     @property
     def url(self):
         return f"https://discord.com/channels/{settings.DISCORD_GUILD_ID}/{self.id}"
+
+
+class FileUpload(models.Model):
+    """Uploads of ZIP files"""
+
+    bucket = models.CharField(max_length=100)
+    prefix = models.CharField(max_length=100)
+    filename = models.CharField(max_length=100)
+    uploader = models.ForeignKey(User, on_delete=models.PROTECT)
+    uploaded = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.bucket}/{self.prefix} by {self.uploader.username}"

@@ -2,15 +2,22 @@ import contextlib
 import csv
 import datetime
 import json
+import mimetypes
 import operator
 import os
+import random
 import secrets
+import string
+import time
+import zipfile
 from collections import defaultdict
 from collections.abc import Iterable
 from dataclasses import dataclass
 from functools import reduce
+from pathlib import Path
 from typing import TypedDict
 
+import boto3
 import requests
 from django import forms, urls
 from django.conf import settings
@@ -36,6 +43,7 @@ from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils.http import urlencode
+from django.utils.safestring import mark_safe
 from django.utils.text import slugify
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
@@ -72,6 +80,7 @@ from puzzle_editing.forms import (
     TestsolveParticipantPicker,
     TestsolveParticipationForm,
     TestsolveSessionNotesForm,
+    UploadForm,
     UserMultipleChoiceField,
     UserTimezoneForm,
 )
@@ -79,6 +88,7 @@ from puzzle_editing.graph import curr_puzzle_graph_b64
 from puzzle_editing.models import (
     CommentReaction,
     DiscordTextChannelCache,
+    FileUpload,
     Hint,
     PseudoAnswer,
     Puzzle,
@@ -984,6 +994,7 @@ def puzzle(request: AuthenticatedHttpRequest, id, slug=None):
                 "hint_form": PuzzleHintForm(initial={"puzzle": puzzle}),
                 "unspoiled": unspoiled,
                 "logistics_info": get_logistics_info(puzzle),
+                "uploads_enabled": bool(settings.UPLOAD_S3_BUCKET),
             },
         )
     else:
@@ -3200,6 +3211,67 @@ def user(request: AuthenticatedHttpRequest, username: str) -> HttpResponse:
             ).order_by("started"),
         },
     )
+
+
+@login_required
+def upload(request: AuthenticatedHttpRequest) -> HttpResponse:
+    if not settings.UPLOAD_S3_BUCKET:
+        return HttpResponse("S3 bucket not configured", status=500)
+
+    s3 = boto3.client("s3")
+
+    if request.POST:
+        form = UploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            f = request.FILES["file"]
+            if isinstance(f, list):
+                messages.error(request, "No file uploaded")
+                return redirect(urls.reverse("upload"))
+            upload_nonce = "".join(
+                random.SystemRandom().choice(string.ascii_letters) for _ in range(10)
+            )
+            upload_basename = Path(f.name).stem if f.name else "unknown"
+            upload_prefix = f"{upload_basename}-{upload_nonce}-{int(time.time())}"
+            with zipfile.ZipFile(f) as zf:
+                zip_prefix = os.path.commonpath(zf.namelist())
+                for zi in zf.infolist():
+                    if zi.is_dir():
+                        continue
+
+                    mime, encoding = mimetypes.guess_type(zi.filename)
+
+                    relative_path = os.path.relpath(zi.filename, zip_prefix)
+                    s3_key = f"{upload_prefix}/{relative_path}"
+
+                    s3.upload_fileobj(
+                        zf.open(zi.filename),
+                        settings.UPLOAD_S3_BUCKET,
+                        s3_key,
+                        ExtraArgs={
+                            "ContentType": mime or "application/octet-stream",
+                            "ContentEncoding": encoding or "utf-8",
+                        },
+                    )
+
+            FileUpload.objects.create(
+                uploader=request.user,
+                bucket=settings.UPLOAD_S3_BUCKET,
+                prefix=upload_prefix,
+                filename=f.name or "unknown.zip",
+            )
+            messages.success(
+                request,
+                mark_safe(
+                    f'File uploaded successfully. You can <a href="https://{settings.UPLOAD_S3_BUCKET}.s3.amazonaws.com/{upload_prefix}/index.html">view your upload here</a>. Remember that you will need to link to this in your puzzle document.'
+                ),
+            )
+            return redirect(urls.reverse("upload"))
+    else:
+        form = UploadForm()
+
+    files = FileUpload.objects.filter(uploader=request.user).order_by("-uploaded")
+
+    return render(request, "upload.html", {"form": form, "files": files})
 
 
 @csrf_exempt
