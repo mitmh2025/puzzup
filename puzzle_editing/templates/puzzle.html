@@ -286,10 +286,14 @@
                             ❌ Discord is disabled
                         {% elif not discord.channel %}
                             ❌ Not linked to Discord
-                            <form method="POST">
-                                {% csrf_token %}
-                                <input class="button is-small" type="submit" name="resync-discord" value="Fix out-of-sync channel">
-                            </form>
+                            {% if discord.can_create %}
+                                <form method="POST">
+                                    {% csrf_token %}
+                                    <input class="button is-small" type="submit" name="resync-discord" value="Fix out-of-sync channel">
+                                </form>
+                            {% else %}
+                                <br /><br />(We&apos;ll automatically create a Discord channel once this puzzle has more than one author or editor.)
+                            {% endif %}
                         {% else %}
                             <a href="{{discord.channel.url}}">#{{discord.channel.name}}</a>
                             <br/>

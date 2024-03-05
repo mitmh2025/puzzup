@@ -727,7 +727,7 @@ def puzzle(request: AuthenticatedHttpRequest, id, slug=None):
                 puzzle.save()
                 if c:
                     discord.sync_puzzle_channel(c, puzzle)
-                    message = status.get_message_for_status(new_status, puzzle)
+                    message = status.get_discord_message_for_status(new_status, puzzle)
                     c.post_message(puzzle.discord_channel_id, message)
 
             if puzzle.status in [status.DEAD, status.DEFERRED]:
@@ -867,7 +867,9 @@ def puzzle(request: AuthenticatedHttpRequest, id, slug=None):
                 puzzle.save()
                 if c:
                     discord.sync_puzzle_channel(c, puzzle)
-                    message = status.get_message_for_status(status_change, puzzle)
+                    message = status.get_discord_message_for_status(
+                        status_change, puzzle
+                    )
                     c.post_message(puzzle.discord_channel_id, message)
             if comment_form.is_valid():
                 add_comment(
@@ -906,6 +908,7 @@ def puzzle(request: AuthenticatedHttpRequest, id, slug=None):
     if is_spoiled_on(user, puzzle):
         discord_status = "disabled"
         discord_channel = None
+        discord_can_create = False
         discord_visible = False
         if c := discord.get_client():
             discord_status = "enabled"
@@ -921,6 +924,10 @@ def puzzle(request: AuthenticatedHttpRequest, id, slug=None):
                     ):
                         discord_visible = True
                         break
+            if discord_channel:
+                discord_can_create = (
+                    len(set(puzzle.authors.all()) | set(puzzle.editors.all())) > 1
+                )
 
         comments = puzzle.comments.all()
         requests = (
@@ -969,6 +976,7 @@ def puzzle(request: AuthenticatedHttpRequest, id, slug=None):
                     "status": discord_status,
                     "channel": discord_channel,
                     "visible": discord_visible,
+                    "can_create": discord_can_create,
                 },
                 "support_requests": requests,
                 "comments": comments,
