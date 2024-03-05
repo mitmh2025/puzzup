@@ -664,7 +664,11 @@ class Puzzle(DirtyFieldsMixin, models.Model):
 
     @property
     def answer(self):
-        return ", ".join(self.answers.values_list("answer", flat=True)) or None
+        try:
+            self._prefetched_objects_cache[self.answers.prefetch_cache_name]
+            return ", ".join(a.answer for a in self.answers.all())
+        except (AttributeError, KeyError):
+            return ", ".join(self.answers.values_list("answer", flat=True)) or None
 
     @property
     def round(self):
