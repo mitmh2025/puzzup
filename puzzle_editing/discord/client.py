@@ -141,6 +141,12 @@ class Client:
         pth = f"/channels/{channel_id}/messages"
         return self._request("post", pth, payload)
 
+    def add_reaction(self, channel_id: str, message_id: str, emoji: str) -> None:
+        """Add a reaction to a message"""
+        self._request(
+            "put", f"/channels/{channel_id}/messages/{message_id}/reactions/{emoji}/@me"
+        )
+
     def edit_message(
         self, channel_id: str, message_id: str, payload: dict[str, Any]
     ) -> JsonDict:

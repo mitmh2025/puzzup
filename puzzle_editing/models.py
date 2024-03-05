@@ -26,6 +26,7 @@ from django.utils.html import format_html, format_html_join
 from django.utils.safestring import mark_safe
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
+from requests import HTTPError
 
 import puzzle_editing.discord_integration as discord
 import puzzle_editing.google_integration as google
@@ -777,6 +778,52 @@ class Puzzle(DirtyFieldsMixin, models.Model):
         )
 
 
+DISCORD_NOTICE_STATUS_GROUPS = [
+    {
+        status.IN_DEVELOPMENT,
+    },
+    {
+        status.AWAITING_ANSWER,
+        status.WRITING_FLEXIBLE,
+    },
+    {
+        status.TESTSOLVING,
+    },
+    {
+        # Any of these indicate that the puzzle passed testsolving:
+        status.NEEDS_SOLUTION,
+        status.AWAITING_ANSWER_FLEXIBLE,
+        status.NEEDS_POSTPROD,
+    },
+]
+
+DISCORD_NOTICE_CELEBRATION_SENTENCE = (
+    "Stuff is happening 🚨! ",
+    "There's been a development 📰! ",
+    "Puzzles are moving 🚚!",
+    "Can you believe it 😮? ",
+)
+
+DISCORD_NOTICE_CELEBRATION_EMOJI = (
+    "🎉",
+    "🎊",
+    "🎈",
+    "🥳",
+    "🎆",
+    "🎇",
+    "🧨",
+    "🔥",
+    "🌟",
+    "✨",
+    "🎂",
+    "🍰",
+    "🥂",
+    "🍾",
+    "🍻",
+    "😍",
+)
+
+
 def send_status_notifications(puzzle: Puzzle) -> None:
     if puzzle.is_meta:
         meta_filter = (
@@ -796,6 +843,7 @@ def send_status_notifications(puzzle: Puzzle) -> None:
         .values_list("user__email", flat=True)
     )
     status_display = status.get_display(puzzle.status)
+    status_emoji = status.get_emoji(puzzle.status)
     if subscriptions:
         messaging.send_mail_wrapper(
             f"{puzzle.spoiler_free_title()} ➡ {status_display}",
@@ -807,6 +855,43 @@ def send_status_notifications(puzzle: Puzzle) -> None:
             },
             subscriptions,
         )
+
+    # Check if this is the first time the puzzle has entered this group of statuses
+    if (
+        settings.DISCORD_HYPE_CHANNEL_ID
+        and any(
+            puzzle.status in group
+            and puzzle.comments.filter(status_change__in=group).count() <= 1
+            for group in DISCORD_NOTICE_STATUS_GROUPS
+        )
+        and (c := discord.get_client())
+    ):
+        message = random.choice(DISCORD_NOTICE_CELEBRATION_SENTENCE)
+        message += f" Congrats to authors {", ".join(discord.mention_users(puzzle.authors.all()))}"
+        if puzzle.editors.exists():
+            message += (
+                f" and editors {', '.join(discord.mention_users(puzzle.editors.all()))}"
+            )
+        message += f" on moving {puzzle.codename} to {status_display}{f" {status_emoji}" if status_emoji else ""}!"
+
+        if puzzle.status == status.TESTSOLVING:
+            message += f" Testsolvers, get your pencils 📝 ready, find a group, and [get to testsolving]({settings.PUZZUP_URL}{urls.reverse("testsolve_main")})!"
+        if puzzle.status in (
+            status.NEEDS_SOLUTION,
+            status.AWAITING_ANSWER_FLEXIBLE,
+            status.NEEDS_POSTPROD,
+        ):
+            message += " That means this puzzle has graduated from testsolving!"
+
+        try:
+            message_id = c.post_message(settings.DISCORD_HYPE_CHANNEL_ID, message)["id"]
+            emoji = random.choices(DISCORD_NOTICE_CELEBRATION_EMOJI, k=3)
+            for e in emoji:
+                c.add_reaction(settings.DISCORD_HYPE_CHANNEL_ID, message_id, e)
+        except HTTPError as e:
+            # swallow rate limiting errors
+            if e.response.status_code != 429:
+                raise
 
 
 @receiver(pre_save, sender=Puzzle)
