@@ -217,9 +217,6 @@ def _set_puzzle_channel_category(
         .annotate(text_channels_count=Count("text_channels"))
         .in_bulk()
     )
-    if current_category_id and current_category_id in categories:
-        # We're already in the right category
-        return
 
     categories_by_index = {cat.puzzle_status_index: cat for cat in categories.values()}
     for i in range(10):
@@ -237,6 +234,10 @@ def _set_puzzle_channel_category(
                 },
             )
             category_id = cache.id
+
+        if current_category_id == category_id:
+            # We're already in the right category
+            return
 
         if category and category.text_channels_count >= 50:
             # This category seems full, try the next one
