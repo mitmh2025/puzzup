@@ -1803,7 +1803,7 @@ class DiscordTextChannelCache(models.Model):
 
     id = models.CharField(primary_key=True, max_length=20)  # Discord snowflake ID
     name = models.CharField(max_length=100)
-    topic = models.CharField(max_length=100)
+    topic = models.CharField(max_length=1024)
     position = models.IntegerField()
     category = models.ForeignKey(
         DiscordCategoryCache,
