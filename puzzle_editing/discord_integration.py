@@ -345,33 +345,28 @@ def sync_puzzle_channel(c: Client | None, puzzle: m.Puzzle) -> None:
         # don't create a new channel if we don't already have one
         return
 
-    changed = False
     if channel_id:
-        if updates:
-            channel = c.update_channel(channel_id, updates)
-            changed = True
+        channel = c.update_channel(channel_id, updates)
     else:
         channel = c.create_channel(updates)
         channel_id = typing.cast(str, channel["id"])
-        changed = True
     category_id = channel["parent_id"]
 
     # This will race with discord_daemon and that's fine - we want it to
     # overwrite us
-    if changed:
-        m.DiscordTextChannelCache.objects.get_or_create(
-            id=channel_id,
-            defaults={
-                "name": channel["name"],
-                "position": channel["position"],
-                "topic": channel["topic"] or "",
-                "category_id": category_id,
-                "permission_overwrites": [
-                    PermissionOverwrite.from_api(o).to_cache()
-                    for o in channel["permission_overwrites"]
-                ],
-            },
-        )
+    m.DiscordTextChannelCache.objects.get_or_create(
+        id=channel_id,
+        defaults={
+            "name": channel["name"],
+            "position": channel["position"],
+            "topic": channel["topic"] or "",
+            "category_id": category_id,
+            "permission_overwrites": [
+                PermissionOverwrite.from_api(o).to_cache()
+                for o in channel["permission_overwrites"]
+            ],
+        },
+    )
 
     _sync_puzzle_info_post(c, puzzle)
     if puzzle.discord_channel_id != channel_id:
