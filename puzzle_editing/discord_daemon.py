@@ -87,6 +87,7 @@ class Client(discord.Client):
             id=str(channel.id),
             defaults={
                 "name": channel.name,
+                "topic": channel.topic or "",
                 "position": channel.position,
                 "category_id": str(channel.category_id),
                 "permission_overwrites": permission_overwrites,

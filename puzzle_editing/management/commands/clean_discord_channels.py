@@ -89,7 +89,7 @@ class Command(BaseCommand):
                         client.delete_channel(p.discord_channel_id)
                         p.discord_channel_id = ""
                         p.save()
-                continue
+                    continue
 
             if (
                 p.discord_channel_id
