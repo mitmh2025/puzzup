@@ -1663,7 +1663,7 @@ def testsolve_history(request):
 
 @require_testsolving_enabled
 @login_required
-def testsolve_main(request):
+def testsolve_main(request: AuthenticatedHttpRequest) -> HttpResponse:
     user = request.user
 
     if request.method == "POST":
@@ -1776,7 +1776,7 @@ def testsolve_main(request):
         for puzzle in testsolvable_puzzles
     ]
 
-    is_testsolve_coordinator = request.user in User.get_testsolve_coordinators()
+    is_testsolve_coordinator = request.user.is_testsolve_coordinator
 
     all_current_sessions = None
     if is_testsolve_coordinator:
