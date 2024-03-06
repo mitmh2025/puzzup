@@ -246,6 +246,9 @@ def _set_puzzle_channel_category(
         # Try to move the channel to the category
         try:
             c.update_channel(puzzle.discord_channel_id, {"parent_id": category_id})
+            m.DiscordTextChannelCache.objects.filter(
+                id=puzzle.discord_channel_id, category_id=current_category_id
+            ).update(category_id=category_id)
             return
         except requests.HTTPError as e:
             msg = e.response.json()
