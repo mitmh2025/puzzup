@@ -199,7 +199,7 @@ def puzzle_list(
     )
 
     # Extra spoiler protection against incorrect puzzle_list configuration
-    if all(p.is_spoiled for p in puzzle_data):
+    if not all(p.is_spoiled for p in puzzle_data):
         if show_title:
             show_id = False
             show_title = False
