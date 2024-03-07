@@ -9,6 +9,7 @@ import random
 import secrets
 import string
 import time
+import typing
 import zipfile
 from collections import defaultdict
 from collections.abc import Iterable
@@ -142,7 +143,7 @@ def get_sessions_with_joined_and_current(user):
     )
 
 
-def get_credits_name(user):
+def get_credits_name(user: User) -> str:
     return user.credits_name or user.display_name or user.username
 
 
@@ -168,13 +169,12 @@ def get_logistics_info(puzzle):
     }
 
 
-def index(request):
-    user = request.user
-
+def index(request: HttpRequest) -> HttpResponse:
     announcement = SiteSetting.get_setting("ANNOUNCEMENT")
 
     if not request.user.is_authenticated:
         return render(request, "index_not_logged_in.html")
+    user = typing.cast(User, request.user)
 
     blocked_on_author_puzzles = Puzzle.objects.filter(
         authors=user,
@@ -228,19 +228,19 @@ def index(request):
 
 
 @login_required
-def docs(request):
+def docs(request: AuthenticatedHttpRequest) -> HttpResponse:
     if not request.user.is_staff:
         raise PermissionDenied
     return render(request, "docs.html", {})
 
 
-def process(request, doc="writing"):
+def process(request: AuthenticatedHttpRequest, doc: str = "writing") -> HttpResponse:
     if not request.user.is_authenticated:
         return render(request, "process_not_logged_in.html")
     return render(request, "process.html", {"doc": doc})
 
 
-def register(request):
+def register(request: HttpRequest) -> HttpResponse:
     if request.method == "POST":
         form = RegisterForm(request.POST)
         if form.is_valid():
@@ -254,7 +254,7 @@ def register(request):
 
 
 @login_required
-def account(request):
+def account(request: AuthenticatedHttpRequest) -> HttpResponse:
     user = request.user
     if request.method == "POST":
         form = AccountForm(request.POST)
@@ -280,7 +280,7 @@ def account(request):
 
 
 @login_required
-def account_timezone(request):
+def account_timezone(request: AuthenticatedHttpRequest) -> HttpResponse:
     if request.method == "POST":
         form = UserTimezoneForm(request.POST, instance=request.user)
         if form.is_valid():
@@ -309,7 +309,11 @@ def format_discord_username(user: JsonDict) -> str:
 # This endpoint handles both linking a Discord account to an existing user and
 # logging in (or creating a new user) via Discord.
 @require_GET
-def oauth2_link_discord(request):
+def oauth2_link_discord(request: HttpRequest) -> HttpResponse:
+    if not settings.DISCORD_CLIENT_ID:
+        messages.error(request, "Discord login is not enabled.")
+        return redirect("/account")
+
     if "error" in request.GET:
         messages.error(request, "Discord login failed: " + request.GET["error"])
         return redirect("/account")
@@ -369,8 +373,9 @@ def oauth2_link_discord(request):
             )
             return redirect("/account")
 
-        user = request.user
-        if not user.is_authenticated:
+        if request.user.is_authenticated:
+            user = typing.cast(User, request.user)
+        else:
             try:
                 # first see if there's an existing user
                 user = User.objects.get(discord_user_id=user_data["id"])
@@ -392,7 +397,7 @@ def oauth2_link_discord(request):
         c = discord.get_client()
         if c:
             discord.init_perms(c, user)
-            member = c.get_member_by_id(user.discord_user_id)
+            member = c.get_member_by_id(user_data["id"])
             if member:
                 user.discord_nickname = member["nick"] or ""
         user.save()
@@ -417,7 +422,7 @@ def oauth2_link_discord(request):
 
 @login_required
 @require_POST
-def oauth2_unlink_discord(request):
+def oauth2_unlink_discord(request: AuthenticatedHttpRequest) -> HttpResponse:
     user = request.user
     if not SITE_PASSWORD:
         messages.error(
@@ -434,7 +439,7 @@ def oauth2_unlink_discord(request):
 
 
 @login_required
-def puzzle_new(request) -> HttpResponse:
+def puzzle_new(request: AuthenticatedHttpRequest) -> HttpResponse:
     user = request.user
 
     if request.method == "POST":
@@ -469,7 +474,7 @@ def puzzle_new(request) -> HttpResponse:
 
 
 @login_required
-def mine(request):
+def mine(request: AuthenticatedHttpRequest) -> HttpResponse:
     puzzles = Puzzle.objects.filter(authors=request.user)
     editing_puzzles = Puzzle.objects.filter(editors=request.user)
     return render(
@@ -483,13 +488,13 @@ def mine(request):
 
 
 @permission_required("puzzle_editing.list_puzzle", raise_exception=True)
-def all_puzzles(request):
+def all_puzzles(request: AuthenticatedHttpRequest) -> HttpResponse:
     puzzles = Puzzle.objects.all().prefetch_related("authors").order_by("id")
     return render(request, "all.html", {"puzzles": puzzles})
 
 
 @permission_required("puzzle_editing.list_puzzle", raise_exception=True)
-def bystatus(request) -> HttpResponse:
+def bystatus(request: AuthenticatedHttpRequest) -> HttpResponse:
     all_puzzles = Puzzle.objects.prefetch_related("authors", "tags").order_by("name")
 
     puzzles_by_status: dict[str, list[Puzzle]] = defaultdict(list)
@@ -523,7 +528,7 @@ def add_comment(
     status_change: str = "",
     action_text: str = "posted a comment",
     is_feedback: bool = False,
-):
+) -> None:
     comment = PuzzleComment(
         puzzle=puzzle,
         author=author,
@@ -573,12 +578,12 @@ def add_comment(
 
 
 @permission_required("puzzle_editing.list_puzzle", raise_exception=True)
-def all_hints(request: HttpRequest):
+def all_hints(request: AuthenticatedHttpRequest) -> HttpResponse:
     return render(request, "all_hints.html", {"puzzles": Puzzle.objects.all()})
 
 
 @login_required
-def puzzle_hints(request: HttpRequest, id):
+def puzzle_hints(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
     puzzle: Puzzle = get_object_or_404(Puzzle, id=id)
     if request.method == "POST":
         form = PuzzleHintForm(request.POST)
@@ -598,7 +603,7 @@ def puzzle_hints(request: HttpRequest, id):
 
 
 @login_required
-def puzzle_other_credits(request: HttpRequest, id):
+def puzzle_other_credits(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
     puzzle: Puzzle = get_object_or_404(Puzzle, id=id)
     if request.method == "POST":
         form = PuzzleOtherCreditsForm(request.POST)
@@ -618,7 +623,9 @@ def puzzle_other_credits(request: HttpRequest, id):
 
 
 @login_required
-def puzzle_other_credit_update(request: HttpRequest, id, puzzle_id):
+def puzzle_other_credit_update(
+    request: AuthenticatedHttpRequest, id: int, puzzle_id: int
+) -> HttpResponse:
     other_credit = get_object_or_404(PuzzleCredit, id=id)
     if request.method == "POST":
         if "delete_oc" in request.POST:
@@ -642,7 +649,9 @@ def puzzle_other_credit_update(request: HttpRequest, id, puzzle_id):
 
 
 @login_required
-def puzzle(request: AuthenticatedHttpRequest, id, slug=None):
+def puzzle(
+    request: AuthenticatedHttpRequest, id: int, slug: str | None = None
+) -> HttpResponse:
     puzzle: Puzzle = get_object_or_404(
         (
             Puzzle.objects.select_related("lead_author")
@@ -1084,7 +1093,7 @@ def puzzle_resource(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
 
 
 @permission_required("puzzle_editing.change_round", raise_exception=True)
-def puzzle_answers(request, id):
+def puzzle_answers(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
     puzzle = get_object_or_404(Puzzle, id=id)
     user = request.user
     spoiled = is_spoiled_on(user, puzzle)
@@ -1133,7 +1142,7 @@ def puzzle_answers(request, id):
 
 
 @login_required
-def puzzle_tags(request, id):
+def puzzle_tags(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
     puzzle = get_object_or_404(Puzzle, id=id)
     user = request.user
     spoiled = is_spoiled_on(user, puzzle)
@@ -1173,7 +1182,7 @@ def puzzle_tags(request, id):
 @login_required
 @auto_postprodding_required
 @permission_required("puzzle_editing.change_puzzlepostprod", raise_exception=True)
-def puzzle_postprod(request, id):
+def puzzle_postprod(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
     puzzle = get_object_or_404(Puzzle, id=id)
     user = request.user
     spoiled = is_spoiled_on(user, puzzle)
@@ -1258,7 +1267,9 @@ def puzzle_postprod(request, id):
 @login_required
 @auto_postprodding_required
 @permission_required("puzzle_editing.change_puzzlepostprod", raise_exception=True)
-def puzzle_postprod_metadata(request, id):
+def puzzle_postprod_metadata(
+    request: AuthenticatedHttpRequest, id: int
+) -> HttpResponse:
     puzzle = get_object_or_404(Puzzle, id=id)
     authors = [get_credits_name(u) for u in puzzle.authors.all()]
     authors.sort(key=lambda a: a.upper())
@@ -1273,7 +1284,7 @@ def puzzle_postprod_metadata(request, id):
 @login_required
 @auto_postprodding_required
 @permission_required("puzzle_editing.change_puzzlepostprod", raise_exception=True)
-def puzzle_yaml(request, id):
+def puzzle_yaml(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
     puzzle = get_object_or_404(Puzzle, id=id)
     return HttpResponse(puzzle.get_yaml_fixture(), content_type="text/plain")
 
@@ -1283,7 +1294,7 @@ def puzzle_yaml(request, id):
     ["puzzle_editing.change_puzzlepostprod", "puzzle_editing.change_round"],
     raise_exception=True,
 )
-def export(request):
+def export(request: AuthenticatedHttpRequest) -> HttpResponse:
     output = ""
     if request.method == "POST" and "export" in request.POST:
         branch_name = utils.export_all()
@@ -1343,7 +1354,7 @@ def check_metadata(request):
 
 
 @login_required
-def puzzle_edit(request, id) -> HttpResponse:
+def puzzle_edit(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
     puzzle = get_object_or_404(Puzzle, id=id)
     user = request.user
 
@@ -1385,7 +1396,7 @@ def puzzle_edit(request, id) -> HttpResponse:
     )
 
 
-def get_changed_data_message(form):
+def get_changed_data_message(form: forms.ModelForm) -> str:
     """Given a filled-out valid form, describe what changed.
 
     Somewhat automagically produce a system comment message that includes all
@@ -1422,7 +1433,7 @@ def get_changed_data_message(form):
 
 
 @login_required
-def puzzle_people(request, id):
+def puzzle_people(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
     puzzle = get_object_or_404(Puzzle, id=id)
     user = request.user
 
@@ -1485,7 +1496,7 @@ def puzzle_people(request, id):
 
 
 @permission_required("puzzle_editing.unspoil_puzzle", raise_exception=True)
-def puzzle_escape(request, id) -> HttpResponse:
+def puzzle_escape(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
     puzzle: Puzzle = get_object_or_404(Puzzle, id=id)
     user: User = request.user
 
@@ -1525,7 +1536,7 @@ def puzzle_escape(request, id) -> HttpResponse:
 
 
 @login_required
-def edit_comment(request, id):
+def edit_comment(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
     comment = get_object_or_404(PuzzleComment, id=id)
 
     if request.user != comment.author:
@@ -1575,7 +1586,7 @@ def edit_comment(request, id):
 
 
 @login_required
-def edit_hint(request, id):
+def edit_hint(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
     hint = get_object_or_404(Hint, id=id)
 
     if request.method == "POST":
@@ -1601,7 +1612,7 @@ def edit_hint(request, id):
 
 
 @login_required
-def edit_pseudo_answer(request, id):
+def edit_pseudo_answer(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
     pseudo_answer = get_object_or_404(PseudoAnswer, id=id)
 
     if request.method == "POST":
@@ -1630,7 +1641,9 @@ def edit_pseudo_answer(request, id):
     )
 
 
-def warn_about_testsolving(is_spoiled, in_session, has_session):
+def warn_about_testsolving(
+    is_spoiled: bool, in_session: bool, has_session: bool
+) -> str | None:
     reasons = []
     if is_spoiled:
         reasons.append("you are spoiled")
@@ -1648,7 +1661,7 @@ def warn_about_testsolving(is_spoiled, in_session, has_session):
 
 @login_required
 @require_testsolving_enabled
-def testsolve_history(request):
+def testsolve_history(request: AuthenticatedHttpRequest) -> HttpResponse:
     past_sessions = TestsolveSession.objects.filter(
         participations__in=TestsolveParticipation.objects.filter(
             user=request.user, ended__isnull=False
@@ -1663,7 +1676,7 @@ def testsolve_history(request):
 
 @require_testsolving_enabled
 @login_required
-def testsolve_main(request):
+def testsolve_main(request: AuthenticatedHttpRequest) -> HttpResponse:
     user = request.user
 
     if request.method == "POST":
@@ -1776,7 +1789,7 @@ def testsolve_main(request):
         for puzzle in testsolvable_puzzles
     ]
 
-    is_testsolve_coordinator = request.user in User.get_testsolve_coordinators()
+    is_testsolve_coordinator = request.user.is_testsolve_coordinator
 
     all_current_sessions = None
     if is_testsolve_coordinator:
@@ -1804,7 +1817,7 @@ def testsolve_main(request):
 
 
 @login_required
-def my_spoiled(request):
+def my_spoiled(request: AuthenticatedHttpRequest) -> HttpResponse:
     spoiled = request.user.spoiled_puzzles.all()
 
     context = {"spoiled": spoiled}
@@ -1813,7 +1826,7 @@ def my_spoiled(request):
 
 @login_required
 @require_testsolving_enabled
-def testsolve_finder(request) -> HttpResponse:
+def testsolve_finder(request: AuthenticatedHttpRequest) -> HttpResponse:
     @dataclass
     class PuzzleData:
         puzzle: Puzzle
@@ -1859,7 +1872,7 @@ def testsolve_finder(request) -> HttpResponse:
     )
 
 
-def testsolve_queryset_to_csv(qs):
+def testsolve_queryset_to_csv(qs) -> HttpResponse:
     opts = qs.model._meta
     csvResponse = HttpResponse(content_type="text/csv")
     csvResponse["Content-Disposition"] = "attachment;filename=export.csv"
@@ -1880,7 +1893,7 @@ def testsolve_queryset_to_csv(qs):
 
 
 @login_required
-def testsolve_csv(request, id):
+def testsolve_csv(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
     session = get_object_or_404(TestsolveSession, id=id)
     queryset = TestsolveParticipation.objects.filter(session=session)
     # opts = queryset.model._meta  # pylint: disable=protected-access
@@ -1897,7 +1910,7 @@ def testsolve_csv(request, id):
 
 
 @login_required
-def testsolve_participants(request, id):
+def testsolve_participants(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
     session = get_object_or_404(TestsolveSession, id=id)
     puzzle = session.puzzle
     user = request.user
@@ -1921,7 +1934,7 @@ def testsolve_participants(request, id):
 
 @login_required
 @require_testsolving_enabled
-def testsolve_one(request, id) -> HttpResponse:
+def testsolve_one(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
     session = get_object_or_404(
         (
             TestsolveSession.objects.select_related()
@@ -2169,7 +2182,7 @@ def testsolve_sheet(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
 @require_POST
 @permission_required("puzzle_editin.unspoil_puzzle", raise_exception=True)
 @require_testsolving_enabled
-def testsolve_escape(request, id):
+def testsolve_escape(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
     participation = get_object_or_404(
         TestsolveParticipation,
         session=id,
@@ -2181,7 +2194,7 @@ def testsolve_escape(request, id):
 
 @login_required
 @require_testsolving_enabled
-def testsolve_feedback(request, id):
+def testsolve_feedback(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
     session = get_object_or_404(TestsolveSession, id=id)
 
     feedback = session.participations.filter(ended__isnull=False)
@@ -2200,7 +2213,7 @@ def testsolve_feedback(request, id):
 
 
 @login_required
-def puzzle_feedback(request, id):
+def puzzle_feedback(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
     puzzle = get_object_or_404(Puzzle, id=id)
     feedback = (
         TestsolveParticipation.objects.filter(session__puzzle=puzzle)
@@ -2220,7 +2233,7 @@ def puzzle_feedback(request, id):
 
 
 @login_required
-def puzzle_feedback_all(request):
+def puzzle_feedback_all(request: AuthenticatedHttpRequest) -> HttpResponse:
     feedback = (
         TestsolveParticipation.objects.filter(ended__isnull=False)
         .select_related("session")
@@ -2233,7 +2246,7 @@ def puzzle_feedback_all(request):
 
 
 @login_required
-def puzzle_feedback_csv(request, id):
+def puzzle_feedback_csv(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
     puzzle = get_object_or_404(Puzzle, id=id)
     feedback = (
         TestsolveParticipation.objects.filter(session__puzzle=puzzle)
@@ -2246,7 +2259,7 @@ def puzzle_feedback_csv(request, id):
 
 
 @login_required
-def puzzle_feedback_all_csv(request):
+def puzzle_feedback_all_csv(request: AuthenticatedHttpRequest) -> HttpResponse:
     feedback = (
         TestsolveParticipation.objects.filter(ended__isnull=False)
         .select_related("session")
@@ -2258,7 +2271,7 @@ def puzzle_feedback_all_csv(request):
 
 @login_required
 @require_testsolving_enabled
-def testsolve_finish(request, id) -> HttpResponse:
+def testsolve_finish(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
     session = get_object_or_404(TestsolveSession, id=id)
     puzzle = session.puzzle
     user = request.user
@@ -2339,7 +2352,7 @@ def testsolve_finish(request, id) -> HttpResponse:
 
 @login_required
 @permission_required("puzzle_editing.change_puzzlepostprod", raise_exception=True)
-def postprod(request):
+def postprod(request: AuthenticatedHttpRequest) -> HttpResponse:
     postprodding = Puzzle.objects.filter(
         status=status.NEEDS_POSTPROD,
         postprodders=request.user,
@@ -2356,7 +2369,7 @@ def postprod(request):
 
 
 @login_required
-def postprod_all(request):
+def postprod_all(request: AuthenticatedHttpRequest) -> HttpResponse:
     needs_postprod = (
         Puzzle.objects.filter(
             status__in=[
@@ -2385,7 +2398,7 @@ def postprod_all(request):
 
 @login_required
 @permission_required("puzzle_editing.change_puzzlefactcheck", raise_exception=True)
-def factcheck(request):
+def factcheck(request: AuthenticatedHttpRequest) -> HttpResponse:
     factchecking = Puzzle.objects.filter(
         status__in=(
             status.NEEDS_FACTCHECK,
@@ -2411,7 +2424,7 @@ def factcheck(request):
 
 @login_required
 @group_required("EIC", "Editor", "Art")
-def flavor(request):
+def flavor(request: AuthenticatedHttpRequest) -> HttpResponse:
     needs_flavor = Puzzle.objects.filter(
         flavor="", flavor_approved_time__isnull=True
     ).prefetch_related("answers__round")
@@ -2433,7 +2446,9 @@ def flavor(request):
 
 
 @group_required("EIC")
-def eic(request, template="awaiting_editor.html"):
+def eic(
+    request: AuthenticatedHttpRequest, template: str = "awaiting_editor.html"
+) -> HttpResponse:
     def puzzles_for_status(status: str) -> Iterable[Puzzle]:
         return (
             Puzzle.objects.filter(status=status)
@@ -2455,7 +2470,7 @@ def eic(request, template="awaiting_editor.html"):
 
 
 @group_required("EIC")
-def eic_overview(request) -> HttpResponse:
+def eic_overview(request: AuthenticatedHttpRequest) -> HttpResponse:
     def sort_key(p: Puzzle):
         # answer/round before no answer/round
 
@@ -2480,7 +2495,7 @@ def eic_overview(request) -> HttpResponse:
 
 
 @group_required("EIC")
-def editor_overview(request) -> HttpResponse:
+def editor_overview(request: AuthenticatedHttpRequest) -> HttpResponse:
     active_statuses = [
         status.INITIAL_IDEA,
         status.IN_DEVELOPMENT,
@@ -2550,7 +2565,7 @@ def editor_overview(request) -> HttpResponse:
 
 @login_required
 @group_required("EIC")
-def needs_editor(request):
+def needs_editor(request: AuthenticatedHttpRequest) -> HttpResponse:
     needs_editors = Puzzle.objects.annotate(
         remaining_des=(F("needed_editors") - Count("editors"))
     ).filter(remaining_des__gt=0)
@@ -2560,7 +2575,7 @@ def needs_editor(request):
 
 
 @permission_required("puzzle_editing.list_puzzle", raise_exception=True)
-def byround(request):
+def byround(request: AuthenticatedHttpRequest) -> HttpResponse:
     round_objs = Round.objects.all()
     round_objs = (
         round_objs.order_by(Lower("name"))
@@ -2620,7 +2635,7 @@ def byround(request):
 
 
 @permission_required("puzzle_editing.change_round", raise_exception=True)
-def rounds(request, id=None):
+def rounds(request: AuthenticatedHttpRequest, id: int | None = None) -> HttpResponse:
     user = request.user
 
     new_round_form = RoundForm()
@@ -2681,7 +2696,7 @@ def rounds(request, id=None):
 
 
 @permission_required("puzzle_editing.change_round", raise_exception=True)
-def edit_round(request, id):
+def edit_round(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
     round = get_object_or_404(Round, id=id)
     if request.method == "POST":
         if request.POST.get("delete") and request.POST.get("sure-delete") == "on":
@@ -2706,7 +2721,7 @@ def edit_round(request, id):
 
 
 @login_required
-def support_all(request):
+def support_all(request: AuthenticatedHttpRequest) -> HttpResponse:
     user = request.user
     team = request.GET.get("team", "ALL")
 
@@ -2766,7 +2781,7 @@ def support_all(request):
 
 
 @login_required
-def support_by_puzzle(request, id):
+def support_by_puzzle(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
     """Show all requests for a puzzle or create one"""
     puzzle = get_object_or_404(Puzzle, id=id)
     support = []
@@ -2795,7 +2810,9 @@ def support_by_puzzle(request, id):
 
 
 @login_required
-def support_by_puzzle_id(request, id, team):
+def support_by_puzzle_id(
+    request: AuthenticatedHttpRequest, id: int, team: str
+) -> HttpResponse:
     """Show support by puzzle and type or else show form to create a new one"""
     id = int(id)
     puzzle = get_object_or_404(Puzzle, pk=id)
@@ -2892,7 +2909,7 @@ def support_by_puzzle_id(request, id, team):
 
 
 @permission_required("puzzle_editing.change_round", raise_exception=True)
-def edit_answer(request, id):
+def edit_answer(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
     answer = get_object_or_404(PuzzleAnswer, id=id)
 
     if request.method == "POST":
@@ -2908,7 +2925,7 @@ def edit_answer(request, id):
 
 
 @permission_required("puzzle_editing.change_round", raise_exception=True)
-def bulk_add_answers(request, id):
+def bulk_add_answers(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
     round = get_object_or_404(Round, id=id)
     if request.method == "POST":
         lines = request.POST["bulk_add_answers"].split("\n")
@@ -2931,7 +2948,7 @@ def bulk_add_answers(request, id):
 
 @login_required
 @permission_required("puzzle_editing.change_round", raise_exception=True)
-def tags(request):
+def tags(request: AuthenticatedHttpRequest) -> HttpResponse:
     return render(
         request,
         "tags.html",
@@ -2940,7 +2957,7 @@ def tags(request):
 
 
 @login_required
-def statistics(request):
+def statistics(request: AuthenticatedHttpRequest) -> HttpResponse:
     past_writing = 0
     past_testsolving = 0
     non_puzzle_schedule_tags = ["meta", "navigation", "event"]
@@ -3018,7 +3035,7 @@ def statistics(request):
 
 
 @permission_required("puzzle_editing.change_round", raise_exception=True)
-def new_tag(request):
+def new_tag(request: AuthenticatedHttpRequest) -> HttpResponse:
     if request.method == "POST":
         form = PuzzleTagForm(request.POST)
         if form.is_valid():
@@ -3031,7 +3048,7 @@ def new_tag(request):
 
 
 @permission_required("puzzle_editing.change_round", raise_exception=True)
-def single_tag(request, id):
+def single_tag(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
     tag = get_object_or_404(PuzzleTag, id=id)
 
     count = tag.puzzles.count()
@@ -3047,7 +3064,7 @@ def single_tag(request, id):
 
 
 @permission_required("puzzle_editing.change_round", raise_exception=True)
-def edit_tag(request, id):
+def edit_tag(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
     tag = get_object_or_404(PuzzleTag, id=id)
     if request.method == "POST":
         form = PuzzleTagForm(request.POST, instance=tag)
@@ -3067,7 +3084,7 @@ def edit_tag(request, id):
     )
 
 
-def get_last_action(comment):
+def get_last_action(comment: PuzzleComment) -> str:
     if not comment:
         return "N/A"
 
@@ -3171,7 +3188,7 @@ def users(request):
 
 
 @login_required
-def users_statuses(request):
+def users_statuses(request: AuthenticatedHttpRequest) -> HttpResponse:
     # distinct=True because https://stackoverflow.com/questions/59071464/django-how-to-annotate-manytomany-field-with-count
     annotation_kwargs = {
         stat: Count(
@@ -3180,9 +3197,7 @@ def users_statuses(request):
         for stat in status.STATUSES
     }
 
-    users = User.objects.all().annotate(**annotation_kwargs)
-
-    users = list(users)
+    users = list(User.objects.all().annotate(**annotation_kwargs))
     for user in users:
         user.stats = [getattr(user, stat) for stat in status.STATUSES]
 
@@ -3289,7 +3304,7 @@ def upload(request: AuthenticatedHttpRequest) -> HttpResponse:
 
 
 @csrf_exempt
-def preview_markdown(request):
+def preview_markdown(request: HttpRequest) -> HttpResponse:
     if request.method == "POST":
         output = render_to_string(
             "preview_markdown.html", {"input": request.body.decode("utf-8")}

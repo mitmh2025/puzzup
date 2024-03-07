@@ -889,7 +889,7 @@ def send_status_notifications(puzzle: Puzzle) -> None:
 
         try:
             message_id = c.post_message(settings.DISCORD_HYPE_CHANNEL_ID, message)["id"]
-            emoji = random.choices(DISCORD_NOTICE_CELEBRATION_EMOJI, k=3)
+            emoji = random.choices(DISCORD_NOTICE_CELEBRATION_EMOJI, k=2)
             for e in emoji:
                 c.add_reaction(settings.DISCORD_HYPE_CHANNEL_ID, message_id, e)
         except HTTPError as e:
