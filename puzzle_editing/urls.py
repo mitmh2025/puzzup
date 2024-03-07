@@ -71,6 +71,7 @@ urlpatterns = [
     path("my-spoiled", views.my_spoiled, name="my_spoiled"),
     path("testsolve_history", views.testsolve_history, name="testsolve_history"),
     path("testsolve_finder", views.testsolve_finder, name="testsolve_finder"),
+    path("testsolve/start", views.testsolve_start, name="testsolve_start"),
     path("testsolve/<int:id>", views.testsolve_one, name="testsolve_one"),
     path(
         "testsolve/<int:id>/puzzle_content",

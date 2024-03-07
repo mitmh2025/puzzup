@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load testsolve_session_list %}
 {% load user_list %}
+{% load puzzle_list %}
 {% load humanize %}
 {% load markdown %}
 {% comment %} {% load card %} {% endcomment %}
@@ -30,7 +31,7 @@
         <h2>Puzzles you can testsolve</h2>
 
         {% if testsolvable %}
-            <form method="POST">
+            <form method="POST" action="{% url 'testsolve_start' %}">
                 {% csrf_token %}
                 <input id="hide-test-authored" type="checkbox" class="hide-test-authored" checked> <label
                     for="hide-test-authored">Hide your puzzles</label>
@@ -52,7 +53,7 @@
                                 <tr
                                     class="{% if puzzle.is_author %}test-authored{% endif %} {% if puzzle.is_spoiled %}test-spoiled{% endif %}">
                                     <td>
-                                        <button class="button is-info" type="submit" name="start_session" value="{{ puzzle.id }}" {% if puzzle_data.warning %}
+                                        <button class="button is-info" type="submit" name="puzzle" value="{{ puzzle.id }}" {% if puzzle_data.warning %}
                                                     data-warning="{{ puzzle_data.warning }}" {% endif %}>
                                                 Start new session
                                             </button>
@@ -83,7 +84,13 @@
         <a href="{% url 'testsolve_history' %}">View your past testsolves</a>
     </div>
 
-    {% if is_testsolve_coordinator %}
+    {% if can_manage_testsolves %}
+        <div class="box">
+            <h2>Puzzles in closed testsolving (Testsolving Coordinator only)</h2>
+            <p>Use the <a href="{% url "testsolve_finder" %}">testsolve finder</a> to put a group together for these puzzles.</p>
+            {% puzzle_list puzzles_with_closed_testsolving request.user show_codename=True show_summary=True %}
+        </div>
+
         <div class="box">
             <h2>All active testsolves (Testsolving Coordinator only)</h2>
             {% testsolve_session_list all_current_sessions request.user coordinator=True %}

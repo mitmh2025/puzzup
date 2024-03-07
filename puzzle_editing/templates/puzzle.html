@@ -532,11 +532,11 @@
             </div>
 
             {% if TESTSOLVING_ALLOWED %}
-                <form method="POST" action="{% url "testsolve_main" %}">
+                <form method="POST" action="{% url "testsolve_start" %}">
                     {% csrf_token %}
                     <h2>
                         Testsolve Sessions
-                        <button class="button is-info is-small" type="submit" name="start_session" value="{{ puzzle.id }}">Start new testsolving session</button>
+                        <button class="button is-info is-small" type="submit" name="puzzle" value="{{ puzzle.id }}">Start new testsolving session</button>
                     </h2>
                 </form>
                 {% if testsolve_sessions %}

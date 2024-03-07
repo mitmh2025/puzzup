@@ -453,6 +453,10 @@ class Puzzle(DirtyFieldsMixin, models.Model):
     logistics_clean_testsolve_count = models.PositiveSmallIntegerField(
         default=0, blank=False, null=False
     )
+    logistics_closed_testsolving = models.BooleanField(
+        default=False,
+        help_text="Check this box if this puzzle should only allow testsolve sessions created by a testsolve coordinator",
+    )
     # From 0-2, what is the expected difficulty of this puzzle across various fields?
     logistics_difficulty_testsolve = models.PositiveSmallIntegerField(
         validators=[MaxValueValidator(2)], blank=True, null=True

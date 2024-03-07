@@ -158,7 +158,7 @@ class LogisticsInfoForm(forms.ModelForm):
         model = Puzzle
         fields = (
             "logistics_clean_testsolve_count",
-            "logistics_difficulty_testsolve",
+            "logistics_closed_testsolving",
             "logistics_number_testsolvers",
             "logistics_testsolve_length",
             "logistics_testsolve_skills",
@@ -171,6 +171,7 @@ class LogisticsInfoForm(forms.ModelForm):
         labels = MappingProxyType(
             {
                 "logistics_clean_testsolve_count": "Clean testsolve count",
+                "logistics_closed_testsolving": "Closed testsolving",
                 "logistics_difficulty_testsolve": "Testsolving",
                 "logistics_number_testsolvers": "Number of Testsolvers",
                 "logistics_testsolve_length": "Expected Testsolve Length",
