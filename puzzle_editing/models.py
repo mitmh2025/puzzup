@@ -806,6 +806,11 @@ DISCORD_NOTICE_CELEBRATION_SENTENCE = (
     "There's been a development 📰! ",
     "Puzzles are moving 🚚!",
     "Can you believe it 😮? ",
+    "The pieces are falling into place 🧩! ",
+    "The plot thickens 📚! ",
+    "Progress marches on 🏃! ",
+    "The wheels are turning 🔄! ",
+    "The gears are grinding 🛠! ",
 )
 
 DISCORD_NOTICE_CELEBRATION_EMOJI = (
