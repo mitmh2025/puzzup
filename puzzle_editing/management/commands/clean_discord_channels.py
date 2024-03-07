@@ -69,6 +69,7 @@ class Command(BaseCommand):
                     else:
                         client.delete_channel(p.discord_channel_id)
                         p.discord_channel_id = ""
+                        p.discord_info_message_id = ""
                         p.save()
                     continue
 
@@ -88,6 +89,7 @@ class Command(BaseCommand):
                     else:
                         client.delete_channel(p.discord_channel_id)
                         p.discord_channel_id = ""
+                        p.discord_info_message_id = ""
                         p.save()
                     continue
 
@@ -108,6 +110,7 @@ class Command(BaseCommand):
                     self.logger.warning("Refusing to fix in dryrun mode.")
                 else:
                     p.discord_channel_id = ""
+                    p.discord_info_message_id = ""
                     p.save()
                 continue
 

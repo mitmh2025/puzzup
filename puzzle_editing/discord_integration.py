@@ -3,7 +3,6 @@ from __future__ import annotations
 import contextlib
 import itertools
 import time
-import typing
 from collections.abc import Iterable
 from enum import Enum
 from typing import Any
@@ -49,6 +48,18 @@ class PermissionOverwrite:
         self.entity = entity
         self.entity_type = entity_type
         self.permission = permission
+
+    def __eq__(self, __value: object) -> bool:
+        if not isinstance(__value, PermissionOverwrite):
+            return NotImplemented
+        return (
+            self.entity == __value.entity
+            and self.entity_type == __value.entity_type
+            and self.permission == __value.permission
+        )
+
+    def __hash__(self) -> int:
+        return hash((self.entity, self.entity_type, self.permission.pair()))
 
     @classmethod
     def from_cache(cls, cached_overwrite: JsonDict) -> PermissionOverwrite:
@@ -140,7 +151,7 @@ def mention_users(users: Iterable[m.User], skip_missing: bool = True) -> list[st
 
 def _build_puzzle_channel_updates(
     puzzle: m.Puzzle,
-) -> tuple[str | None, dict[str, Any]]:
+) -> tuple[m.DiscordTextChannelCache | None, dict[str, Any]]:
     """Generate the set of updates (or creation parameters) for a puzzle channel"""
     current = None
     with contextlib.suppress(m.DiscordTextChannelCache.DoesNotExist):
@@ -197,9 +208,12 @@ def _build_puzzle_channel_updates(
             overwrite.permission.update(view_channel=True, manage_messages=True)
         elif uid not in can_see:
             overwrite.permission.update(view_channel=False, manage_messages=False)
-    updates["permission_overwrites"] = [o.to_api() for o in overwrites.values()]
+    if not current or frozenset(overwrites.values()) != frozenset(
+        PermissionOverwrite.from_cache(o) for o in current.permission_overwrites
+    ):
+        updates["permission_overwrites"] = [o.to_api() for o in overwrites.values()]
 
-    return (current.id if current else None, updates)
+    return (current, updates)
 
 
 def _set_puzzle_channel_category(
@@ -292,7 +306,7 @@ def _sync_puzzle_info_post(c: Client | None, puzzle: m.Puzzle) -> None:
             {
                 "type": "rich",
                 "description": (
-                    f'"{puzzle.name}" has been created in status **{status.get_display(puzzle.status)}**! Here are some useful links:\n'
+                    f'Here are some useful links for "{puzzle.name}":\n'
                     "\n"
                     f"* [PuzzUp entry]({settings.PUZZUP_URL}{urls.reverse("puzzle", kwargs={"id": puzzle.id})})\n"
                     f"* Here's a Google Doc where you can write your puzzle content: [Puzzle content]({settings.PUZZUP_URL}{urls.reverse('puzzle_content', kwargs={'id': puzzle.id})})\n"
@@ -324,7 +338,7 @@ def _sync_puzzle_info_post(c: Client | None, puzzle: m.Puzzle) -> None:
                 raise
     else:
         message_id = c.post_message(puzzle.discord_channel_id, message_content)["id"]
-    if message_id:
+    if message_id and not puzzle.discord_info_message_id:
         c.pin_message(puzzle.discord_channel_id, message_id)
         puzzle.discord_info_message_id = message_id
 
@@ -334,43 +348,47 @@ def sync_puzzle_channel(c: Client | None, puzzle: m.Puzzle) -> None:
     if not c:
         return
 
-    channel_id, updates = _build_puzzle_channel_updates(puzzle)
+    cache, updates = _build_puzzle_channel_updates(puzzle)
 
     skip_create = False
     if puzzle.status in (status.DEFERRED, status.DEAD):
         skip_create = True
     if len(set(puzzle.authors.all()) | set(puzzle.editors.all())) <= 1:
         skip_create = True
-    if not channel_id and skip_create:
+    if not cache and skip_create:
         # don't create a new channel if we don't already have one
         return
 
-    if channel_id:
-        channel = c.update_channel(channel_id, updates)
+    channel = None
+    category_id = None
+    if cache:
+        category_id = cache.category_id
+        if updates:
+            channel = c.update_channel(cache.id, updates)
     else:
         channel = c.create_channel(updates)
-        channel_id = typing.cast(str, channel["id"])
-    category_id = channel["parent_id"]
 
-    # This will race with discord_daemon and that's fine - we want it to
-    # overwrite us
-    m.DiscordTextChannelCache.objects.get_or_create(
-        id=channel_id,
-        defaults={
-            "name": channel["name"],
-            "position": channel["position"],
-            "topic": channel["topic"] or "",
-            "category_id": category_id,
-            "permission_overwrites": [
-                PermissionOverwrite.from_api(o).to_cache()
-                for o in channel["permission_overwrites"]
-            ],
-        },
-    )
+    if channel:
+        category_id = channel["parent_id"]
+        # This will race with discord_daemon and that's fine - we want it to
+        # overwrite us
+        m.DiscordTextChannelCache.objects.get_or_create(
+            id=channel["id"],
+            defaults={
+                "name": channel["name"],
+                "position": channel["position"],
+                "topic": channel["topic"] or "",
+                "category_id": category_id,
+                "permission_overwrites": [
+                    PermissionOverwrite.from_api(o).to_cache()
+                    for o in channel["permission_overwrites"]
+                ],
+            },
+        )
 
     _sync_puzzle_info_post(c, puzzle)
-    if puzzle.discord_channel_id != channel_id:
-        puzzle.discord_channel_id = channel_id
+    if channel and puzzle.discord_channel_id != channel["id"]:
+        puzzle.discord_channel_id = channel["id"]
         puzzle.save()
 
     _set_puzzle_channel_category(c, puzzle, category_id)
