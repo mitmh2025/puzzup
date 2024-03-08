@@ -16,6 +16,10 @@
             Clean testsolve count:
             <span>{{ logistics_info.logistics_clean_testsolve_count }}</span>
         </div>
+        <div>
+            Closed testsolving:
+            <span>{{ logistics_info.logistics_closed_testsolving|yesno:"✅ (only testsolve coordinators can create test sessions),❌ (anyone can create test sessions)" }}</span>
+        </div>
     {% endif %}
     <div>
         Testsolving:

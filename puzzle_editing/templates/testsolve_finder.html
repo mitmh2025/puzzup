@@ -13,8 +13,6 @@
 
         {% if solvers %}
             {% if puzzle_data %}
-                <p>(Starting the session won't automatically add other people &mdash; you'll  still have to send them the link and ask them to join.)</p>
-
                 <table class="classic">
                     <tr>
                         <th>#❓</th>
@@ -33,9 +31,15 @@
                         <tr>
                             <td>{{ pdata.unspoiled_count }}</td>
                             <td>
-                                <button type="submit" name="start_session" value="{{ pdata.puzzle.id }}">
-                                    Start new session
-                                </button>
+                                <form method="POST" action="{% url 'testsolve_start' %}">
+                                    {% csrf_token %}
+                                    {% for user in users %}
+                                        <input type="hidden" name="participants" value="{{ user.id }}">
+                                    {% endfor %}
+                                    <button class="button is-info" type="submit" name="puzzle" value="{{ pdata.puzzle.id }}">
+                                        Start new session
+                                    </button>
+                                </form>
                             </td>
                             <td>{{ pdata.puzzle.html_display }}</td>
                             <td class="small-md">{{ pdata.puzzle.summary|markdown }}</td>

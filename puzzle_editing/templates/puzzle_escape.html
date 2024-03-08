@@ -31,9 +31,9 @@
                     This puzzle is in <span class="tag">{{ status }}</span>, but if you really want to, you can:<br>
                 {% endif %}
             </p>
-            <form method="POST" action="{% url 'testsolve_main' %}">
+            <form method="POST" action="{% url 'testsolve_start' %}">
                 {% csrf_token %}
-                <button class="button is-info" type="submit" name="start_session" value="{{ puzzle.id }}">Start new testsolving session</button>
+                <button class="button is-info" type="submit" name="puzzle" value="{{ puzzle.id }}">Start new testsolving session</button>
             </form>
         </div>
     {% endif %}

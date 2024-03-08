@@ -680,6 +680,7 @@ def puzzle(
     exclude = []
     if not user.has_perm("puzzle_editing.change_testsolvesession"):
         exclude.append("logistics_clean_testsolve_count")
+        exclude.append("logistics_closed_testsolving")
     LogisticsForm = forms.modelform_factory(
         Puzzle, form=LogisticsInfoForm, exclude=exclude
     )
@@ -1032,11 +1033,9 @@ def puzzle(
         )
         comments = PuzzleComment.objects.filter(puzzle=puzzle, author=user)
 
-        if (
-            status.get_status_rank(puzzle.status)
-            >= status.get_status_rank(status.NEEDS_POSTPROD)
-            or user.is_testsolve_coordinator
-        ):
+        if status.get_status_rank(puzzle.status) >= status.get_status_rank(
+            status.NEEDS_POSTPROD
+        ) or user.has_perm("puzzle_editing.change_testsolvesession"):
             logistics_info = get_logistics_info(puzzle)
         else:
             logistics_info = {}
@@ -1679,68 +1678,6 @@ def testsolve_history(request: AuthenticatedHttpRequest) -> HttpResponse:
 def testsolve_main(request: AuthenticatedHttpRequest) -> HttpResponse:
     user = request.user
 
-    if request.method == "POST":
-        if "start_session" in request.POST:
-            puzzle_id = request.POST["start_session"]
-            puzzle = get_object_or_404(Puzzle, id=puzzle_id)
-            session = TestsolveSession(puzzle=puzzle)
-            session.save()
-
-            participation = TestsolveParticipation(session=session, user=user)
-            participation.save()
-
-            if (c := discord.get_client()) and session.discord_thread_id:
-                puzzle_content_url = request.build_absolute_uri(
-                    urls.reverse("testsolve_puzzle_content", kwargs={"id": session.id})
-                )
-                sheet_url = request.build_absolute_uri(
-                    urls.reverse("testsolve_sheet", kwargs={"id": session.id})
-                )
-                author_tags = discord.mention_users(puzzle.authors.all(), False)
-                editor_tags = discord.mention_users(puzzle.editors.all(), False)
-                message = c.post_message(
-                    session.discord_thread_id,
-                    {
-                        "embeds": [
-                            {
-                                "type": "rich",
-                                "description": (
-                                    f"New testsolve session created for {puzzle.name}.\n"
-                                    "\n"
-                                    f"We've created a few documents for you to work with:\n"
-                                    f"* Here is a **read-only copy** of the puzzle for you to testsolve: [Google Doc]({puzzle_content_url})\n"
-                                    f"* Here is a Google Sheet to work in: [Google Sheet]({sheet_url})"
-                                    "\n"
-                                    "We've also included the authors and editors so that they can monitor the thread and intervene if necessary. Good luck!"
-                                ),
-                                "fields": [
-                                    {
-                                        "name": "Authors",
-                                        "value": ", ".join(author_tags),
-                                    },
-                                    {
-                                        "name": "Editors",
-                                        "value": ", ".join(editor_tags),
-                                    },
-                                ],
-                            }
-                        ]
-                    },
-                )
-                c.pin_message(session.discord_thread_id, message["id"])
-
-            add_comment(
-                request=request,
-                puzzle=puzzle,
-                author=user,
-                is_system=True,
-                send_email=False,
-                content=f"Created testsolve session #{session.id}",
-                testsolve_session=session,
-            )
-
-            return redirect(urls.reverse("testsolve_one", args=[session.id]))
-
     current_user_sessions = TestsolveSession.objects.filter(
         participations__in=TestsolveParticipation.objects.filter(
             user=request.user, ended__isnull=True
@@ -1760,7 +1697,10 @@ def testsolve_main(request: AuthenticatedHttpRequest) -> HttpResponse:
     )
 
     testsolvable_puzzles = (
-        Puzzle.objects.filter(status=status.TESTSOLVING)
+        Puzzle.objects.filter(
+            status=status.TESTSOLVING,
+            logistics_closed_testsolving=False,
+        )
         .annotate(
             is_author=Exists(
                 User.objects.filter(authored_puzzles=OuterRef("pk"), id=user.id)
@@ -1789,10 +1729,13 @@ def testsolve_main(request: AuthenticatedHttpRequest) -> HttpResponse:
         for puzzle in testsolvable_puzzles
     ]
 
-    is_testsolve_coordinator = request.user.is_testsolve_coordinator
+    can_manage_testsolves = request.user.has_perm(
+        "puzzle_editing.change_testsolvesession"
+    )
 
     all_current_sessions = None
-    if is_testsolve_coordinator:
+    puzzles_with_closed_testsolving = None
+    if can_manage_testsolves:
         all_current_sessions = (
             TestsolveSession.objects.filter(
                 Exists(
@@ -1804,16 +1747,100 @@ def testsolve_main(request: AuthenticatedHttpRequest) -> HttpResponse:
             .order_by("started")
             .prefetch_related("participations")
         )
+        puzzles_with_closed_testsolving = (
+            Puzzle.objects.filter(
+                logistics_closed_testsolving=True,
+                status=status.TESTSOLVING,
+            )
+            .order_by("priority")
+            .prefetch_related("authors", "editors", "tags")
+        )
 
     context = {
         "current_user_sessions": current_user_sessions,
         "joinable_sessions": joinable_sessions,
         "testsolvable": testsolvable,
-        "is_testsolve_coordinator": is_testsolve_coordinator,
+        "can_manage_testsolves": can_manage_testsolves,
         "all_current_sessions": all_current_sessions,
+        "puzzles_with_closed_testsolving": puzzles_with_closed_testsolving,
     }
 
     return render(request, "testsolve_main.html", context)
+
+
+@require_testsolving_enabled
+@require_POST
+@login_required
+def testsolve_start(request: AuthenticatedHttpRequest) -> HttpResponse:
+    puzzle_id = request.POST["puzzle"]
+    puzzle = get_object_or_404(Puzzle, id=puzzle_id)
+
+    participants: set[str | int] = set(request.POST.getlist("participants"))
+    if not participants:
+        participants = {request.user.id}
+    if (
+        not request.user.has_perm("puzzle_editing.change_testsolvesession")
+        and request.user.id not in participants
+    ):
+        raise PermissionDenied
+
+    session = TestsolveSession(puzzle=puzzle, joinable=(len(participants) <= 1))
+    session.save()
+
+    for p in participants:
+        TestsolveParticipation(session=session, user_id=p).save()
+
+    if (c := discord.get_client()) and session.discord_thread_id:
+        puzzle_content_url = request.build_absolute_uri(
+            urls.reverse("testsolve_puzzle_content", kwargs={"id": session.id})
+        )
+        sheet_url = request.build_absolute_uri(
+            urls.reverse("testsolve_sheet", kwargs={"id": session.id})
+        )
+        author_tags = discord.mention_users(puzzle.authors.all(), False)
+        editor_tags = discord.mention_users(puzzle.editors.all(), False)
+        message = c.post_message(
+            session.discord_thread_id,
+            {
+                "embeds": [
+                    {
+                        "type": "rich",
+                        "description": (
+                            f"New testsolve session created for {puzzle.name}.\n"
+                            "\n"
+                            f"We've created a few documents for you to work with:\n"
+                            f"* Here is a **read-only copy** of the puzzle for you to testsolve: [Google Doc]({puzzle_content_url})\n"
+                            f"* Here is a Google Sheet to work in: [Google Sheet]({sheet_url})"
+                            "\n"
+                            "We've also included the authors and editors so that they can monitor the thread and intervene if necessary. Good luck!"
+                        ),
+                        "fields": [
+                            {
+                                "name": "Authors",
+                                "value": ", ".join(author_tags),
+                            },
+                            {
+                                "name": "Editors",
+                                "value": ", ".join(editor_tags),
+                            },
+                        ],
+                    }
+                ]
+            },
+        )
+        c.pin_message(session.discord_thread_id, message["id"])
+
+    add_comment(
+        request=request,
+        puzzle=puzzle,
+        author=request.user,
+        is_system=True,
+        send_email=False,
+        content=f"Created testsolve session #{session.id}",
+        testsolve_session=session,
+    )
+
+    return redirect(urls.reverse("testsolve_one", args=[session.id]))
 
 
 @login_required
@@ -1836,9 +1863,12 @@ def testsolve_finder(request: AuthenticatedHttpRequest) -> HttpResponse:
     solvers = request.GET.getlist("solvers")
     users = User.objects.filter(pk__in=solvers) if solvers else None
     if users:
-        testsolveable_puzzles = list(
-            Puzzle.objects.filter(status=status.TESTSOLVING).order_by("priority")
+        puzzle_queryset = Puzzle.objects.filter(status=status.TESTSOLVING).order_by(
+            "priority"
         )
+        if not request.user.has_perm("puzzle_editing.change_testsolvesession"):
+            puzzle_queryset = puzzle_queryset.filter(logistics_closed_testsolving=False)
+        testsolveable_puzzles = list(puzzle_queryset)
         puzzle_data: list[PuzzleData] = []
         for puzzle in testsolveable_puzzles:
             puzzle_data.append(
