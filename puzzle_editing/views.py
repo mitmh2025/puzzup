@@ -1,3 +1,4 @@
+import collections
 import contextlib
 import csv
 import datetime
@@ -1863,8 +1864,10 @@ def testsolve_finder(request: AuthenticatedHttpRequest) -> HttpResponse:
     solvers = request.GET.getlist("solvers")
     users = User.objects.filter(pk__in=solvers) if solvers else None
     if users:
-        puzzle_queryset = Puzzle.objects.filter(status=status.TESTSOLVING).order_by(
-            "priority"
+        puzzle_queryset = (
+            Puzzle.objects.filter(status=status.TESTSOLVING)
+            .order_by("priority")
+            .prefetch_related("tags", "authors", "editors")
         )
         if not request.user.has_perm("puzzle_editing.change_testsolvesession"):
             puzzle_queryset = puzzle_queryset.filter(logistics_closed_testsolving=False)
@@ -1874,16 +1877,28 @@ def testsolve_finder(request: AuthenticatedHttpRequest) -> HttpResponse:
             puzzle_data.append(
                 PuzzleData(puzzle=puzzle, user_data=[], unspoiled_count=0)
             )
+        authors = collections.defaultdict(set)
+        for pid, uid in User.authored_puzzles.through.objects.filter(
+            user_id__in=solvers
+        ).values_list("puzzle_id", "user_id"):
+            authors[pid].add(uid)
+        editors = collections.defaultdict(set)
+        for pid, uid in User.editing_puzzles.through.objects.filter(
+            user_id__in=solvers
+        ).values_list("puzzle_id", "user_id"):
+            editors[pid].add(uid)
+        spoiled = collections.defaultdict(set)
+        for pid, uid in User.spoiled_puzzles.through.objects.filter(
+            user_id__in=solvers
+        ).values_list("puzzle_id", "user_id"):
+            spoiled[pid].add(uid)
         for user in users:
-            authored_ids = set(user.authored_puzzles.values_list("id", flat=True))
-            editor_ids = set(user.editing_puzzles.values_list("id", flat=True))
-            spoiled_ids = set(user.spoiled_puzzles.values_list("id", flat=True))
             for pdata in puzzle_data:
-                if pdata.puzzle.id in authored_ids:
+                if pdata.puzzle.id in authors[user.id]:
                     pdata.user_data.append("📝 Author")
-                elif pdata.puzzle.id in editor_ids:
+                elif pdata.puzzle.id in editors[user.id]:
                     pdata.user_data.append("💬 Editor")
-                elif pdata.puzzle.id in spoiled_ids:
+                elif pdata.puzzle.id in spoiled[user.id]:
                     pdata.user_data.append("👀 Spoiled")
                 else:
                     pdata.user_data.append("❓ Unspoiled")
