@@ -201,6 +201,10 @@ class User(AbstractUser):
     def get_testsolve_coordinators():
         return User.objects.filter(groups__name="Testsolve Coordinators")
 
+    @staticmethod
+    def get_eics():
+        return User.objects.filter(groups__name="EIC")
+
     def __str__(self):
         return (
             self.display_name

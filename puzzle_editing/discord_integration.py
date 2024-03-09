@@ -196,6 +196,12 @@ def _build_puzzle_channel_updates(
         must_see.add(settings.DISCORD_CLIENT_ID)
     # anyone who is spoiled CAN see the channel
     can_see = {s.discord_user_id for s in puzzle.spoiled.all() if s.discord_user_id}
+    for uid in (
+        m.User.get_eics()
+        .exclude(discord_user_id="")
+        .values_list("discord_user_id", flat=True)
+    ):
+        can_see.add(uid)
     # Loop over all users who must see and all who currently have overwrites;
     # add VIEW_CHANNEL to those who must have it and remove VIEW_CHANNEL from
     # those who can't have it. If someone is a spoiled user but not an author
