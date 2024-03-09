@@ -888,7 +888,10 @@ def send_status_notifications(puzzle: Puzzle) -> None:
         message += f" on moving {puzzle.codename} to {status_display}{f" {status_emoji}" if status_emoji else ""}!"
 
         if puzzle.status == status.TESTSOLVING:
-            message += f" Testsolvers, get your pencils 📝 ready, find a group, and [get to testsolving]({settings.PUZZUP_URL}{urls.reverse("testsolve_main")})!"
+            if puzzle.logistics_closed_testsolving:
+                message += " (Testsolvers, don't get too excited — our testsolve coordinators are going to do some manual coordinating for this particular puzzle 🤫. But hold tight; more puzzles are coming your way soon!)"
+            else:
+                message += f" Testsolvers, get your pencils ✏️ ready, find a group, and [get to testsolving]({settings.PUZZUP_URL}{urls.reverse("testsolve_main")})!"
         if puzzle.status in (
             status.NEEDS_SOLUTION,
             status.AWAITING_ANSWER_FLEXIBLE,
