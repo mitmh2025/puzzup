@@ -880,12 +880,10 @@ def send_status_notifications(puzzle: Puzzle) -> None:
         and (c := discord.get_client())
     ):
         message = random.choice(DISCORD_NOTICE_CELEBRATION_SENTENCE)
-        message += f" Congrats to authors {", ".join(discord.mention_users(puzzle.authors.all()))}"
+        message += f" Congrats to author(s) {", ".join(discord.mention_users(puzzle.authors.all()))}"
         if puzzle.editors.exists():
-            message += (
-                f" and editors {', '.join(discord.mention_users(puzzle.editors.all()))}"
-            )
-        message += f" on moving {puzzle.codename} to {status_display}{f" {status_emoji}" if status_emoji else ""}!"
+            message += f" and editor(s) {', '.join(discord.mention_users(puzzle.editors.all()))}"
+        message += f" on moving{" (metapuzzle)" if puzzle.is_meta else ""} {puzzle.codename} to {status_display}{f" {status_emoji}" if status_emoji else ""}!"
 
         if puzzle.status == status.TESTSOLVING:
             if puzzle.logistics_closed_testsolving:
