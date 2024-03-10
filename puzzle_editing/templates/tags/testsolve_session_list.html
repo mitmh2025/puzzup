@@ -42,7 +42,7 @@
                             <td class="small-md">{{ puzzle.summary|markdown }}</td>
                             <td sorttable_customkey="{{ puzzle.priority }}">{{ puzzle.get_priority_display }}</td>
                         {% endif %}
-                        <td>{{ session.participants_html }}</td>
+                        <td>{{ session.participants|length }} participant(s): {% user_list session.participants linkify=True %}</td>
                         {% if coordinator %}
                             <td>{{ session.get_done_participants_display }}</td>
                         {% endif %}

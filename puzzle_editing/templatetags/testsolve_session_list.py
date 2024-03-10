@@ -56,7 +56,7 @@ def testsolve_session_list(
     sessions = list(sessions)
 
     for session in sessions:
-        session.opt_participants = []
+        session.participants = []
 
     id_to_index = {session.id: i for i, session in enumerate(sessions)}
 
@@ -70,20 +70,7 @@ def testsolve_session_list(
             "postprodder",
             "factchecker",
         ]:
-            session.opt_participants.append(
-                (testsolve.user.username, testsolve.user.credits_name)
-            )
-
-    for session in sessions:
-        session.participants_html = (
-            str(len(session.opt_participants))
-            + (
-                " participant: "
-                if len(session.opt_participants) == 1
-                else " participants: "
-            )
-            + ", ".join([u[1] if u[1] else u[0] for u in session.opt_participants])
-        )
+            session.participants.append(testsolve.user)
 
     return {
         "perms": context["perms"],
