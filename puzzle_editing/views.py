@@ -1788,9 +1788,6 @@ def testsolve_start(request: AuthenticatedHttpRequest) -> HttpResponse:
     session = TestsolveSession(puzzle=puzzle, joinable=(len(participants) <= 1))
     session.save()
 
-    for p in participants:
-        TestsolveParticipation(session=session, user_id=p).save()
-
     if (c := discord.get_client()) and session.discord_thread_id:
         puzzle_content_url = request.build_absolute_uri(
             urls.reverse("testsolve_puzzle_content", kwargs={"id": session.id})
@@ -1830,6 +1827,9 @@ def testsolve_start(request: AuthenticatedHttpRequest) -> HttpResponse:
             },
         )
         c.pin_message(session.discord_thread_id, message["id"])
+
+    for p in participants:
+        TestsolveParticipation(session=session, user_id=p).save()
 
     add_comment(
         request=request,
