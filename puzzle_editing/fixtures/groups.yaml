@@ -50,6 +50,9 @@
     - - change_status_puzzle
       - puzzle_editing
       - puzzle
+    - - unspoil_puzzle
+      - puzzle_editing
+      - puzzle
 - model: auth.group
   fields:
     name: Art Lead

@@ -2235,6 +2235,19 @@ def testsolve_escape(request: AuthenticatedHttpRequest, id: int) -> HttpResponse
         user=request.user,
     )
     participation.delete()
+    if (
+        (c := discord.get_client())
+        and participation.session.discord_thread_id
+        and request.user.discord_user_id
+    ):
+        try:
+            c.remove_member_from_thread(
+                participation.session.discord_thread_id, request.user.discord_user_id
+            )
+        except HTTPError as e:
+            if e.response.status_code != 404:
+                # The user isn't in the thread, so we don't need to remove them
+                raise
     return redirect(urls.reverse("testsolve_main"))
 
 
