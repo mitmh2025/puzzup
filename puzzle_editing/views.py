@@ -1785,7 +1785,8 @@ def testsolve_start(request: AuthenticatedHttpRequest) -> HttpResponse:
     ):
         raise PermissionDenied
 
-    session = TestsolveSession(puzzle=puzzle, joinable=(len(participants) <= 1))
+    is_joinable = len(participants) == 1 and request.user.id in participants
+    session = TestsolveSession(puzzle=puzzle, joinable=is_joinable)
     session.save()
 
     if (c := discord.get_client()) and session.discord_thread_id:
