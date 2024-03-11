@@ -4,6 +4,7 @@ from typing import Any
 from urllib.parse import urlencode
 
 import requests
+from django.utils.text import Truncator
 
 logger = logging.getLogger(__name__)
 
@@ -137,7 +138,7 @@ class Client:
         """
         if isinstance(payload, str):
             payload = {"content": payload}
-        payload["content"] = payload.get("content", "")[:2000]
+        payload["content"] = Truncator(payload.get("content", "")).chars(2000)
         pth = f"/channels/{channel_id}/messages"
         return self._request("post", pth, payload)
 
