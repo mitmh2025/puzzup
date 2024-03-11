@@ -1503,6 +1503,7 @@ class TestsolveParticipation(models.Model):
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="testsolve_participations"
     )
+    in_discord_thread = models.BooleanField(default=False)
     started = models.DateTimeField(auto_now_add=True)
     ended = models.DateTimeField(null=True, blank=True)
     fun_rating = models.IntegerField(null=True, blank=True)
@@ -1623,7 +1624,7 @@ class TestsolveParticipation(models.Model):
 def add_testsolver_to_thread(
     sender, instance: TestsolveParticipation, created: bool, **kwargs
 ):
-    if not created:
+    if instance.in_discord_thread:
         return
     c = discord.get_client()
     if c:
@@ -1632,6 +1633,8 @@ def add_testsolver_to_thread(
             c.add_member_to_thread(
                 session.discord_thread_id, instance.user.discord_user_id
             )
+            instance.in_discord_thread = True
+            instance.save()
 
 
 class TestsolveGuess(models.Model):

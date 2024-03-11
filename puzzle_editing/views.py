@@ -1776,16 +1776,18 @@ def testsolve_start(request: AuthenticatedHttpRequest) -> HttpResponse:
     puzzle_id = request.POST["puzzle"]
     puzzle = get_object_or_404(Puzzle, id=puzzle_id)
 
-    participants: set[str | int] = set(request.POST.getlist("participants"))
+    participants: set[User] = set(
+        User.objects.filter(pk__in=request.POST.getlist("participants"))
+    )
     if not participants:
-        participants = {request.user.id}
+        participants = {request.user}
     if (
         not request.user.has_perm("puzzle_editing.change_testsolvesession")
-        and request.user.id not in participants
+        and request.user not in participants
     ):
         raise PermissionDenied
 
-    is_joinable = len(participants) == 1 and request.user.id in participants
+    is_joinable = len(participants) == 1 and request.user in participants
     session = TestsolveSession(puzzle=puzzle, joinable=is_joinable)
     session.save()
 
@@ -1829,8 +1831,13 @@ def testsolve_start(request: AuthenticatedHttpRequest) -> HttpResponse:
         )
         c.pin_message(session.discord_thread_id, message["id"])
 
+        c.post_message(
+            session.discord_thread_id,
+            f"Adding testsolvers: {", ".join(discord.mention_users(participants))}",
+        )
+
     for p in participants:
-        TestsolveParticipation(session=session, user_id=p).save()
+        TestsolveParticipation(session=session, user=p, in_discord_thread=True).save()
 
     add_comment(
         request=request,
@@ -1964,11 +1971,18 @@ def testsolve_participants(request: AuthenticatedHttpRequest, id: int) -> HttpRe
         new_testers = User.objects.filter(
             pk__in=request.POST.getlist("add_testsolvers")
         )
+        if (c := discord.get_client()) and session.discord_thread_id:
+            c.post_message(
+                session.discord_thread_id,
+                f"Adding testsolvers: {", ".join(discord.mention_users(new_testers))}",
+            )
         for new_tester in new_testers:
             if not TestsolveParticipation.objects.filter(
                 session=session, user=new_tester
             ).exists():
-                TestsolveParticipation(session=session, user=new_tester).save()
+                TestsolveParticipation(
+                    session=session, user=new_tester, in_discord_thread=True
+                ).save()
 
     current_testers = User.objects.exclude(
         pk__in=[user.id for user in session.participants()]
