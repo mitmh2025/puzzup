@@ -482,7 +482,7 @@ def safe_post_message(
     payload: MsgPayload,
 ) -> JsonDict | None:
     """Post a message to a channel"""
-    if c is None or channel_id is None:
+    if c is None or not channel_id:
         return None
     try:
         return c.post_message(channel_id, payload)

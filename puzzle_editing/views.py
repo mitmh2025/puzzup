@@ -2165,6 +2165,13 @@ def testsolve_one(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
             c = discord.get_client()
             discord.safe_post_message(
                 c,
+                session.puzzle.discord_channel_id,
+                f"{", ".join(discord.mention_users([*session.puzzle.authors.all(), *session.puzzle.editors.all()]))} "
+                "🆘 **Help Requested** 🆘: Testsolvers are stuck and have asked for help. Whoever is first available should join their "
+                f"[testsolve session]({request.build_absolute_uri(session.get_absolute_url())}) and try to get them unstuck",
+            )
+            discord.safe_post_message(
+                c,
                 session.discord_thread_id,
                 "Don't worry - help is on the way! You have successfully requested for help. The Testsolve Coordinators will reach out when they've found someone.",
             )
