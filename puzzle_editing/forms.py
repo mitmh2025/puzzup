@@ -978,7 +978,9 @@ class TestsolveParticipantPicker(forms.Form):
 class UploadField(forms.FileField):
     def validate(self, value):
         with zipfile.ZipFile(value) as zf:
-            common_prefix = os.path.commonpath(zf.namelist())
+            common_prefix = os.path.commonpath(
+                [p for p in zf.namelist() if not p.startswith("__MACOSX/")]
+            )
             if not (zipfile.Path(zf, common_prefix) / "index.html").exists():
                 msg = "The ZIP file must contain an index.html file."
                 raise ValidationError(msg)
