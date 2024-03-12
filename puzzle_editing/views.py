@@ -3342,7 +3342,10 @@ def upload(request: AuthenticatedHttpRequest) -> HttpResponse:
             upload_basename = Path(f.name).stem if f.name else "unknown"
             upload_prefix = f"{upload_basename}-{upload_nonce}-{int(time.time())}"
             with zipfile.ZipFile(f) as zf:
-                zip_prefix = os.path.commonpath(zf.namelist())
+                zip_prefix = os.path.commonpath(
+                    [p for p in zf.namelist() if not p.startswith("__MACOSX/")]
+                )
+
                 for zi in zf.infolist():
                     if zi.is_dir():
                         continue
@@ -3350,6 +3353,8 @@ def upload(request: AuthenticatedHttpRequest) -> HttpResponse:
                     mime, encoding = mimetypes.guess_type(zi.filename)
 
                     relative_path = os.path.relpath(zi.filename, zip_prefix)
+                    if relative_path.startswith(".."):
+                        continue
                     s3_key = f"{upload_prefix}/{relative_path}"
 
                     s3.upload_fileobj(
