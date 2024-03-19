@@ -542,9 +542,7 @@ def add_comment(
     comment.save()
 
     if testsolve_session:
-        subject = "New comment on {} (testsolve #{})".format(
-            puzzle.spoiler_free_title(), testsolve_session.id
-        )
+        subject = f"New comment on {puzzle.spoiler_free_title()} (testsolve #{testsolve_session.id})"
         emails = testsolve_session.get_emails(exclude_emails=(author.email,))
     else:
         subject = f"New comment on {puzzle.spoiler_free_title()}"

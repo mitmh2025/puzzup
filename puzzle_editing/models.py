@@ -1625,9 +1625,7 @@ class TestsolveParticipation(models.Model):
     )
 
     def __str__(self):
-        return "Testsolve participation: {} in Session #{}".format(
-            self.user.username, self.session.id
-        )
+        return f"Testsolve participation: {self.user.username} in Session #{self.session.id}"
 
 
 @receiver(post_save, sender=TestsolveParticipation)
@@ -1665,9 +1663,7 @@ class TestsolveGuess(models.Model):
 
     def __str__(self):
         correct_text = "Correct" if self.correct else "Incorrect"
-        return "{}: {} guess by {} in Session #{}".format(
-            self.guess, correct_text, self.user.username, self.session.id
-        )
+        return f"{self.guess}: {correct_text} guess by {self.user.username} in Session #{self.session.id}"
 
 
 def is_spoiled_on(user: User, puzzle: Puzzle) -> bool:
