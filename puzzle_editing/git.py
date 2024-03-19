@@ -75,11 +75,7 @@ class GitRepo:
             or len(self.repo.untracked_files) > 0
             or self.repo.head.reference.name != self.branch
         ):
-            msg = "Repository is in a broken state. [{} / {} / {}]".format(
-                self.repo.is_dirty(),
-                self.repo.untracked_files,
-                self.repo.head.reference.name,
-            )
+            msg = f"Repository is in a broken state. [{self.repo.is_dirty()} / {self.repo.untracked_files} / {self.repo.head.reference.name}]"
             raise CommandError(msg)
 
     @classmethod
