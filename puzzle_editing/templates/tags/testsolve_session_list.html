@@ -18,6 +18,7 @@
                 {% if coordinator %}
                     <th>Completions</th>
                 {% endif %}
+                <th>Time Elapsed</th>
                 {% if show_notes %}
                     <th>Notes</th>
                 {% endif %}
@@ -45,6 +46,11 @@
                         <td>{{ session.participants|length }} participant(s): {% user_list session.participants linkify=True %}</td>
                         {% if coordinator %}
                             <td>{{ session.get_done_participants_display }}</td>
+                        {% endif %}
+                        {% if session.is_expired %}
+                            <td style="background-color: lightsalmon;">{{ session.time_since_started }}</td>
+                        {% else %}
+                            <td>{{ session.time_since_started }}</td>
                         {% endif %}
                         {% if show_notes %}
                             <td class="small-md">{{ session.notes|markdown }}</td>

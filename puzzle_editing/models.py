@@ -1293,12 +1293,22 @@ class TestsolveSession(models.Model):
     def get_absolute_url(self):
         return urls.reverse("testsolve_one", kwargs={"id": self.id})
 
+    def get_time_since_started(self):
+        td = datetime.datetime.now(tz=datetime.UTC) - self.started
+        minutes = td.total_seconds() / 60.0
+        hours, minutes = divmod(minutes, 60.0)
+        days, hours = divmod(hours, 24.0)
+        return days, hours, minutes
+
+    @property
+    def is_expired(self):
+        days = self.get_time_since_started()[0]
+        return days >= 2
+
     @property
     def time_since_started(self):
-        td = datetime.datetime.now(tz=datetime.UTC) - self.started
-        minutes = td.seconds / 60
-        hours, minutes = divmod(minutes, 60)
-        days, hours = divmod(hours, 24)
+        days, hours, minutes = self.get_time_since_started()
+
         return " ".join(
             [
                 time
