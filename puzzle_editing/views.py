@@ -2247,7 +2247,6 @@ def testsolve_sheet(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
 
 
 @require_POST
-@permission_required("puzzle_editin.unspoil_puzzle", raise_exception=True)
 @require_testsolving_enabled
 def testsolve_escape(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
     participation = get_object_or_404(
