@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load user_list %}
+{% load markdown %}
+
+{% block bodyclass %}testsolving-session{% endblock %}
+{% block title %}Close Testsolving Session #{{ session.id }} for {{ session.puzzle }}{% endblock %}
+
+{% block main %}
+    <nav class="breadcrumb" aria-label="breadcrumbs">
+        <ul>
+            <li><a href="{% url 'testsolve_one' session.id %}">Back to testsolving session</a></li>
+        </ul>
+    </nav>
+    <h1>
+        Close testsolve session #{{ session.id }} for ({{ session.puzzle }}
+    </h1>
+
+    {% if session.ended %}
+        Testsolve session #{{ session.id }} for ({{ session.puzzle }} has already ended!
+    {% else %}
+        <p>*<em> required field</em></p>
+        <form class="testsolve-close-form" method="post">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            {% for field in form %}
+                <div class="columns {{ field.name }}">
+                    <div class="column is-one-quarter">
+                    </div>
+                    <div class="column form-column {{ field.field.required|yesno:"is-required," }}">
+                        <label class="label">
+                            {% if field.help_text %}
+                                {{ field.help_text|safe|markdown }}
+                            {% else %}
+                                <p><strong>{{ field.label }}</strong></p>
+                            {% endif %}
+                        </label>
+                        <div class="control">
+                            {{ field }}
+                            {{ field.errors }}
+                        </div>
+                    </div>
+                    <div class="column is-one-quarter">
+                    </div>
+                </div>
+            {% endfor %}
+            <div class="columns">
+                <div class="column is-one-quarter"></div>
+                <div class="column">
+                    <input class="button is-primary" type="submit" value="Submit">
+                </div>
+            </div>
+        </form>
+    {% endif %}
+{% endblock %}

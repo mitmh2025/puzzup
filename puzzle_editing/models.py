@@ -1287,6 +1287,9 @@ class TestsolveSession(models.Model):
         blank=True,
     )
 
+    class Meta:
+        permissions = (("close_session", "Can close a session at any point"),)
+
     def __str__(self):
         return f"Testsolve session #{self.id} on {self.puzzle}"
 
@@ -1320,6 +1323,10 @@ class TestsolveSession(models.Model):
                 if time
             ]
         )
+
+    @property
+    def ended(self):
+        return len(self.active_participants()) == 0
 
     def participants(self) -> Iterable[User]:
         for p in self.participations.select_related("user").all():

@@ -53,6 +53,9 @@
     - - unspoil_puzzle
       - puzzle_editing
       - puzzle
+    - - close_session
+      - puzzle_editing
+      - testsolvesession
 - model: auth.group
   fields:
     name: Art Lead
