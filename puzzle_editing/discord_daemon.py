@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import logging
 import sys
@@ -165,7 +167,7 @@ async def asyncio_main() -> None:
         await client.start(settings.DISCORD_BOT_TOKEN)
 
 
-def twisted_errback(e: "Failure") -> None:
+def twisted_errback(e: Failure) -> None:
     sys.excepthook(e.type, e.value, e.tb)
 
 

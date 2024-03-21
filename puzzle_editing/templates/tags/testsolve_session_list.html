@@ -29,6 +29,9 @@
                 {% if show_leave %}
                     <th></th>
                 {% endif %}
+                {% if coordinator %}
+                    <th>Close Session</th>
+                {% endif %}
             </tr>
             {% for session in sessions %}
                 {% with session.puzzle as puzzle %}
@@ -61,6 +64,9 @@
                         {% endif %}
                         {% if show_leave %}
                             <td><a href="{% url 'testsolve_finish' session.id %}">Finish{% if perms.puzzle_editing.unspoil_puzzle %} or Leave{% endif %}</a></td>
+                        {% endif %}
+                        {% if coordinator %}
+                            <td><a href="{% url 'testsolve_close' session.id %}">Close Session</a></td>
                         {% endif %}
                     </tr>
                 {% endwith %}

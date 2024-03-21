@@ -820,6 +820,22 @@ class GuessForm(forms.Form):
     guess = forms.CharField()
 
 
+class TestsolveCloseForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields["notes"].required = False
+
+    class Meta:
+        model = TestsolveSession
+        fields = ("notes",)
+        widgets = MappingProxyType(
+            {
+                "notes": MarkdownTextarea(attrs={"rows": 5}),
+            }
+        )
+
+
 class TestsolveParticipationForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

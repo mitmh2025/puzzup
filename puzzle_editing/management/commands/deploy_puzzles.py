@@ -23,9 +23,7 @@ class Command(BaseCommand):
             or len(repo.untracked_files) > 0
             or repo.head.reference.name not in ["master", "main"]
         ):
-            msg = "Repository is in a broken state. [{} / {} / {}]".format(
-                repo.is_dirty(), repo.untracked_files, repo.head.reference.name
-            )
+            msg = f"Repository is in a broken state. [{repo.is_dirty()} / {repo.untracked_files} / {repo.head.reference.name}]"
             raise CommandError(msg)
 
         origin = repo.remotes.origin

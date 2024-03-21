@@ -78,6 +78,7 @@ from puzzle_editing.forms import (
     SupportRequestAuthorNotesForm,
     SupportRequestStatusForm,
     SupportRequestTeamNotesForm,
+    TestsolveCloseForm,
     TestsolveFinderForm,
     TestsolveParticipantPicker,
     TestsolveParticipationForm,
@@ -542,9 +543,7 @@ def add_comment(
     comment.save()
 
     if testsolve_session:
-        subject = "New comment on {} (testsolve #{})".format(
-            puzzle.spoiler_free_title(), testsolve_session.id
-        )
+        subject = f"New comment on {puzzle.spoiler_free_title()} (testsolve #{testsolve_session.id})"
         emails = testsolve_session.get_emails(exclude_emails=(author.email,))
     else:
         subject = f"New comment on {puzzle.spoiler_free_title()}"
@@ -2427,6 +2426,71 @@ def testsolve_finish(request: AuthenticatedHttpRequest, id: int) -> HttpResponse
     }
 
     return render(request, "testsolve_finish.html", context)
+
+
+@login_required
+@require_testsolving_enabled
+@permission_required("puzzle_editing.close_session", raise_exception=True)
+def testsolve_close(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
+    session = get_object_or_404(TestsolveSession, id=id)
+    puzzle = session.puzzle
+    user = request.user
+
+    if request.method == "POST" and session:
+        completed_form = TestsolveCloseForm(
+            request.POST,
+            instance=session,
+        )
+        if completed_form.is_valid():
+            # Post a comment and send to discord when closing
+            if not session.ended:
+                comment_content = "\n\n".join(
+                    filter(
+                        None,
+                        [
+                            "Closed testsolve:",
+                            completed_form.cleaned_data["notes"],
+                        ],
+                    )
+                )
+                add_comment(
+                    request=request,
+                    puzzle=puzzle,
+                    author=user,
+                    testsolve_session=session,
+                    is_system=False,
+                    is_feedback=True,
+                    send_email=False,
+                    send_discord=True,
+                    content=comment_content,
+                    action_text="closed a testsolve with comment",
+                )
+
+                # End all participations in session
+                for p in session.participations.all():
+                    p.ended = datetime.datetime.now()
+                    p.save()
+
+                session.joinable = False
+                session.save()
+
+            return redirect(urls.reverse("testsolve_one", args=[id]))
+        else:
+            context = {
+                "session": session,
+                "form": completed_form,
+            }
+
+            return render(request, "testsolve_close.html", context)
+
+    form = TestsolveCloseForm(instance=session)
+
+    context = {
+        "session": session,
+        "form": form,
+    }
+
+    return render(request, "testsolve_close.html", context)
 
 
 @login_required
