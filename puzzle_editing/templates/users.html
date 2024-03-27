@@ -8,14 +8,14 @@
 
 {% block main %}
     <h1>Users</h1>
-    <p>👷 Lead&emsp;🟢 Active&emsp;🛑 Deferred&emsp;💀 Dead&emsp;🏁 Done</p>
+    <p>👷 Lead&emsp;🟢 Active&emsp;👒 In Development&emsp;✏️  Writing&emsp;🤷🏽‍♀️  Awaiting Answer&emsp;🛑 Deferred&emsp;💀 Dead&emsp;🏁 Done</p>
     <div class="box">
         <div class="table-container">
             <table class="table sortable user-table">
                 <thead>
                     <tr>
                         <th colspan="2">
-                            <th colspan="5">Authored</th>
+                            <th colspan="8">Authored</th>
                             <th colspan="4">Editing</th>
                             <th colspan="2">Postprod</th>
                             <th colspan="4">Factcheck</th>
@@ -28,6 +28,10 @@
 
                             <th class="left-border is-size-7">👷</th>
                             <th class="is-size-7 deemph">🟢</th>
+                            <th class="is-size-7 deemph">👒</th>
+                            <th class="is-size-7 deemph">✏️</th>
+                            <th class="is-size-7 deemph">🤷🏽‍♀️</th>
+
                             <th class="is-size-7 deemph">🛑</th>
                             <th class="is-size-7 deemph">💀</th>
                             <th class="is-size-7 deemph">🏁</th>
@@ -68,6 +72,9 @@
                                     <td>{{ user.hat }}</td>
                                     <td class="left-border" data-tippy-content="Puzzles lead authored by user">{{ user.authored_lead }}</td>
                                     <td class="deemph" data-tippy-content="Active puzzles authored by user">{{ user.authored_active }}</td>
+                                    <td class="deemph" data-tippy-content="In development puzzles authored by user">{{ user.authored_in_development }}</td>
+                                    <td class="deemph" data-tippy-content="Writing-stage puzzles authored by user">{{ user.authored_writing }}</td>
+                                    <td class="deemph" data-tippy-content="Awaiting-answer-stage puzzles authored by user">{{ user.authored_awaiting_answer }}</td>
                                     <td class="deemph" data-tippy-content="Deferred puzzles authored by user">{{ user.authored_deferred }}</td>
                                     <td class="deemph" data-tippy-content="Dead puzzles authored by user">{{ user.authored_dead }}</td>
                                     <td class="deemph" data-tippy-content="Done puzzles authored by user">{{ user.authored_done }}</td>

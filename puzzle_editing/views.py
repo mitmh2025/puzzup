@@ -3275,6 +3275,10 @@ def users(request):
         status.DEAD: "dead",
         status.DEFERRED: "deferred",
         status.DONE: "done",
+        status.IN_DEVELOPMENT: "in_development",
+        status.WRITING: "writing",
+        status.WRITING_FLEXIBLE: "writing",
+        status.AWAITING_ANSWER: "awaiting_answer",
     }
     for key in ("authored", "editing", "postprodding", "factchecking"):
         for st in statuses.values():
