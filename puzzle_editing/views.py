@@ -575,7 +575,7 @@ def add_comment(
 
         message = f"{name} ({action_text}):\n{content}"
         if len(message) >= 2000:  # discord character limit
-            url = settings.PUZZUP_URL + "/" + comment.get_absolute_url()
+            url = settings.PUZZUP_URL + comment.get_absolute_url()
             url_str = f"... (full comment at {url})"
             message = message[: 2000 - len(url_str)]
             message += url_str
