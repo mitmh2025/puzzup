@@ -572,9 +572,15 @@ def add_comment(
         name = author.display_name or author.credits_name
         if author.discord_user_id:
             name = discord.mention_user(author.discord_user_id)
-        discord.safe_post_message(
-            c, puzzle.discord_channel_id, f"{name} ({action_text}):\n{content}"
-        )
+
+        message = f"{name} ({action_text}):\n{content}"
+        if len(message) >= 2000:  # discord character limit
+            url = settings.PUZZUP_URL + comment.get_absolute_url()
+            url_str = f"... (full comment at {url})"
+            message = message[: 2000 - len(url_str)]
+            message += url_str
+
+        discord.safe_post_message(c, puzzle.discord_channel_id, message)
 
 
 @permission_required("puzzle_editing.list_puzzle", raise_exception=True)
