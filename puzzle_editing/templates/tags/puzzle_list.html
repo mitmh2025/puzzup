@@ -18,9 +18,12 @@
         for="hide-past-solution-{{ random_id }}">Hide puzzles &ge; Awaiting Solution Approval</label>
     <input id="show-only-answer-{{ random_id }}" type="checkbox" class="show-only-answer"> <label
         for="show-only-answer-{{ random_id }}">Show only puzzles with answers</label>
+    {% if show_copy_to_clipboard %}
+        <button class="copy-to-clipboard" data-clipboard-target="#puzzle-list-{{ random_id }}">Copy to clipboard</button>
+    {% endif %}
 
     <div class='table-container'>
-        <table class="table is-striped classic sortable">
+        <table class="table is-striped classic sortable" id="puzzle-list-{{ random_id }}">
             <tr align="left">
                 {% if show_emoji %}
                     <th>🤔</th>

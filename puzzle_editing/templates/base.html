@@ -341,6 +341,18 @@
       }
 
       tippy('[data-tippy-content]');
+
+      document.querySelectorAll('.copy-to-clipboard').forEach((node) => {
+        node.addEventListener('click', () => {
+          const target = document.querySelector(node.dataset.clipboardTarget);
+          const range = document.createRange();
+          range.selectNode(target);
+          window.getSelection().removeAllRanges();
+          window.getSelection().addRange(range);
+          document.execCommand('copy');
+          window.getSelection().removeAllRanges();
+        });
+      });
     </script>
     <script src="{% static 'sorttable.js' %}"></script>
     {% block extrajs %}{% endblock %}
