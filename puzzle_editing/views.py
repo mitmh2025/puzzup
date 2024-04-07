@@ -2572,7 +2572,7 @@ def factcheck(request: AuthenticatedHttpRequest) -> HttpResponse:
 
 
 @login_required
-@group_required("EIC", "Editor", "Art")
+@group_required("EIC", "Art")
 def flavor(request: AuthenticatedHttpRequest) -> HttpResponse:
     needs_flavor = Puzzle.objects.filter(
         flavor="", flavor_approved_time__isnull=True
