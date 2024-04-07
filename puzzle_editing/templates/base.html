@@ -110,7 +110,7 @@
                 {% endif %}
                 <hr class="navbar-divider">
                 {% nav_link current_path 'users' 'Users' %}
-                {% if request.user.is_superuser or request.user|has_group:"Art" or request.user|has_group:"Editor" or request.user|has_group:"EIC" %}
+                {% if request.user.is_superuser or request.user|has_group:"Art" or request.user|has_group:"EIC" %}
                   {% nav_link current_path 'flavor' 'Flavor' %}
                 {% endif %}
                 {% nav_link current_path 'statistics' 'Statistics' %}
