@@ -2081,6 +2081,9 @@ def testsolve_one(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
                         session.discord_thread_id,
                         f":tada: Congratulations on solving this puzzle! :tada:\nTime since testsolve started: {session.time_since_started}",
                     )
+
+                if session.puzzle.status == status.TESTSOLVING:
+                    guess_comment += " Automatically moving puzzle to {status.get_display(status.WRITING)}."
             else:
                 # Guess might still be partially correct
                 for answer in session.puzzle.pseudo_answers.all():
@@ -2114,6 +2117,11 @@ def testsolve_one(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
                 send_email=False,
                 content=guess_comment,
             )
+
+            # Finally, if this was correct, change the puzzle status
+            if correct and session.puzzle.status == status.TESTSOLVING:
+                puzzle.status = status.WRITING
+                puzzle.save()
 
         elif "change_joinable" in request.POST:
             session.joinable = request.POST["change_joinable"] == "1"
@@ -2386,7 +2394,12 @@ def testsolve_finish(request: AuthenticatedHttpRequest, id: int) -> HttpResponse
             )
 
             # Post a comment and send to discord when first finished.
-            if not participation.ended:
+            first_finish = not participation.ended
+            participation.ended = datetime.datetime.now()
+            participation.save()
+
+            if first_finish:
+                change_status = session.ended and puzzle.status == status.TESTSOLVING
                 comment_content = "\n\n".join(
                     filter(
                         None,
@@ -2395,6 +2408,9 @@ def testsolve_finish(request: AuthenticatedHttpRequest, id: int) -> HttpResponse
                             completed_form.cleaned_data["general_feedback"],
                             completed_form.cleaned_data.get("misc_feedback"),
                             ratings_text,
+                            f"Automatically moving puzzle to {status.get_display(status.WRITING)}"
+                            if change_status
+                            else None,
                         ],
                     )
                 )
@@ -2410,9 +2426,10 @@ def testsolve_finish(request: AuthenticatedHttpRequest, id: int) -> HttpResponse
                     content=comment_content,
                     action_text="finished a testsolve with comment",
                 )
-            participation.ended = datetime.datetime.now()
-            participation.save()
 
+                if change_status:
+                    puzzle.status = status.WRITING
+                    puzzle.save()
             return redirect(urls.reverse("testsolve_one", args=[id]))
         else:
             context = {
@@ -2448,6 +2465,7 @@ def testsolve_close(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
             instance=session,
         )
         if completed_form.is_valid():
+            change_status = puzzle.status == status.TESTSOLVING
             # Post a comment and send to discord when closing
             if not session.ended:
                 comment_content = "\n\n".join(
@@ -2456,6 +2474,9 @@ def testsolve_close(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
                         [
                             "Closed testsolve:",
                             completed_form.cleaned_data["notes"],
+                            f"Automatically moving puzzle to {status.get_display(status.WRITING)}"
+                            if change_status
+                            else None,
                         ],
                     )
                 )
@@ -2476,6 +2497,10 @@ def testsolve_close(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
                 for p in session.participations.all():
                     p.ended = datetime.datetime.now()
                     p.save()
+
+                if change_status:
+                    puzzle.status = status.WRITING
+                    puzzle.save()
 
                 session.joinable = False
                 session.save()
