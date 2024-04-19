@@ -2083,7 +2083,7 @@ def testsolve_one(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
                     )
 
                 if session.puzzle.status == status.TESTSOLVING:
-                    guess_comment += " Automatically moving puzzle to {status.get_display(status.WRITING)}."
+                    guess_comment += f" Automatically moving puzzle to {status.get_display(status.WRITING)}."
             else:
                 # Guess might still be partially correct
                 for answer in session.puzzle.pseudo_answers.all():
