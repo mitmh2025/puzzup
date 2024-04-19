@@ -1807,32 +1807,17 @@ def testsolve_start(request: AuthenticatedHttpRequest) -> HttpResponse:
         editor_tags = discord.mention_users(puzzle.editors.all(), False)
         message = c.post_message(
             session.discord_thread_id,
-            {
-                "embeds": [
-                    {
-                        "type": "rich",
-                        "description": (
-                            f"New testsolve session created for {puzzle.name}.\n"
-                            "\n"
-                            f"We've created a few documents for you to work with:\n"
-                            f"* Here is a **read-only copy** of the puzzle for you to testsolve: [Google Doc]({puzzle_content_url})\n"
-                            f"* Here is a Google Sheet to work in: [Google Sheet]({sheet_url})"
-                            "\n"
-                            "We've also included the authors and editors so that they can monitor the thread and intervene if necessary. Good luck!"
-                        ),
-                        "fields": [
-                            {
-                                "name": "Authors",
-                                "value": ", ".join(author_tags),
-                            },
-                            {
-                                "name": "Editors",
-                                "value": ", ".join(editor_tags),
-                            },
-                        ],
-                    }
-                ]
-            },
+            (
+                f"New testsolve session created for {puzzle.name}.\n"
+                "\n"
+                f"We've created a few documents for you to work with:\n"
+                f"* Here is a **read-only copy** of the puzzle for you to testsolve: [Google Doc]({puzzle_content_url})\n"
+                f"* Here is a Google Sheet to work in: [Google Sheet]({sheet_url})\n"
+                "\n"
+                "We've also included the authors and editors so that they can monitor the thread and intervene if necessary. Good luck!\n"
+                f"Authors: {', '.join(author_tags)}\n"
+                f"Editors: {', '.join(editor_tags)}"
+            ),
         )
         c.pin_message(session.discord_thread_id, message["id"])
 
@@ -2083,7 +2068,7 @@ def testsolve_one(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
                     )
 
                 if session.puzzle.status == status.TESTSOLVING:
-                    guess_comment += " Automatically moving puzzle to {status.get_display(status.WRITING)}."
+                    guess_comment += f" Automatically moving puzzle to {status.get_display(status.WRITING)}."
             else:
                 # Guess might still be partially correct
                 for answer in session.puzzle.pseudo_answers.all():
