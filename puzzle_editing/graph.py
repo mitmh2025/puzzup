@@ -6,6 +6,7 @@ from io import BytesIO
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
+from django.conf import settings
 
 from puzzle_editing import status
 from puzzle_editing.models import PuzzleComment
@@ -79,7 +80,18 @@ def curr_puzzle_graph_b64(time: str, target_count, width: int = 20, height: int 
     col = (colormap[::2] + colormap[1::2])[: len(status.STATUSES) - len(exclude)]
     ax.stackplot(np.array(x), np.transpose(y), labels=labels, colors=col[-1::-1])
     if target_count is not None:
-        ax.plot(np.array(x), [target_count for i in x], color=(0, 0, 0))
+        if time not in timetypes:
+            plt.xlim(right=settings.HUNT_TIME)
+            ax.plot(
+                np.array([x[-1], settings.HUNT_TIME]),
+                np.array([sum(y[-1]), target_count]),
+                "r--",
+            )
+        ax.plot(
+            np.array(plt.xlim()),
+            np.array([target_count, target_count]),
+            color=(0, 0, 0),
+        )
     handles, plabels = ax.get_legend_handles_labels()
     box = ax.get_position()
     ax.set_position((box.x0, box.y0, box.width * 0.8, box.height))
