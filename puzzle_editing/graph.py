@@ -35,13 +35,16 @@ timetypes = {
 }
 
 
-exclude = [
+exclude = {
     status.INITIAL_IDEA,
     status.AWAITING_ANSWER,
     status.IN_DEVELOPMENT,
     status.DEFERRED,
     status.DEAD,
-]
+}
+
+
+include = list(reversed([s for s in status.STATUSES if s not in exclude]))
 
 
 def curr_puzzle_graph_b64(time: str, target_count, width: int = 20, height: int = 10):
@@ -55,9 +58,7 @@ def curr_puzzle_graph_b64(time: str, target_count, width: int = 20, height: int 
     x: list[datetime] = []
     y = []
 
-    labels = [
-        status.get_display(s) for s in status.STATUSES[-1::-1] if s not in exclude
-    ]
+    labels = [status.get_display(s) for s in include]
 
     for comment in comments:
         new_status = comment.status_change
@@ -67,12 +68,12 @@ def curr_puzzle_graph_b64(time: str, target_count, width: int = 20, height: int 
                 counts[curr_status[comment.puzzle.id]] -= 1
             curr_status[comment.puzzle.id] = new_status
             x.append(comment.date)
-            y.append([counts[s] for s in status.STATUSES[-1::-1] if s not in exclude])
+            y.append([counts[s] for s in include])
 
     # Plot
     fig = plt.figure(figsize=(width, height))
     ax = plt.subplot(1, 1, 1)
-    ax.xaxis_date("US/Eastern")
+    ax.xaxis_date(settings.TIME_ZONE)
     if time in timetypes:
         now = datetime.now()
         plt.xlim(x[-1] - timetypes[time], now)
@@ -81,10 +82,13 @@ def curr_puzzle_graph_b64(time: str, target_count, width: int = 20, height: int 
     ax.stackplot(np.array(x), np.transpose(y), labels=labels, colors=col[-1::-1])
     if target_count is not None:
         if time not in timetypes:
+            glide_path_start = sum(
+                c for i, c in enumerate(y[-1]) if status.past_testsolving(include[i])
+            )
             plt.xlim(right=settings.HUNT_TIME)
             ax.plot(
                 np.array([x[-1], settings.HUNT_TIME]),
-                np.array([sum(y[-1]), target_count]),
+                np.array([glide_path_start, target_count]),
                 "r--",
             )
         ax.plot(
