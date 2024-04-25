@@ -1797,6 +1797,9 @@ def testsolve_start(request: AuthenticatedHttpRequest) -> HttpResponse:
     session.save()
 
     if (c := discord.get_client()) and session.discord_thread_id:
+        testsolve_url = request.build_absolute_uri(
+            urls.reverse("testsolve_one", kwargs={"id": session.id})
+        )
         puzzle_content_url = request.build_absolute_uri(
             urls.reverse("testsolve_puzzle_content", kwargs={"id": session.id})
         )
@@ -1810,7 +1813,8 @@ def testsolve_start(request: AuthenticatedHttpRequest) -> HttpResponse:
             (
                 f"New testsolve session created for {puzzle.name}.\n"
                 "\n"
-                f"We've created a few documents for you to work with:\n"
+                f"A few resources for you to work with:\n"
+                f"* Here is the testsolve page in PuzzUp with the answer checker and feedback form: [PuzzUp]({testsolve_url})\n"
                 f"* Here is a **read-only copy** of the puzzle for you to testsolve: [Google Doc]({puzzle_content_url})\n"
                 f"* Here is a Google Sheet to work in: [Google Sheet]({sheet_url})\n"
                 "\n"
