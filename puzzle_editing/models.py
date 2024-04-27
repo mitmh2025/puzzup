@@ -818,7 +818,6 @@ DISCORD_NOTICE_CELEBRATION_SENTENCE = (
     "The plot thickens 📚! ",
     "Progress marches on 🏃! ",
     "The wheels are turning 🔄! ",
-    "The gears are grinding 🛠! ",
 )
 
 DISCORD_NOTICE_CELEBRATION_EMOJI = (
@@ -873,16 +872,20 @@ def send_status_notifications(puzzle: Puzzle) -> None:
             subscriptions,
         )
 
-    # Check if this is the first time the puzzle has entered this group of statuses
+    should_hype = False
+    # Hype a puzzle if (a) it's going into open testsolving (b) this is the first
+    # time it's entered a status group
     if (
-        settings.DISCORD_HYPE_CHANNEL_ID
-        and any(
-            puzzle.status in group
-            and puzzle.comments.filter(status_change__in=group).count() <= 1
-            for group in DISCORD_NOTICE_STATUS_GROUPS
-        )
-        and (c := discord.get_client())
+        puzzle.status == status.TESTSOLVING and not puzzle.logistics_closed_testsolving
+    ) or any(
+        puzzle.status in group
+        and puzzle.comments.filter(status_change__in=group).count() <= 1
+        for group in DISCORD_NOTICE_STATUS_GROUPS
     ):
+        should_hype = True
+
+    # Check if this is the first time the puzzle has entered this group of statuses
+    if settings.DISCORD_HYPE_CHANNEL_ID and should_hype and (c := discord.get_client()):
         message = random.choice(DISCORD_NOTICE_CELEBRATION_SENTENCE)
         message += f" Congrats to author(s) {", ".join(discord.mention_users(puzzle.authors.all()))}"
         if puzzle.editors.exists():
