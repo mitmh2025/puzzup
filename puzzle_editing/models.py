@@ -799,6 +799,9 @@ DISCORD_NOTICE_STATUS_GROUPS = [
         status.WRITING_FLEXIBLE,
     },
     {
+        status.TESTSOLVING,
+    },
+    {
         # Any of these indicate that the puzzle passed testsolving:
         status.NEEDS_SOLUTION,
         status.AWAITING_ANSWER_FLEXIBLE,
@@ -870,9 +873,11 @@ def send_status_notifications(puzzle: Puzzle) -> None:
         )
 
     should_hype = False
-    # Hype a puzzle if (a) it's going into testsolving (b) this is the first
+    # Hype a puzzle if (a) it's going into open testsolving (b) this is the first
     # time it's entered a status group
-    if puzzle.status == status.TESTSOLVING or any(
+    if (
+        puzzle.status == status.TESTSOLVING and not puzzle.logistics_closed_testsolving
+    ) or any(
         puzzle.status in group
         and puzzle.comments.filter(status_change__in=group).count() <= 1
         for group in DISCORD_NOTICE_STATUS_GROUPS
