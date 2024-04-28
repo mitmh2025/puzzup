@@ -30,6 +30,7 @@
                         <th>Status</th>
                         <th>Assignees</th>
                         <th>Author notes</th>
+                        <th>Last updated</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -41,6 +42,13 @@
                             <td>{{ request.get_status_display }}</td>
                             <td>{% user_list request.assignees linkify=True %}</td>
                             <td>{{ request.author_notes|markdown|truncatechars_html:50}}</td>
+                            <td>
+                                {% if not request.team_notes_mtime or request.author_notes_mtime > request.team_notes_mtime %}
+                                    {{ request.author_notes_mtime|date:"Y-m-d H:i" }}
+                                {% else %}
+                                    {{ request.team_notes_mtime|date:"Y-m-d H:i" }}
+                                {% endif %}
+                            </td>
                         </tr>
                     {% endfor %}
                 </tbody>
