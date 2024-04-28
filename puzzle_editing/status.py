@@ -59,9 +59,9 @@ def past_writing(status):
 
 
 def past_testsolving(status):
-    return get_status_rank(status) > get_status_rank(
-        NEEDS_SOLUTION
-    ) and get_status_rank(status) <= get_status_rank(DONE)
+    return get_status_rank(status) > get_status_rank(TESTSOLVING) and get_status_rank(
+        status
+    ) <= get_status_rank(DONE)
 
 
 # Possible blockers:
