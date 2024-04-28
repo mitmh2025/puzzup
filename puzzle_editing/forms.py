@@ -849,6 +849,7 @@ class TestsolveParticipationForm(forms.ModelForm):
             "user",
             "started",
             "ended",
+            "in_discord_thread",
             # Hide all of these form fields as we felt they are extraneous.
             # FIXME: you may want to show some of them.
             "clues_needed",
