@@ -36,7 +36,7 @@
                     <div class="block">
                         <h5>Author{{ puzzle.authors.count|pluralize }}</h5>
                         <b>Lead:</b> {% user_display puzzle.lead_author linkify=True %}<br/>
-                        {% user_list puzzle.authors linkify=True %}
+                        <b>All authors:</b>{% user_list puzzle.authors linkify=True %}
                     </div>
                     <div class="block">
                         <h5>Editor{{ puzzle.editors.count|pluralize }}</h5>
