@@ -14,44 +14,48 @@
         <a class="button is-info" href="{% url 'oauth2_link_discord' %}">Sign in with Discord</a>
     </div>
 
-    <form id="login" action='.' method="post">
-        {% csrf_token %}
-        {{ form.non_field_errors }}
-        <div class="columns">
-            <div class="column is-one-quarter">
-                <label class="label">{{ form.username.label }}</label>
-            </div>
-            <div class="column">
-                <div class="control">
-                    {{ form.username }}
-                    {{ form.username.errors }}
-                </div>
-            </div>
-        </div>
-        <div class="columns">
-            <div class="column is-one-quarter">
-                <label class="label">{{ form.password.label }}</label>
-            </div>
-            <div class="column">
-                <div class="control">
-                    {{ form.password }}
-                    {{ form.password.errors }}
-                </div>
-            </div>
-        </div>
-        <div class="columns">
-            <div class="column is-one-quarter">
-            </div>
-            <div class="column">
-                <input class="button is-primary" type="submit" value="Submit">
-            </div>
-        </div>
-        <div class="columns">
-            <div class="column">
-                <a href="{% url 'password_reset' %}">Forgot your password?</a>
-            </div>
-        </div>
+    {% if SITE_PASSWORD_SET %}
 
-        <input type="hidden" name="next" value="{{ next }}">
-    </form>
+        <form id="login" action='.' method="post">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            <div class="columns">
+                <div class="column is-one-quarter">
+                    <label class="label">{{ form.username.label }}</label>
+                </div>
+                <div class="column">
+                    <div class="control">
+                        {{ form.username }}
+                        {{ form.username.errors }}
+                    </div>
+                </div>
+            </div>
+            <div class="columns">
+                <div class="column is-one-quarter">
+                    <label class="label">{{ form.password.label }}</label>
+                </div>
+                <div class="column">
+                    <div class="control">
+                        {{ form.password }}
+                        {{ form.password.errors }}
+                    </div>
+                </div>
+            </div>
+            <div class="columns">
+                <div class="column is-one-quarter">
+                </div>
+                <div class="column">
+                    <input class="button is-primary" type="submit" value="Submit">
+                </div>
+            </div>
+            <div class="columns">
+                <div class="column">
+                    <a href="{% url 'password_reset' %}">Forgot your password?</a>
+                </div>
+            </div>
+
+            <input type="hidden" name="next" value="{{ next }}">
+        </form>
+
+    {% endif %}
 {% endblock %}
