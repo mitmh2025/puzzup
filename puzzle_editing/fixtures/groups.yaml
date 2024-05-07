@@ -66,6 +66,10 @@
     permissions: []
 - model: auth.group
   fields:
+    name: Fabrication Lead
+    permissions: []
+- model: auth.group
+  fields:
     name: Tech Lead
     permissions: []
 - model: auth.group

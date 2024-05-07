@@ -1084,6 +1084,7 @@ class SupportRequest(models.Model):
     class Team(models.TextChoices):
         ART = ("ART", "🎨 Art")
         ACC = ("ACC", "🔎 Accessibility")
+        FAB = ("FAB", "🔨 Fabrication")
         OPS = ("OPS", "🚧 Operations")
         TECH = ("TECH", "👩🏽‍💻 Tech")
 
@@ -1091,6 +1092,7 @@ class SupportRequest(models.Model):
         {
             Team.ART: "Art Lead",
             Team.ACC: "Accessibility Lead",
+            Team.FAB: "Fabrication Lead",
             Team.OPS: "Ops Lead",
             Team.TECH: "Tech Lead",
         }
@@ -1100,6 +1102,7 @@ class SupportRequest(models.Model):
         {
             "Art Lead": Team.ART,
             "Accessibility Lead": Team.ACC,
+            "Fabrication Lead": Team.FAB,
             "Ops Lead": Team.OPS,
             "Tech Lead": Team.TECH,
         }

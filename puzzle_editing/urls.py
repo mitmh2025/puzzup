@@ -3,6 +3,8 @@ from django.urls import include, path, re_path
 from django.views.generic.base import RedirectView
 from django.views.static import serve
 
+from puzzle_editing.models import SupportRequest
+
 from . import slashcommands, views
 
 urlpatterns = [
@@ -50,7 +52,7 @@ urlpatterns = [
     path("puzzle/<int:id>/puzzle.yaml", views.puzzle_yaml, name="puzzle_yaml"),
     path("puzzle/<int:id>/escape", views.puzzle_escape, name="puzzle_escape"),
     re_path(
-        r"^puzzle/(?P<id>\d+)/support/(?P<team>ART|ACC|OPS|TECH)$",
+        rf"^puzzle/(?P<id>\d+)/support/(?P<team>{'|'.join(SupportRequest.Team.values)})$",
         views.support_by_puzzle_id,
         name="support_by_puzzle_id",
     ),

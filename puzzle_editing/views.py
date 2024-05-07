@@ -2927,9 +2927,7 @@ def support_all(request: AuthenticatedHttpRequest) -> HttpResponse:
     triaged_requests = all_triaged_requests.filter(is_visible)
     closed_requests = all_closed_requests.filter(is_visible)
 
-    team_title = team.title()
-    if team == "ACC":
-        team_title = "Accessibility"
+    team_title = "All" if team == "ALL" else SupportRequest.Team[team].label
 
     return render(
         request,
