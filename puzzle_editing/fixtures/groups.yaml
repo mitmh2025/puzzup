@@ -40,6 +40,9 @@
     - - change_status_puzzle
       - puzzle_editing
       - puzzle
+    - - change_supportrequest
+      - puzzle_editing
+      - supportrequest
 - model: auth.group
   fields:
     name: Testsolve Coordinators
@@ -59,19 +62,38 @@
 - model: auth.group
   fields:
     name: Art Lead
-    permissions: []
+    permissions:
+    - - change_supportrequest
+      - puzzle_editing
+      - supportrequest
 - model: auth.group
   fields:
     name: Accessibility Lead
-    permissions: []
+    permissions:
+    - - change_supportrequest
+      - puzzle_editing
+      - supportrequest
+- model: auth.group
+  fields:
+    name: Fabrication Lead
+    permissions:
+    - - change_supportrequest
+      - puzzle_editing
+      - supportrequest
 - model: auth.group
   fields:
     name: Tech Lead
-    permissions: []
+    permissions:
+    - - change_supportrequest
+      - puzzle_editing
+      - supportrequest
 - model: auth.group
   fields:
     name: Ops Lead
-    permissions: []
+    permissions:
+    - - change_supportrequest
+      - puzzle_editing
+      - supportrequest
 - model: auth.group
   fields:
     name: Postprodder

@@ -92,6 +92,7 @@ aws ssm get-parameter --output text --query Parameter.Value --with-decryption --
 mkdir -p credentials
 aws ssm get-parameter --output text --query Parameter.Value --with-decryption --name puzzup-drive-credentials > credentials/drive-credentials.json
 python manage.py migrate
+python manage.py loaddata --app puzzle_editing groups
 exec env NPROC="$(nproc --ignore=1)" supervisord -c /etc/supervisord.conf
 EOF
 

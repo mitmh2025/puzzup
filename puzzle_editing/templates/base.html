@@ -100,7 +100,7 @@
                 {% if perms.puzzle_editing.list_puzzle %}
                   {% nav_link current_path 'all_hints' '🪙 Hint report' %}
                 {% endif %}
-                {% if request.user|has_group:"EIC" or request.user|has_group:"Art Lead" or request.user|has_group:"Accessibility Lead" or request.user|has_group:"Tech Lead" %}
+                {% if perms.puzzle_editing.change_supportrequest %}
                   <hr class="navbar-divider">
                   {% nav_link current_path 'all_support' '⛑ Support' %}
                 {% endif %}
