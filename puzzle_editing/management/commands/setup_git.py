@@ -39,7 +39,7 @@ class Command(BaseCommand):
         os.system(f'git config --global user.email "{settings.AUTOPOSTPROD_EMAIL}"')
 
         git_ssh_id_file = settings.SSH_KEY.expanduser()
-        git_ssh_cmd = "ssh -i %s" % git_ssh_id_file
+        git_ssh_cmd = f"ssh -i {git_ssh_id_file}"
 
         repo = git.Repo.clone_from(
             settings.HUNT_REPO_URL,
