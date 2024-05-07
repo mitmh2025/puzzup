@@ -694,7 +694,7 @@ class Puzzle(DirtyFieldsMixin, models.Model):
         postprodders.sort(key=lambda u: u.upper())
         return {
             "puzzle_title": self.name,
-            "credits": "by %s" % self.author_byline,
+            "credits": f"by {self.author_byline}",
             "answer": self.answer or "???",
             "round": next(iter(a.round_id for a in self.answers.all()), 1),
             "puzzle_idea_id": self.id,
