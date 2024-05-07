@@ -3291,16 +3291,31 @@ def users(request):
         user.attrs = defaultdict(int)
 
     attr_keys = []
-    statuses = {
-        status.DEAD: "dead",
-        status.DEFERRED: "deferred",
-        status.DONE: "done",
-        status.IN_DEVELOPMENT: "in_development",
-        status.WRITING: "writing",
-        status.WRITING_FLEXIBLE: "writing",
-        status.AWAITING_ANSWER: "awaiting_answer",
+    status_categories = {
+        "authored": {
+            status.DEAD: "dead",
+            status.DEFERRED: "deferred",
+            status.DONE: "done",
+            status.IN_DEVELOPMENT: "in_development",
+            status.WRITING: "writing",
+            status.WRITING_FLEXIBLE: "writing",
+            status.AWAITING_ANSWER: "awaiting_answer",
+        },
+        "editing": {
+            status.DEAD: "dead",
+            status.DEFERRED: "deferred",
+            status.DONE: "done",
+        },
+        "postprodding": {
+            status.DONE: "done",
+        },
+        "factchecking": {
+            status.DEAD: "dead",
+            status.DEFERRED: "deferred",
+            status.DONE: "done",
+        },
     }
-    for key in ("authored", "editing", "postprodding", "factchecking"):
+    for key, statuses in status_categories.items():
         for st in statuses.values():
             attr_keys.append(f"{key}_{st}")
         attr_keys.append(f"{key}_active")
