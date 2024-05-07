@@ -229,7 +229,7 @@ def puzzle_list(
             if status.get_status_rank(st["value"])
             > status.get_status_rank(status.NEEDS_SOLUTION)
         ],
-        "random_id": "%016x" % random.randrange(16**16),
+        "random_id": f"{random.randrange(16**16):016x}",
         "show_last_status_change": show_last_status_change,
         "show_summary": show_summary,
         "show_description": show_description,
