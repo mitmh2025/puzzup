@@ -2902,14 +2902,18 @@ def support_all(request: AuthenticatedHttpRequest) -> HttpResponse:
         if group_filters:
             filters.append(reduce(operator.or_, group_filters))
 
-    all_open_requests = SupportRequest.objects.filter(
-        status__in=["REQ", "APP"]
+    all_new_requests = SupportRequest.objects.filter(status="REQ").order_by(
+        "team", "status"
+    )
+    all_triaged_requests = SupportRequest.objects.filter(
+        status__in=["APP", "BLOK"],
     ).order_by("team", "status")
     all_closed_requests = SupportRequest.objects.exclude(
-        status__in=["REQ", "APP"]
+        status__in=["REQ", "APP", "BLOK"]
     ).order_by("team", "status")
     if team != "ALL":
-        all_open_requests = all_open_requests.filter(team=team)
+        all_new_requests = all_new_requests.filter(team=team)
+        all_triaged_requests = all_triaged_requests.filter(team=team)
         all_closed_requests = all_closed_requests.filter(team=team)
 
     # Only show the ones this user is spoiled on, or that matches the filters.
@@ -2919,7 +2923,8 @@ def support_all(request: AuthenticatedHttpRequest) -> HttpResponse:
         pk=user.id,
     )
     is_visible = Exists(is_spoiled) | Q(*filters)
-    open_requests = all_open_requests.filter(is_visible)
+    new_requests = all_new_requests.filter(is_visible)
+    triaged_requests = all_triaged_requests.filter(is_visible)
     closed_requests = all_closed_requests.filter(is_visible)
 
     team_title = team.title()
@@ -2931,11 +2936,14 @@ def support_all(request: AuthenticatedHttpRequest) -> HttpResponse:
         "support_all.html",
         {
             "title": f"{team_title} support requests",
-            "open_requests": open_requests,
+            "new_requests": new_requests,
+            "triaged_requests": triaged_requests,
             "closed_requests": closed_requests,
-            "hidden_count": all_open_requests.count()
+            "hidden_count": all_new_requests.count()
+            + all_triaged_requests.count()
             + all_closed_requests.count()
-            - open_requests.count()
+            - new_requests.count()
+            - triaged_requests.count()
             - closed_requests.count(),
             "type": "all",
             "team": team,
@@ -3291,31 +3299,16 @@ def users(request):
         user.attrs = defaultdict(int)
 
     attr_keys = []
-    status_categories = {
-        "authored": {
-            status.DEAD: "dead",
-            status.DEFERRED: "deferred",
-            status.DONE: "done",
-            status.IN_DEVELOPMENT: "in_development",
-            status.WRITING: "writing",
-            status.WRITING_FLEXIBLE: "writing",
-            status.AWAITING_ANSWER: "awaiting_answer",
-        },
-        "editing": {
-            status.DEAD: "dead",
-            status.DEFERRED: "deferred",
-            status.DONE: "done",
-        },
-        "postprodding": {
-            status.DONE: "done",
-        },
-        "factchecking": {
-            status.DEAD: "dead",
-            status.DEFERRED: "deferred",
-            status.DONE: "done",
-        },
+    statuses = {
+        status.DEAD: "dead",
+        status.DEFERRED: "deferred",
+        status.DONE: "done",
+        status.IN_DEVELOPMENT: "in_development",
+        status.WRITING: "writing",
+        status.WRITING_FLEXIBLE: "writing",
+        status.AWAITING_ANSWER: "awaiting_answer",
     }
-    for key, statuses in status_categories.items():
+    for key in ("authored", "editing", "postprodding", "factchecking"):
         for st in statuses.values():
             attr_keys.append(f"{key}_{st}")
         attr_keys.append(f"{key}_active")

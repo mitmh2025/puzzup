@@ -1,7 +1,4 @@
 {% extends "base.html" %}
-{% load user_list %}
-{% load comment_list %}
-{% load markdown %}
 
 {% block title %}{{ title }}{% endblock %}
 
@@ -17,75 +14,17 @@
         <input type="submit" class="button is-small" {% if team == "TECH" %}disabled{% endif %} name="team" value="TECH">
     </form>
 
-    <h2>Open requests</h2>
+    <h2>New requests</h2>
 
-    <div class="box">
-        <div class="table-container">
-            <table class="table sortable">
-                <thead>
-                    <tr>
-                        <th></th>
-                        <th>Puzzle</th>
-                        <th>Team</th>
-                        <th>Status</th>
-                        <th>Assignees</th>
-                        <th>Author notes</th>
-                        <th>Last updated</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for request in open_requests %}
-                        <tr>
-                            <td><a class='button is-small is-info' href="{% url 'support_by_puzzle_id' request.puzzle.id request.team %}">View</a></td>
-                            <td>{{ request.puzzle.html_link_no_tags }}</td>
-                            <td>{{ request.get_team_display }}</td>
-                            <td>{{ request.get_status_display }}</td>
-                            <td>{% user_list request.assignees linkify=True %}</td>
-                            <td>{{ request.author_notes|markdown|truncatechars_html:50}}</td>
-                            <td>
-                                {% if not request.team_notes_mtime or request.author_notes_mtime > request.team_notes_mtime %}
-                                    {{ request.author_notes_mtime|date:"Y-m-d H:i" }}
-                                {% else %}
-                                    {{ request.team_notes_mtime|date:"Y-m-d H:i" }}
-                                {% endif %}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
+    {% include "support_list.html" with requests=new_requests %}
+
+    <h2>Triaged requests</h2>
+
+    {% include "support_list.html" with requests=triaged_requests %}
 
     <h2>Closed requests</h2>
 
-    <div class="box">
-        <div class="table-container">
-            <table class="table sortable">
-                <thead>
-                    <tr>
-                        <th></th>
-                        <th>Puzzle</th>
-                        <th>Team</th>
-                        <th>Status</th>
-                        <th>Assignees</th>
-                        <th>Author notes</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for request in closed_requests %}
-                        <tr>
-                            <td><a class='button is-small is-info' href="{% url 'support_by_puzzle_id' request.puzzle.id request.team %}">View</a></td>
-                            <td>{{ request.puzzle.html_link_no_tags }}</td>
-                            <td>{{ request.get_team_display }}</td>
-                            <td>{{ request.get_status_display }}</td>
-                            <td>{% user_list request.assignees linkify=True %}</td>
-                            <td>{{ request.author_notes|truncatewords:10}}</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
+    {% include "support_list.html" with requests=closed_requests %}
 
     {% if hidden_count > 0 %}
         <p><i>Note: {{ hidden_count }} requests for unspoiled puzzles have been hidden.</i></p>

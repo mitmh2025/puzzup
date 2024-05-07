@@ -1108,8 +1108,8 @@ class SupportRequest(models.Model):
     class Status(models.TextChoices):
         NONE = ("NO", "No need")
         REQUESTED = ("REQ", "Requested")
-        APPROVED = ("APP", "Approved")
-        BLOCK = ("BLOK", "Blocking")
+        APPROVED = ("APP", "Triaged, waiting on team")
+        BLOCK = ("BLOK", "Triaged, waiting on puzzle")
         COMPLETE = ("COMP", "Completed")
         CANCELLED = ("X", "Cancelled")
 

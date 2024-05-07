@@ -1,0 +1,39 @@
+{% load user_list %}
+{% load markdown %}
+
+<div class="box">
+    <div class="table-container">
+        <table class="table sortable">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Puzzle</th>
+                    <th>Team</th>
+                    <th>Status</th>
+                    <th>Assignees</th>
+                    <th>Author notes</th>
+                    <th>Last updated</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in requests %}
+                    <tr>
+                        <td><a class='button is-small is-info' href="{% url 'support_by_puzzle_id' request.puzzle.id request.team %}">View</a></td>
+                        <td>{{ request.puzzle.html_link_no_tags }}</td>
+                        <td>{{ request.get_team_display }}</td>
+                        <td>{{ request.get_status_display }}</td>
+                        <td>{% user_list request.assignees linkify=True %}</td>
+                        <td>{{ request.author_notes|markdown|truncatechars_html:50}}</td>
+                        <td>
+                            {% if not request.team_notes_mtime or request.author_notes_mtime > request.team_notes_mtime %}
+                                {{ request.author_notes_mtime|date:"Y-m-d H:i" }}
+                            {% else %}
+                                {{ request.team_notes_mtime|date:"Y-m-d H:i" }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
