@@ -1725,6 +1725,30 @@ def testsolve_main(request: AuthenticatedHttpRequest) -> HttpResponse:
         )
     )
 
+    late_testsolveable_puzzles = (
+        Puzzle.objects.filter(
+            status__in=[s for s in status.STATUSES if status.past_testsolving(s)],
+            logistics_closed_testsolving=False,
+            is_meta=False,
+        )
+        .annotate(
+            is_author=Exists(
+                User.objects.filter(authored_puzzles=OuterRef("pk"), id=user.id)
+            ),
+            is_spoiled=Exists(
+                User.objects.filter(spoiled_puzzles=OuterRef("pk"), id=user.id)
+            ),
+            in_session=Exists(current_user_sessions.filter(puzzle=OuterRef("pk"))),
+            has_session=Exists(joinable_sessions.filter(puzzle=OuterRef("pk"))),
+        )
+        .order_by("priority")
+        .prefetch_related(
+            "authors",
+            "editors",
+            "tags",
+        )
+    )
+
     testsolvable = [
         {
             "puzzle": puzzle,
@@ -1733,6 +1757,16 @@ def testsolve_main(request: AuthenticatedHttpRequest) -> HttpResponse:
             ),
         }
         for puzzle in testsolvable_puzzles
+    ]
+
+    late_testsolvable = [
+        {
+            "puzzle": puzzle,
+            "warning": warn_about_testsolving(
+                puzzle.is_spoiled, puzzle.in_session, puzzle.has_session
+            ),
+        }
+        for puzzle in late_testsolveable_puzzles
     ]
 
     can_manage_testsolves = request.user.has_perm(
@@ -1766,6 +1800,7 @@ def testsolve_main(request: AuthenticatedHttpRequest) -> HttpResponse:
         "current_user_sessions": current_user_sessions,
         "joinable_sessions": joinable_sessions,
         "testsolvable": testsolvable,
+        "late_testsolvable": late_testsolvable,
         "can_manage_testsolves": can_manage_testsolves,
         "all_current_sessions": all_current_sessions,
         "puzzles_with_closed_testsolving": puzzles_with_closed_testsolving,
@@ -1792,8 +1827,11 @@ def testsolve_start(request: AuthenticatedHttpRequest) -> HttpResponse:
     ):
         raise PermissionDenied
 
+    late_testsolve = status.past_testsolving(puzzle.status)
     is_joinable = len(participants) == 1 and request.user in participants
-    session = TestsolveSession(puzzle=puzzle, joinable=is_joinable)
+    session = TestsolveSession(
+        puzzle=puzzle, joinable=is_joinable, late_testsolve=late_testsolve
+    )
     session.save()
 
     if (c := discord.get_client()) and session.discord_thread_id:
@@ -1808,20 +1846,35 @@ def testsolve_start(request: AuthenticatedHttpRequest) -> HttpResponse:
         )
         author_tags = discord.mention_users(puzzle.authors.all(), False)
         editor_tags = discord.mention_users(puzzle.editors.all(), False)
-        message = c.post_message(
-            session.discord_thread_id,
-            (
-                f"New testsolve session created for {puzzle.name}.\n"
-                "\n"
-                f"A few resources for you to work with:\n"
-                f"* Here is the testsolve page in PuzzUp with the answer checker and feedback form: [PuzzUp]({testsolve_url})\n"
-                f"* Here is a **read-only copy** of the puzzle for you to testsolve: [Google Doc]({puzzle_content_url})\n"
-                f"* Here is a Google Sheet to work in: [Google Sheet]({sheet_url})\n"
-                "\n"
+        message_text = (
+            f"New testsolve session created for {puzzle.name}.\n"
+            "\n"
+            f"A few resources for you to work with:\n"
+            f"* Here is the testsolve page in PuzzUp with the answer checker and feedback form: [PuzzUp]({testsolve_url})\n"
+            f"* Here is a **read-only copy** of the puzzle for you to testsolve: [Google Doc]({puzzle_content_url})\n"
+            f"* Here is a Google Sheet to work in: [Google Sheet]({sheet_url})"
+        )
+        if late_testsolve:
+            message_text += (
+                "\n\n"
+                "As a reminder, this puzzle has already passed testsolving, so "
+                "we're satisfied with the flow of this puzzle. We're mostly "
+                "not interested in feedback. If you notice errors (e.g. "
+                "incorrect data, an accessibility issue, or a partial or "
+                "intermediate answer that we should accept), we definitely "
+                "want to know about that.\n\n"
+                "Otherwise, just have fun!"
+            )
+        else:
+            message_text += (
+                "\n\n"
                 "We've also included the authors and editors so that they can monitor the thread and intervene if necessary. Good luck!\n"
                 f"Authors: {', '.join(author_tags)}\n"
                 f"Editors: {', '.join(editor_tags)}"
-            ),
+            )
+        message = c.post_message(
+            session.discord_thread_id,
+            message_text,
         )
         c.pin_message(session.discord_thread_id, message["id"])
 
@@ -3325,6 +3378,7 @@ def users(request):
     attr_keys.append("testsolving_in_progress")
     testsolve_participations_qs = (
         TestsolveParticipation.objects.all()
+        .exclude(session__late_testsolve=True)
         .annotate(
             in_progress=ExpressionWrapper(Q(ended=None), output_field=BooleanField())
         )

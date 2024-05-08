@@ -80,6 +80,76 @@
     </div>
 
     <div class="box">
+        <h2>Post-testsolving puzzles you can solve for fun</h2>
+
+        {% if late_testsolvable %}
+            <div class="notification is-warning">
+                <p><strong>Note:</strong> These puzzles have been successfully
+                    testsolved and are slated for inclusion in the hunt. If there
+                    are puzzles for testsolving above, please solve those first!</p>
+
+                <p>We're making these available for your entertainment and,
+                    while we're not completely disinterested in your feedback, we
+                    also are not going to make changes to the flow or difficulty of
+                    the puzzle at this point in the process. If there are errors,
+                    accessibility issues, partial or intermediate answers that we
+                    should accept (but don't), etc., we <em>do</em> want to know
+                    about that.</p>
+
+                <p>Otherwise, just focus on the fun part: solving the
+                    puzzle!</p>
+            </div>
+
+
+            <form method="POST" action="{% url 'testsolve_start' %}">
+                {% csrf_token %}
+                <input id="hide-test-authored-late" type="checkbox" class="hide-test-authored" checked> <label
+                    for="hide-test-authored-late">Hide your puzzles</label>
+                <input id="hide-test-spoiled-late" type="checkbox" class="hide-test-spoiled"> <label for="hide-test-spoiled-late">Hide
+                    spoiled</label>
+                <div class="table-container">
+                    <table class="classic">
+                        <tr align="left">
+                            <th></th>
+                            <th>ID/Name</th>
+                            <th>Summary</th>
+                            <th>Authors</th>
+                            <th>Editors</th>
+                            <th>Priority</th>
+                            <th>When Entered Testsolving</th>
+                        </tr>
+                        {% for puzzle_data in late_testsolvable %}
+                            {% with puzzle_data.puzzle as puzzle %}
+                                <tr
+                                    class="{% if puzzle.is_author %}test-authored{% endif %} {% if puzzle.is_spoiled %}test-spoiled{% endif %}">
+                                    <td>
+                                        <button class="button is-info" type="submit" name="puzzle" value="{{ puzzle.id }}" {% if puzzle_data.warning %}
+                                                    data-warning="{{ puzzle_data.warning }}" {% endif %}>
+                                                Start new session
+                                            </button>
+                                        {% if puzzle_data.warning %}
+                                            <div>({{ puzzle_data.warning }}!)</div>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ puzzle.html_display }}
+                                    </td>
+                                    <td class="small-md">{{ puzzle.summary|markdown }}</td>
+                                    <td>{% user_list puzzle.authors %}</td>
+                                    <td>{% user_list puzzle.editors %}</td>
+                                    <td>{{ puzzle.get_priority_display }}</td>
+                                    <td>{{ puzzle.status_mtime | naturaltime }}</td>
+                                </tr>
+                            {% endwith %}
+                        {% endfor %}
+                    </table>
+                </div>
+            </form>
+        {% else %}
+            <div class="empty">No puzzles to list</div>
+        {% endif %}
+    </div>
+
+    <div class="box">
         <h2>Your past testsolving sessions</h2>
         <a href="{% url 'testsolve_history' %}">View your past testsolves</a>
     </div>

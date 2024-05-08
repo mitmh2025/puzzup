@@ -21,6 +21,29 @@
     <p>*<em> required field</em></p>
 
     {% if participation %}
+        {% if session.late_testsolve %}
+            <div class="columns">
+                <div class="column is-one-quarter"></div>
+                <div class="column">
+                    <div class="notification is-warning">
+                        <p><strong>Reminder:</strong> This puzzle has already passed
+                            testsolving, so we are not going to make changes on the flow or
+                            difficulty of the puzzle. Please don't give us feedback on those
+                            (or even a detailed breakdown of how your testsolve went).</p>
+
+                        <p>We <em>are</em> interested if you've found any errors in the
+                            puzzle, accessibility issues, partial or intermediate answers
+                            that we should have accepted, or other issues like that which
+                            could affect the final presentation of the puzzle.</p>
+
+                        <p>(And if you had tons of fun, we definitely want to know that
+                            too!)</p>
+                    </div>
+                </div>
+                <div class="column is-one-quarter"></div>
+            </div>
+        {% endif %}
+
         <form class="testsolve-form" method="post">
             {% csrf_token %}
             {{ form.non_field_errors }}
