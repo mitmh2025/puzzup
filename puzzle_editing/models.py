@@ -1279,6 +1279,10 @@ class TestsolveSession(models.Model):
         help_text="Whether this puzzle is advertised to other users as a session they can join.",
     )
     notes = models.TextField(blank=True)
+    late_testsolve = models.BooleanField(
+        default=False,
+        help_text="Whether this testsolve occurred after the puzzle had passed testsolving",
+    )
 
     discord_thread_id = models.CharField(
         max_length=19,

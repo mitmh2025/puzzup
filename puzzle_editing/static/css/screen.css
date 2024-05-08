@@ -819,11 +819,11 @@ table.puzzle-table td p, table.puzzle-table td pre {
   display: none;
 }
 
-.hide-test-authored:checked + label + input + label + div > table tr.test-authored {
+.hide-test-authored:checked ~ div > table tr.test-authored {
   display: none;
 }
 
-.hide-test-spoiled:checked + label + div > table tr.test-spoiled {
+.hide-test-spoiled:checked ~ div > table tr.test-spoiled {
   display: none;
 }
 
