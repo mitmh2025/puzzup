@@ -3,12 +3,6 @@
   fields:
     name: Editor
     permissions:
-    - - list_puzzle
-      - puzzle_editing
-      - puzzle
-    - - change_testsolvesession
-      - puzzle_editing
-      - testsolvesession
     - - change_status_puzzle
       - puzzle_editing
       - puzzle
