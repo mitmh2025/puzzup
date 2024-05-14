@@ -1008,3 +1008,39 @@ body.singleround h2 .round-link {
 .puzzle-summary, .puzzle-desc, .puzzle-mech, .puzzle-req .puzzle-notes {
   overflow-wrap: anywhere;
 }
+
+#jump-to-puzzle {
+  height: 100%;
+  width: 20em;
+}
+
+.jump-to-puzzle-suggestions {
+  display: none;
+  position: absolute;
+  top: calc(100% - 0.5rem);
+  width: 100%;
+  background: rgba(255, 255, 255, 0.93);
+  border: 1px solid #ccc;
+}
+
+.jump-to-puzzle-suggestions:has(li) {
+  display: block;
+}
+
+.jump-to-puzzle-suggestions li a{
+  border-bottom: 1px solid #eee;
+  padding: 0.5em 1em;
+  display: block;
+}
+
+.jump-to-puzzle-suggestions li:last-child a {
+  border: none;
+}
+
+.jump-to-puzzle-suggestions li.selected a {
+  background: rgba(250, 250, 250, 0.95);
+}
+
+.jump-to-puzzle-suggestions li:hover:not(.selected) a {
+  background: rgba(250, 250, 250, 0.95);
+}
