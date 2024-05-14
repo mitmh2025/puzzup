@@ -885,7 +885,7 @@ def send_status_notifications(puzzle: Puzzle) -> None:
         should_hype = True
 
     # Check if this is the first time the puzzle has entered this group of statuses
-    if settings.DISCORD_HYPE_CHANNEL_ID and should_hype and (c := discord.get_client()):
+    if (c := discord.get_client()) and should_hype:
         message = random.choice(DISCORD_NOTICE_CELEBRATION_SENTENCE)
         message += f" Congrats to author(s) {", ".join(discord.mention_users(puzzle.authors.all()))}"
         if puzzle.editors.exists():
@@ -904,15 +904,29 @@ def send_status_notifications(puzzle: Puzzle) -> None:
         ):
             message += " That means this puzzle has graduated from testsolving!"
 
-        try:
-            message_id = c.post_message(settings.DISCORD_HYPE_CHANNEL_ID, message)["id"]
-            emoji = random.choices(DISCORD_NOTICE_CELEBRATION_EMOJI, k=2)
-            for e in emoji:
-                c.add_reaction(settings.DISCORD_HYPE_CHANNEL_ID, message_id, e)
-        except HTTPError as e:
-            # swallow rate limiting errors
-            if e.response.status_code != 429:
-                raise
+        if (
+            puzzle.status == status.TESTSOLVING
+            and settings.DISCORD_TESTSOLVE_HYPE_CHANNEL_ID
+        ):
+            try:
+                c.post_message(settings.DISCORD_TESTSOLVE_HYPE_CHANNEL_ID, message)
+            except HTTPError as e:
+                # swallow rate limiting errors
+                if e.response.status_code != 429:
+                    raise
+
+        if settings.DISCORD_HYPE_CHANNEL_ID:
+            try:
+                message_id = c.post_message(settings.DISCORD_HYPE_CHANNEL_ID, message)[
+                    "id"
+                ]
+                emoji = random.choices(DISCORD_NOTICE_CELEBRATION_EMOJI, k=2)
+                for em in emoji:
+                    c.add_reaction(settings.DISCORD_HYPE_CHANNEL_ID, message_id, em)
+            except HTTPError as e:
+                # swallow rate limiting errors
+                if e.response.status_code != 429:
+                    raise
 
 
 @receiver(pre_save, sender=Puzzle)
