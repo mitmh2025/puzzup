@@ -1647,13 +1647,15 @@ def edit_pseudo_answer(request: AuthenticatedHttpRequest, id: int) -> HttpRespon
 
 
 def warn_about_testsolving(
-    is_spoiled: bool, in_session: bool, has_session: bool
+    is_spoiled: bool, in_session: bool, was_in_session: bool, has_session: bool
 ) -> str | None:
     reasons = []
     if is_spoiled:
         reasons.append("you are spoiled")
     if in_session:
         reasons.append("you are already testsolving it")
+    if was_in_session:
+        reasons.append("you have already testsolved it")
     if has_session:
         reasons.append("there is an existing session you can join")
 
@@ -1690,6 +1692,12 @@ def testsolve_main(request: AuthenticatedHttpRequest) -> HttpResponse:
         ).all()
     ).order_by("started")
 
+    past_user_sessions = TestsolveSession.objects.filter(
+        participations__in=TestsolveParticipation.objects.filter(
+            user=request.user, ended__isnull=False
+        ).all()
+    )
+
     joinable_sessions = (
         TestsolveSession.objects.exclude(
             pk__in=TestsolveSession.objects.filter(
@@ -1715,6 +1723,7 @@ def testsolve_main(request: AuthenticatedHttpRequest) -> HttpResponse:
                 User.objects.filter(spoiled_puzzles=OuterRef("pk"), id=user.id)
             ),
             in_session=Exists(current_user_sessions.filter(puzzle=OuterRef("pk"))),
+            was_in_session=Exists(past_user_sessions.filter(puzzle=OuterRef("pk"))),
             has_session=Exists(joinable_sessions.filter(puzzle=OuterRef("pk"))),
         )
         .order_by("priority")
@@ -1739,6 +1748,7 @@ def testsolve_main(request: AuthenticatedHttpRequest) -> HttpResponse:
                 User.objects.filter(spoiled_puzzles=OuterRef("pk"), id=user.id)
             ),
             in_session=Exists(current_user_sessions.filter(puzzle=OuterRef("pk"))),
+            was_in_session=Exists(past_user_sessions.filter(puzzle=OuterRef("pk"))),
             has_session=Exists(joinable_sessions.filter(puzzle=OuterRef("pk"))),
         )
         .order_by("priority")
@@ -1753,7 +1763,10 @@ def testsolve_main(request: AuthenticatedHttpRequest) -> HttpResponse:
         {
             "puzzle": puzzle,
             "warning": warn_about_testsolving(
-                puzzle.is_spoiled, puzzle.in_session, puzzle.has_session
+                puzzle.is_spoiled,
+                puzzle.in_session,
+                puzzle.was_in_session,
+                puzzle.has_session,
             ),
         }
         for puzzle in testsolvable_puzzles
@@ -1763,7 +1776,10 @@ def testsolve_main(request: AuthenticatedHttpRequest) -> HttpResponse:
         {
             "puzzle": puzzle,
             "warning": warn_about_testsolving(
-                puzzle.is_spoiled, puzzle.in_session, puzzle.has_session
+                puzzle.is_spoiled,
+                puzzle.in_session,
+                puzzle.was_in_session,
+                puzzle.has_session,
             ),
         }
         for puzzle in late_testsolveable_puzzles
