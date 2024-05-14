@@ -66,6 +66,14 @@ class PuzzleAdmin(admin.ModelAdmin):
     )
 
 
+class TestsolveSessionAdmin(admin.ModelAdmin):
+    model = TestsolveSession
+
+    list_display = ("id", "puzzle", "started", "ended", "late_testsolve")
+
+    list_filter = ("late_testsolve",)
+
+
 class TestsolveParticipationAdmin(ImportExportModelAdmin):
     model = TestsolveParticipation
 
@@ -80,7 +88,7 @@ admin.site.register(PuzzleFactcheck)
 admin.site.register(PuzzlePostprod)
 admin.site.register(PuzzleVisited)
 admin.site.register(StatusSubscription)
-admin.site.register(TestsolveSession)
+admin.site.register(TestsolveSession, TestsolveSessionAdmin)
 admin.site.register(PuzzleComment)
 admin.site.register(TestsolveParticipation, TestsolveParticipationAdmin)
 admin.site.register(TestsolveGuess)
