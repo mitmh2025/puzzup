@@ -10,6 +10,8 @@ register = template.Library()
 
 @register.simple_tag()
 def puzzle_search_list(user: User):
+    if not user.is_authenticated:
+        return "[]"
     if user.is_eic or user.has_perm("puzzle_editing.list_puzzle"):
         puzzles = Puzzle.objects
     else:

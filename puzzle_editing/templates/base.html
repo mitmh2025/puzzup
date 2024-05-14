@@ -120,11 +120,13 @@
           </div>
 
           <div class="navbar-end">
-            <div class="navbar-item control">
-              <input placeholder="Jump to puzzle ('/' to search)" class="input" type="search" id="jump-to-puzzle">
-              <ul class="jump-to-puzzle-suggestions">
-              </ul>
-            </div>
+            {% if request.user.is_authenticated %}
+              <div class="navbar-item control">
+                <input placeholder="Jump to puzzle ('/' to search)" class="input" type="search" id="jump-to-puzzle">
+                <ul class="jump-to-puzzle-suggestions">
+                </ul>
+              </div>
+            {% endif %}
             <div class="navbar-item">
               {% if request.user.is_authenticated %}
                 <div class="navbar-item">
