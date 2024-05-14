@@ -120,13 +120,11 @@
           </div>
 
           <div class="navbar-end">
-            {% if perms.puzzle_editing.list_puzzle %}
-              <div class="navbar-item control">
-                <input placeholder="Jump to puzzle ('/' to search)" class="input" type="search" id="jump-to-puzzle">
-                <ul class="jump-to-puzzle-suggestions">
-                </ul>
-              </div>
-            {% endif %}
+            <div class="navbar-item control">
+              <input placeholder="Jump to puzzle ('/' to search)" class="input" type="search" id="jump-to-puzzle">
+              <ul class="jump-to-puzzle-suggestions">
+              </ul>
+            </div>
             <div class="navbar-item">
               {% if request.user.is_authenticated %}
                 <div class="navbar-item">
@@ -187,10 +185,8 @@
       {% endblock %}
     </div>
 
-    {% if perms.puzzle_editing.list_puzzle %}
-      <script src="https://cdn.jsdelivr.net/npm/minisearch@6.3.0/dist/umd/index.min.js"></script>
-      <script id="puzzle-search-list" type="application/json">{% puzzle_search_list %}</script>
-    {% endif %}
+    <script src="https://cdn.jsdelivr.net/npm/minisearch@6.3.0/dist/umd/index.min.js"></script>
+    <script id="puzzle-search-list" type="application/json">{% puzzle_search_list user %}</script>
     <script type="text/javascript">
 
     // Prevent multiple POST requests while the first form submission is loading.
@@ -367,61 +363,58 @@
       });
 
       const jumpToPuzzle = document.getElementById('jump-to-puzzle');
-      let miniSearch;
-      if (jumpToPuzzle) {
-        const puzzles = JSON.parse(document.getElementById('puzzle-search-list').textContent);
-        miniSearch = new MiniSearch({
-          fields: ["id", "codename"],
-          storeFields: ["id", "codename"],
-        });
-        miniSearch.addAll(puzzles);
+      const puzzles = JSON.parse(document.getElementById('puzzle-search-list').textContent);
+      const miniSearch = new MiniSearch({
+        fields: ["id", "codename"],
+        storeFields: ["id", "codename"],
+      });
+      miniSearch.addAll(puzzles);
 
-        jumpToPuzzle.addEventListener('input', () => {
-          const results = miniSearch.search(jumpToPuzzle.value, { prefix: true });
-          const suggestions = document.querySelector('.jump-to-puzzle-suggestions');
-          suggestions.innerHTML = '';
-          results.slice(0, 5).forEach((result) => {
-            const li = document.createElement('li');
-            li.innerHTML = `<a href="/puzzle/${result.id}">${result.id}: (${result.codename})</a>`;
-            suggestions.appendChild(li);
-          });
+      jumpToPuzzle.addEventListener('input', () => {
+        const results = miniSearch.search(jumpToPuzzle.value, { prefix: true });
+        const suggestions = document.querySelector('.jump-to-puzzle-suggestions');
+        suggestions.innerHTML = '';
+        results.slice(0, 5).forEach((result) => {
+          const li = document.createElement('li');
+          li.innerHTML = `<a href="/puzzle/${result.id}">${result.id}: (${result.codename})</a>`;
+          suggestions.appendChild(li);
         });
+      });
 
-        const moveSelection = (direction) => {
-          const suggestions = document.querySelector('.jump-to-puzzle-suggestions');
-          const selected = suggestions.querySelector('.selected');
+      const moveSelection = (direction) => {
+        const suggestions = document.querySelector('.jump-to-puzzle-suggestions');
+        const selected = suggestions.querySelector('.selected');
+        if (selected) {
+          selected.classList.remove('selected');
+          const next = direction === 'down' ? selected.nextSibling : selected.previousSibling;
+          if (next) {
+            next.classList.add('selected');
+          }
+        } else {
+          suggestions.firstChild.classList.add('selected');
+        }
+      };
+
+      jumpToPuzzle.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowDown') {
+          moveSelection('down');
+        } else if (event.key === 'ArrowUp') {
+          moveSelection('up');
+        } else if (event.key === 'Enter') {
+          const selected = document.querySelector('.jump-to-puzzle-suggestions .selected a');
           if (selected) {
-            selected.classList.remove('selected');
-            const next = direction === 'down' ? selected.nextSibling : selected.previousSibling;
-            if (next) {
-              next.classList.add('selected');
-            }
-          } else {
-            suggestions.firstChild.classList.add('selected');
+            selected.click();
           }
-        };
+        }
+      });
 
-        jumpToPuzzle.addEventListener('keydown', (event) => {
-          if (event.key === 'ArrowDown') {
-            moveSelection('down');
-          } else if (event.key === 'ArrowUp') {
-            moveSelection('up');
-          } else if (event.key === 'Enter') {
-            const selected = document.querySelector('.jump-to-puzzle-suggestions .selected a');
-            if (selected) {
-              selected.click();
-            }
-          }
-        });
+      document.addEventListener("keyup", (e) => {
+        if (e.key !== "/" || e.ctrlKey || e.metaKey) return;
+        if (/^(?:input|textarea|select|button)$/i.test(e.target.tagName)) return;
 
-        document.addEventListener("keyup", (e) => {
-          if (e.key !== "/" || e.ctrlKey || e.metaKey) return;
-          if (/^(?:input|textarea|select|button)$/i.test(e.target.tagName)) return;
-
-          e.preventDefault();
-          jumpToPuzzle.focus();
-        })
-      }
+        e.preventDefault();
+        jumpToPuzzle.focus();
+      })
     </script>
     <script src="{% static 'sorttable.js' %}"></script>
     {% block extrajs %}{% endblock %}
