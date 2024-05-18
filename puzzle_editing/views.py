@@ -2120,6 +2120,7 @@ def testsolve_one(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
             # Check these later, only if guess is not correct
             partially_correct = False
             partial_response = ""
+            changing_status = correct and session.puzzle.status == status.TESTSOLVING
 
             if correct:
                 c = discord.get_client()
@@ -2140,7 +2141,7 @@ def testsolve_one(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
                         f":tada: Congratulations on solving this puzzle! :tada:\nTime since testsolve started: {session.time_since_started}",
                     )
 
-                if session.puzzle.status == status.TESTSOLVING:
+                if changing_status:
                     guess_comment += f" Automatically moving puzzle to {status.get_display(status.WRITING)}."
             else:
                 # Guess might still be partially correct
@@ -2174,10 +2175,11 @@ def testsolve_one(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
                 is_system=True,
                 send_email=False,
                 content=guess_comment,
+                status_change=status.WRITING if changing_status else "",
             )
 
             # Finally, if this was correct, change the puzzle status
-            if correct and session.puzzle.status == status.TESTSOLVING:
+            if changing_status:
                 puzzle.status = status.WRITING
                 puzzle.save()
 
@@ -2483,6 +2485,7 @@ def testsolve_finish(request: AuthenticatedHttpRequest, id: int) -> HttpResponse
                     send_discord=True,
                     content=comment_content,
                     action_text="finished a testsolve with comment",
+                    status_change=status.WRITING if change_status else "",
                 )
 
                 if change_status:
@@ -2549,6 +2552,7 @@ def testsolve_close(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
                     send_discord=True,
                     content=comment_content,
                     action_text="closed a testsolve with comment",
+                    status_change=status.WRITING if change_status else "",
                 )
 
                 # End all participations in session
