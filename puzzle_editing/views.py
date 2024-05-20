@@ -2893,8 +2893,6 @@ def rounds(request: AuthenticatedHttpRequest, id: int | None = None) -> HttpResp
         elif "delete_answer" in request.POST:
             get_object_or_404(PuzzleAnswer, id=request.POST["delete_answer"]).delete()
 
-        return redirect(urls.reverse("rounds"))
-
     round_objs = Round.objects.all()
     if id:
         round_objs = round_objs.filter(pk=id)
