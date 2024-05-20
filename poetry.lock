@@ -1256,13 +1256,13 @@ Django = ">=2.0"
 
 [[package]]
 name = "django-import-export"
-version = "4.0.0"
+version = "4.0.3"
 description = "Django application and library for importing and exporting data with included admin integration."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "django_import_export-4.0.0-py3-none-any.whl", hash = "sha256:6e8c881ad8ef93ca1f302bbcc39f2b7fc0bb5b3acbdaf4563a6cf271a56c8086"},
-    {file = "django_import_export-4.0.0.tar.gz", hash = "sha256:888bcd4385f92c27ce544fad7ca4cc4f9cf9d84b51cb89e402999a0988afd6f8"},
+    {file = "django_import_export-4.0.3-py3-none-any.whl", hash = "sha256:d55193414cb86994a2dfef47670c6887ee1ab8e5efab4ff0a7335c9cad6418c0"},
+    {file = "django_import_export-4.0.3.tar.gz", hash = "sha256:9762babf66e34da194f96ada2d133585f25c065d237d749a424319a0ddef7e23"},
 ]
 
 [package.dependencies]
@@ -3076,13 +3076,13 @@ crt = ["botocore[crt] (>=1.33.2,<2.0a.0)"]
 
 [[package]]
 name = "sentry-sdk"
-version = "2.0.1"
+version = "2.2.0"
 description = "Python client for Sentry (https://sentry.io)"
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "sentry_sdk-2.0.1-py2.py3-none-any.whl", hash = "sha256:b54c54a2160f509cf2757260d0cf3885b608c6192c2555a3857e3a4d0f84bdb3"},
-    {file = "sentry_sdk-2.0.1.tar.gz", hash = "sha256:c278e0f523f6f0ee69dc43ad26dcdb1202dffe5ac326ae31472e012d941bee21"},
+    {file = "sentry_sdk-2.2.0-py2.py3-none-any.whl", hash = "sha256:674f58da37835ea7447fe0e34c57b4a4277fad558b0a7cb4a6c83bcb263086be"},
+    {file = "sentry_sdk-2.2.0.tar.gz", hash = "sha256:70eca103cf4c6302365a9d7cf522e7ed7720828910eb23d43ada8e50d1ecda9d"},
 ]
 
 [package.dependencies]
@@ -3091,6 +3091,7 @@ urllib3 = ">=1.26.11"
 
 [package.extras]
 aiohttp = ["aiohttp (>=3.5)"]
+anthropic = ["anthropic (>=0.16)"]
 arq = ["arq (>=0.23)"]
 asyncpg = ["asyncpg (>=0.23)"]
 beam = ["apache-beam (>=2.12)"]
@@ -3106,6 +3107,8 @@ flask = ["blinker (>=1.1)", "flask (>=0.11)", "markupsafe"]
 grpcio = ["grpcio (>=1.21.1)"]
 httpx = ["httpx (>=0.16.0)"]
 huey = ["huey (>=2)"]
+huggingface-hub = ["huggingface-hub (>=0.22)"]
+langchain = ["langchain (>=0.0.210)"]
 loguru = ["loguru (>=0.5)"]
 openai = ["openai (>=1.0.0)", "tiktoken (>=0.3.0)"]
 opentelemetry = ["opentelemetry-distro (>=0.35b0)"]
@@ -3409,13 +3412,13 @@ files = [
 
 [[package]]
 name = "types-beautifulsoup4"
-version = "4.12.0.20240504"
+version = "4.12.0.20240511"
 description = "Typing stubs for beautifulsoup4"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "types-beautifulsoup4-4.12.0.20240504.tar.gz", hash = "sha256:d7b7af4ccc52fc22784d33a529695e34329a9bdd5db6a649c9b25cb2c3a148d5"},
-    {file = "types_beautifulsoup4-4.12.0.20240504-py3-none-any.whl", hash = "sha256:84e04e4473b3c79da04d9d1f89d20a38e5cc92f9c080a8e1f9d36a287b350465"},
+    {file = "types-beautifulsoup4-4.12.0.20240511.tar.gz", hash = "sha256:004f6096fdd83b19cdbf6cb10e4eae57b10205eccc365d0a69d77da836012e28"},
+    {file = "types_beautifulsoup4-4.12.0.20240511-py3-none-any.whl", hash = "sha256:7ceda66a93ba28d759d5046d7fec9f4cad2f563a77b3a789efc90bcadafeefd1"},
 ]
 
 [package.dependencies]
@@ -3850,4 +3853,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.12,<3.13"
-content-hash = "d241e9eec7869e2b4165d05c75436dd4496edd009ab8308060e2091f2f8e4771"
+content-hash = "39f083e2b3ee7ce13613f51f61cbfe1ee510da4e244a522d7e18a652ddda4d3e"
