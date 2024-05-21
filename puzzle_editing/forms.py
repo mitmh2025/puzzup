@@ -895,11 +895,11 @@ class TestsolveParticipationForm(forms.ModelForm):
                         ),
                         (
                             2,
-                            "2: easy – doable but challenging for new solvers (e.g. Fish/Students, teammate hunt intro round)",
+                            "2: easy – doable but challenging for new solvers (e.g. Hole in the Ceiling of Hades from 2024, Students from 2021, Fish from 2015, teammate hunt intro round)",
                         ),
                         (
                             3,
-                            "3: somewhat difficult – still straightforward for experienced teams (e.g. Ministry)",
+                            "3: somewhat difficult – still straightforward for experienced teams (e.g. Underworld from 2024, Ministry from 2022)",
                         ),
                         (
                             4,
