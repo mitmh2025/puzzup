@@ -77,7 +77,7 @@ def curr_puzzle_graph_b64(time: str, target_count, width: int = 20, height: int 
     if time in timetypes:
         now = datetime.now()
         plt.xlim(x[-1] - timetypes[time], now)
-    colormap: list[str] = list(matplotlib.cm.get_cmap("tab20").colors)  # type: ignore
+    colormap: list[str] = list(matplotlib.cm.tab20.colors)  # type: ignore
     col = (colormap[::2] + colormap[1::2])[: len(status.STATUSES) - len(exclude)]
     ax.stackplot(np.array(x), np.transpose(y), labels=labels, colors=col[-1::-1])
     if target_count is not None:
