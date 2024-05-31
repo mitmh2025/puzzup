@@ -906,6 +906,7 @@ def send_status_notifications(puzzle: Puzzle) -> None:
 
         if (
             puzzle.status == status.TESTSOLVING
+            and not puzzle.logistics_closed_testsolving
             and settings.DISCORD_TESTSOLVE_HYPE_CHANNEL_ID
         ):
             try:
