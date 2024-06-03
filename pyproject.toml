@@ -54,7 +54,7 @@ ruff = "^0.4.6"
 types-beautifulsoup4 = "^4.12.0.20240511"
 types-boto3 = "^1.0.2"
 types-markdown = "^3.6.0.20240316"
-types-pillow = "^10.2.0.20240415"
+types-pillow = "^10.2.0.20240520"
 types-requests = "^2.31.0.20240406"
 
 [tool.ruff]
