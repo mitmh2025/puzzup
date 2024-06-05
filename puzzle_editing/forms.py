@@ -1008,5 +1008,5 @@ class UploadForm(forms.Form):
         required=True,
         max_length=100,  # confusingly this is filename length, not file size
         widget=forms.ClearableFileInput(attrs={"accept": "application/zip,.zip"}),
-        help_text="Upload a ZIP file containing the puzzle content. Note that the filename should not contain anything sensitive. It should have an index.html file at the root. Please try to keep the file to 10MB or less.",
+        help_text="Upload a ZIP file containing the puzzle content. Note that the filename should not contain anything sensitive. It should have an index.html file at the root. Please try to keep the file to 20MB or less.",
     )

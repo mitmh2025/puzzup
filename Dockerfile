@@ -26,7 +26,7 @@ ENV PYTHONPATH="/usr/src/app:$PYTHONPATH"
 COPY <<'EOF' /etc/nginx/sites-available/default
 server {
     listen 80;
-    client_max_body_size 10m;
+    client_max_body_size 20m;
 
     location / {
         proxy_pass http://127.0.0.1:8000;
