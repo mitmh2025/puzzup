@@ -799,8 +799,9 @@ def puzzle(
             add_system_comment_here("Puzzle flavor unapproved")
         elif "add_author" in request.POST:
             puzzle.authors.add(user)
-            discord.set_puzzle_visibility(c, puzzle, user, True)
-            discord.announce_ppl(c, puzzle.discord_channel_id, authors=[user])
+            if puzzle.discord_channel_id:
+                discord.set_puzzle_visibility(c, puzzle, user, True)
+                discord.announce_ppl(c, puzzle.discord_channel_id, authors=[user])
             add_system_comment_here("Added author " + str(user))
         elif "remove_author" in request.POST:
             puzzle.authors.remove(user)
@@ -808,8 +809,9 @@ def puzzle(
         elif "add_editor" in request.POST:
             check_permission("puzzle_editing.change_round")
             puzzle.editors.add(user)
-            discord.set_puzzle_visibility(c, puzzle, user, True)
-            discord.announce_ppl(c, puzzle.discord_channel_id, editors=[user])
+            if puzzle.discord_channel_id:
+                discord.set_puzzle_visibility(c, puzzle, user, True)
+                discord.announce_ppl(c, puzzle.discord_channel_id, editors=[user])
             add_system_comment_here("Added editor " + str(user))
         elif "remove_editor" in request.POST:
             check_permission("puzzle_editing.change_round")
@@ -818,7 +820,6 @@ def puzzle(
         elif "add_factchecker" in request.POST:
             check_permission("puzzle_editing.change_puzzlefactcheck")
             puzzle.factcheckers.add(user)
-            discord.sync_puzzle_channel(c, puzzle)
             if puzzle.discord_channel_id:
                 discord.announce_ppl(c, puzzle.discord_channel_id, factcheckers=[user])
             add_system_comment_here("Added factchecker " + str(user))
