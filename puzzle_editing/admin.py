@@ -58,8 +58,6 @@ class PuzzleAdmin(admin.ModelAdmin):
         "private_notes",
         "flavor",
         "tags__name",
-        "content",
-        "solution",
         "comments__content",
         "answers__answer",
         "pseudo_answers__answer",
