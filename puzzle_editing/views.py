@@ -809,6 +809,7 @@ def puzzle(
         elif "add_editor" in request.POST:
             check_permission("puzzle_editing.change_round")
             puzzle.editors.add(user)
+            discord.sync_puzzle_channel(c, puzzle)
             if puzzle.discord_channel_id:
                 discord.set_puzzle_visibility(c, puzzle, user, True)
                 discord.announce_ppl(c, puzzle.discord_channel_id, editors=[user])
@@ -820,6 +821,7 @@ def puzzle(
         elif "add_factchecker" in request.POST:
             check_permission("puzzle_editing.change_puzzlefactcheck")
             puzzle.factcheckers.add(user)
+            discord.sync_puzzle_channel(c, puzzle)
             if puzzle.discord_channel_id:
                 discord.announce_ppl(c, puzzle.discord_channel_id, factcheckers=[user])
             add_system_comment_here("Added factchecker " + str(user))
