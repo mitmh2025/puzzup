@@ -1847,8 +1847,9 @@ def testsolve_start(request: AuthenticatedHttpRequest) -> HttpResponse:
         raise PermissionDenied
 
     late_testsolve = status.past_testsolving(puzzle.status)
+    is_joinable = len(participants) == 1 and request.user in participants
     session = TestsolveSession(
-        puzzle=puzzle, joinable=False, late_testsolve=late_testsolve
+        puzzle=puzzle, joinable=is_joinable, late_testsolve=late_testsolve
     )
     session.save()
 
