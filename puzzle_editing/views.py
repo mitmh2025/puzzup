@@ -2335,6 +2335,8 @@ def testsolve_escape(request: AuthenticatedHttpRequest, id: int) -> HttpResponse
         (c := discord.get_client())
         and participation.session.discord_thread_id
         and request.user.discord_user_id
+        and request.user not in participation.session.puzzle.authors.all()
+        and request.user not in participation.session.puzzle.editors.all()
     ):
         try:
             c.remove_member_from_thread(
