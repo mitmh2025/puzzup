@@ -884,13 +884,18 @@ def send_status_notifications(puzzle: Puzzle) -> None:
     ):
         should_hype = True
 
+    re_testing = (
+        puzzle.status == status.TESTSOLVING
+        and puzzle.comments.filter(status_change__in=status.TESTSOLVING).count() > 1
+    )
+
     # Check if this is the first time the puzzle has entered this group of statuses
     if (c := discord.get_client()) and should_hype:
         message = random.choice(DISCORD_NOTICE_CELEBRATION_SENTENCE)
         message += f" Congrats to author(s) {", ".join(discord.mention_users(puzzle.authors.all()))}"
         if puzzle.editors.exists():
             message += f" and editor(s) {', '.join(discord.mention_users(puzzle.editors.all()))}"
-        message += f" on moving{" (metapuzzle)" if puzzle.is_meta else ""} {puzzle.codename} to {status_display}{f" {status_emoji}" if status_emoji else ""}!"
+        message += f" on moving{" (metapuzzle)" if puzzle.is_meta else ""} {puzzle.codename}{" **back**" if re_testing else ""} to {status_display}{f" {status_emoji}" if status_emoji else ""}!"
 
         if puzzle.status == status.TESTSOLVING:
             if puzzle.logistics_closed_testsolving:
