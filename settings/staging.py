@@ -1,8 +1,9 @@
 import sentry_sdk
+from django.core.exceptions import DisallowedHost
 from sentry_sdk.integrations.django import DjangoIntegration
 
 from settings.base import *  # noqa: F403
-from settings.sentry import before_send, before_send_transaction
+from settings.sentry import before_send_transaction
 
 DEBUG = True
 SECURE_SSL_REDIRECT = True
@@ -23,6 +24,6 @@ sentry_sdk.init(
     # django.contrib.auth) you may enable sending PII data.
     send_default_pii=True,
     environment="staging",
-    before_send=before_send,
+    ignore_errors=[DisallowedHost],
     before_send_transaction=before_send_transaction,
 )
