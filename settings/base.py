@@ -155,8 +155,8 @@ AWS_SES_CONFIGURATION_SET = os.environ.get("AWS_SES_CONFIGURATION_SET")
 
 EMAIL_SUBJECT_PREFIX = "[Puzzup] "
 
-DEFAULT_FROM_EMAIL = "puzzup@letswriteahunt.com"
-AUTOPOSTPROD_EMAIL = "puzzup@letswriteahunt.com"
+DEFAULT_FROM_EMAIL = "puzzup@mitmh2025.com"
+AUTOPOSTPROD_EMAIL = "puzzup@mitmh2025.com"
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 # 1 year, in seconds
