@@ -1023,6 +1023,14 @@ body.singleround h2 .round-link {
   border: 1px solid #ccc;
 }
 
+/* Sadly there doesn't seem to be any way to get at Bulma's breakpoints so just reproduce */
+@media screen and (max-width: 1023px) {
+  .jump-to-puzzle-suggestions {
+    top: initial;
+    bottom: calc(100% - 0.5rem);
+  }
+}
+
 .jump-to-puzzle-suggestions:has(li) {
   display: block;
 }
