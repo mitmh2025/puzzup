@@ -827,6 +827,10 @@ table.puzzle-table td p, table.puzzle-table td pre {
   display: none;
 }
 
+.hide-test-already-tested:checked ~ div > table tr.test-already-tested {
+  display: none;
+}
+
 .show-delete-answer:checked ~ .deemph {
   color: var(--deemphasized-color);
   font-size: 80%;
