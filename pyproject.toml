@@ -30,7 +30,7 @@ ipython = "^8.25.0"
 markdown = "^3.6"
 matplotlib = "^3.9.1"
 nh3 = "^0.2.18"
-numpy = "^2.0.0"
+numpy = "^2.0.1"
 Pillow = "^10.4.0"
 psycopg = {extras = ["binary"], version = "^3.2.1"}
 pymdown-extensions = "^10.8"
