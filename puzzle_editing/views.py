@@ -2463,39 +2463,40 @@ def testsolve_finish(request: AuthenticatedHttpRequest, id: int) -> HttpResponse
             participation.ended = datetime.datetime.now()
             participation.save()
 
+            change_status = False
             if first_finish:
                 change_status = session.ended and puzzle.status == status.TESTSOLVING
-                comment_content = "\n\n".join(
-                    filter(
-                        None,
-                        [
-                            "Finished testsolve",
-                            completed_form.cleaned_data["general_feedback"],
-                            completed_form.cleaned_data.get("misc_feedback"),
-                            ratings_text,
-                            f"Automatically moving puzzle to {status.get_display(status.WRITING)}"
-                            if change_status
-                            else None,
-                        ],
-                    )
+            comment_content = "\n\n".join(
+                filter(
+                    None,
+                    [
+                        "Finished testsolve" if first_finish else "Updated feedback",
+                        completed_form.cleaned_data["general_feedback"],
+                        completed_form.cleaned_data.get("misc_feedback"),
+                        ratings_text,
+                        f"Automatically moving puzzle to {status.get_display(status.WRITING)}"
+                        if change_status
+                        else None,
+                    ],
                 )
-                add_comment(
-                    request=request,
-                    puzzle=puzzle,
-                    author=user,
-                    testsolve_session=session,
-                    is_system=False,
-                    is_feedback=True,
-                    send_email=False,
-                    send_discord=True,
-                    content=comment_content,
-                    action_text="finished a testsolve with comment",
-                    status_change=status.WRITING if change_status else "",
-                )
+            )
+            add_comment(
+                request=request,
+                puzzle=puzzle,
+                author=user,
+                testsolve_session=session,
+                is_system=False,
+                is_feedback=True,
+                send_email=False,
+                send_discord=True,
+                content=comment_content,
+                action_text="finished a testsolve with comment",
+                status_change=status.WRITING if change_status else "",
+            )
 
-                if change_status:
-                    puzzle.status = status.WRITING
-                    puzzle.save()
+            if change_status:
+                puzzle.status = status.WRITING
+                puzzle.save()
             return redirect(urls.reverse("testsolve_one", args=[id]))
         else:
             context = {
