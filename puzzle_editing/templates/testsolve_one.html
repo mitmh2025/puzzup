@@ -169,15 +169,15 @@
             {% if session.joinable %}
                 <form class="block" method="POST">
                     {% csrf_token %}
-                    <p>This session is listed as joinable by other solvers.
-                        <button class="button is-small" type="submit" name="change_joinable" value="0">Set as non-joinable</button>
+                    <p>This session is publicly listed for others to join.
+                        <button class="button is-small" type="submit" name="change_joinable" value="0">Set as unlisted</button>
                     </p>
                 </form>
             {% else %}
                 <form class="block" method="POST">
                     {% csrf_token %}
-                    <p>This session is not listed as joinable by other solvers.
-                        <button class="button is-small" type="submit" name="change_joinable" value="1">Set as joinable</button>
+                    <p>Anyone can join this session by going to this URL, but it is not publicly listed.
+                        <button class="button is-small" type="submit" name="change_joinable" value="1">Set as publicly listed</button>
                     </p>
                 </form>
             {% endif %}

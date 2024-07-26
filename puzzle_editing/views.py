@@ -778,7 +778,7 @@ def puzzle(
                         testsolve_session=session,
                         is_system=True,
                         send_email=False,
-                        content="Puzzle status changed, automaticaly marking session as no longer joinable",
+                        content="Puzzle status changed, automaticaly marking session as no longer listed",
                     )
                     session.save()
 
@@ -2131,7 +2131,7 @@ def testsolve_one(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
 
                 if session.joinable:
                     guess_comment += (
-                        " Automatically marking session as no longer joinable."
+                        " Automatically marking session as no longer listed."
                     )
 
                     session.joinable = False
