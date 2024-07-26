@@ -54,9 +54,9 @@ Testsolving occurs on the [Testsolve page](/testsolve). Testsolving is organized
 
 To start a session, go to [Testsolving](/testsolve) and click **Start new session** next to a puzzle under **Puzzles you can testsolve**. This includes all puzzles with the status READY TO BE TESTSOLVED. PuzzUp even allows you to testsolve puzzles you're spoiled on (though you probably shouldn't).
 
-You can also join an ongoing session under **Testsolving sessions you can join**. To make a given session *joinable*, click the "Allow others to join" button. This flag indicates whether a session is looking for new participants, and it can be turned off after the testsolve group has gotten big enough or made enough progress that a separate testsolve would be deemed more useful.
+You can also join an ongoing session under **Publicly listed testsolving sessions**. To make a given session *listed*, click the "Set as publicly listed" button. This flag indicates whether a session is looking for new participants, and it can be turned off after the testsolve group has gotten big enough or made enough progress that a separate testsolve would be deemed more useful.
 
-(Note: anybody can join a testsolving session if they have the URL. So, if you have a group of people you want to testsolve a puzzle with, create a session and send them the link, and they will be able to join without anyone touching the *joinable* switch.)
+(Note: anybody can join a testsolving session if they have the URL. So, if you have a group of people you want to testsolve a puzzle with, create a session and send them the link, and they will be able to join without anyone touching the *listed* switch.)
 
 On a testsolve session's page, you can leave comments, which will be visible to other participants viewing the session as well as to the puzzle author or anybody else viewing the spoilery puzzle page itself.
 
