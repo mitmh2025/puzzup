@@ -11,7 +11,7 @@ authors = ["betaveros", "mitchgu", "jakob223", "dvorak42", "fortenforge", "Sandy
 
 [tool.poetry.dependencies]
 python = ">=3.12,<3.13"
-aiogoogle = "^5.7.0"
+aiogoogle = "^5.12.0"
 asgiref = "^3.8.1"
 beautifulsoup4 = "^4.12.3"
 boto3 = "^1.34.153"

@@ -13,13 +13,13 @@ files = [
 
 [[package]]
 name = "aiogoogle"
-version = "5.7.0"
+version = "5.12.0"
 description = "Async Google API client"
 optional = false
 python-versions = "*"
 files = [
-    {file = "aiogoogle-5.7.0-py3-none-any.whl", hash = "sha256:3429ec126fe34769eeb4bb4d707f62b6774446598cc64c1c406ed4530db545a0"},
-    {file = "aiogoogle-5.7.0.tar.gz", hash = "sha256:ce595232c2fa5d2e012b4fd83f2d57e158c92e1cde638b0a0d4627e418f7a740"},
+    {file = "aiogoogle-5.12.0-py3-none-any.whl", hash = "sha256:b3d6573d806025c2edc7df293be38cf1b7f3c24a53ae461b7608dfdc71086326"},
+    {file = "aiogoogle-5.12.0.tar.gz", hash = "sha256:e6d125a4963d71ec655dee46157fe39bd0d183f79d4700e49cf0aaea69539605"},
 ]
 
 [package.dependencies]
@@ -3862,4 +3862,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.12,<3.13"
-content-hash = "3cc5db662da250303180b118f7e78fcb4adbb03497a650709d0b4aebe1cedfbc"
+content-hash = "145ff42eaa846678575b1003d264aa7fcdd967709e3a2d87d9b7d844ac9a48e8"
