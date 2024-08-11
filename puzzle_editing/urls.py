@@ -50,6 +50,7 @@ urlpatterns = [
         name="puzzle_postprod_metadata",
     ),
     path("puzzle/<int:id>/puzzle.yaml", views.puzzle_yaml, name="puzzle_yaml"),
+    path("puzzle/<int:id>/puzzle.ts", views.puzzle_ts, name="puzzle_ts"),
     path("puzzle/<int:id>/escape", views.puzzle_escape, name="puzzle_escape"),
     re_path(
         rf"^puzzle/(?P<id>\d+)/support/(?P<team>{'|'.join(SupportRequest.Team.values)})$",
