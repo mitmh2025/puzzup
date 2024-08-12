@@ -1326,11 +1326,7 @@ def puzzle_ts(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
 
     additional_credits = []
     for cred in puzzle.other_credits.all():
-        what = {
-            "ART": "Art",
-            "TCH": "Tech",
-            "OTH": "Other",
-        }[cred.credit_type]
+        what = dict(PuzzleCredit.CreditType.choices)[cred.credit_type]
         who = [get_credits_name(u) for u in cred.users.all()] or [cred.text]
         who.sort(key=lambda a: a.upper())
         additional_credits.append(

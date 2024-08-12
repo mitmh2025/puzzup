@@ -1062,9 +1062,10 @@ class PseudoAnswer(models.Model):
 class PuzzleCredit(models.Model):
     """A miscellaneous puzzle credit, such as Art"""
 
-    ART = ("ART", "Art")
-    TECH = ("TCH", "Tech")
-    OTHER = ("OTH", "Other")
+    class CreditType(models.TextChoices):
+        ART = ("ART", "Art")
+        TECH = ("TCH", "Tech")
+        OTHER = ("OTH", "Other")
 
     puzzle = models.ForeignKey(
         Puzzle, related_name="other_credits", on_delete=models.CASCADE
@@ -1075,7 +1076,7 @@ class PuzzleCredit(models.Model):
     text = models.TextField(blank=True)
 
     credit_type = models.CharField(
-        max_length=3, choices=[ART, TECH, OTHER], default=ART[0]
+        max_length=3, choices=CreditType.choices, default=CreditType.ART
     )
 
     class Meta:
