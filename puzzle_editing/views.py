@@ -1297,6 +1297,130 @@ def puzzle_yaml(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
     return HttpResponse(puzzle.get_yaml_fixture(), content_type="text/plain")
 
 
+@login_required
+@permission_required("puzzle_editing.change_puzzlepostprod", raise_exception=True)
+def puzzle_ts(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
+    # Formats in the hunt2025 frontend's PuzzleDefinition format, which is a
+    # TypeScript file which exports an object with a particular set of fields.
+    puzzle = get_object_or_404(Puzzle, id=id)
+
+    metadata = puzzle.metadata
+    title = puzzle.name
+
+    def reindent(s, spaces):
+        return "\n".join([" " * spaces + line for line in s.split("\n")])
+
+    # weirdly, the lead author is not necessarily included in all authors, so
+    # make sure it's included
+    all_authors = set(puzzle.authors.all())
+    lead_author = puzzle.lead_author
+    if lead_author is not None:
+        all_authors.add(lead_author)
+    authors = [get_credits_name(u) for u in all_authors]
+    # sort alphabetically by credits name, case insensitively...
+    authors.sort(key=lambda a: a.upper())
+    # ...but also make sure the lead author is listed first.  Python's sort()
+    # with key is guaranteed to be stable, so we can just do that last
+    if lead_author is not None:
+        authors.sort(key=lambda a: 0 if a == get_credits_name(lead_author) else 1)
+
+    additional_credits = []
+    for cred in puzzle.other_credits.all():
+        what = dict(PuzzleCredit.CreditType.choices)[cred.credit_type]
+        who = [get_credits_name(u) for u in cred.users.all()] or [cred.text]
+        who.sort(key=lambda a: a.upper())
+        additional_credits.append(
+            f"""{{
+  for_what: {json.dumps(what)},
+  who: {json.dumps(who)},
+}}"""
+        )
+    additional_credits_data = (
+        "\n"
+        + ",\n".join([reindent(credit, spaces=4) for credit in additional_credits])
+        + ",\n  "
+        if len(additional_credits) > 0
+        else ""
+    )
+
+    editors = [get_credits_name(u) for u in puzzle.editors.all()]
+    editors.sort(key=lambda a: a.upper())
+
+    def hint_js_data(hint):
+        keywords = [
+            kw.strip() for kw in hint.keywords.split(",") if len(kw.strip()) > 0
+        ]
+        keywords_line = (
+            f"\n  keywords: {json.dumps(keywords)}," if len(keywords) > 0 else ""
+        )
+        return f"""{{
+  order: {json.dumps(hint.order)},
+  description: {json.dumps(hint.description)},{keywords_line}
+  nudge: {json.dumps(hint.content)},
+}}"""
+
+    hints = puzzle.hints.all().order_by("order")
+    hint_data = (
+        "\n"
+        + ",\n".join([reindent(hint_js_data(hint), spaces=4) for hint in hints])
+        + ",\n  "
+        if len(hints) > 0
+        else ""
+    )
+
+    response_to_guesses: dict[str, list[str]] = {}
+    for cr in puzzle.pseudo_answers.all().order_by("answer"):
+        if cr.response not in response_to_guesses:
+            response_to_guesses[cr.response] = []
+        response_to_guesses[cr.response].append(cr.answer)
+    canned_responses = [
+        f"""{{
+  guess: {json.dumps(v)},
+  reply: {json.dumps(k)},
+}}"""
+        for k, v in response_to_guesses.items()
+    ]
+
+    canned_response_data = (
+        "\n"
+        + ",\n".join(
+            [
+                reindent(canned_response, spaces=4)
+                for canned_response in canned_responses
+            ]
+        )
+        + ",\n  "
+        if len(canned_responses) > 0
+        else ""
+    )
+
+    puzzle_data = f"""import {{ type PuzzleDefinition }} from "../types";
+import Puzzle from "./puzzle";
+import Solution from "./solution";
+
+const puzzle: PuzzleDefinition = {{
+  title: {json.dumps(title)},
+  slug: {json.dumps(metadata["puzzle_slug"])},
+  answer: {json.dumps(metadata["answer"])},
+  authors: {json.dumps(authors)},
+  editors: {json.dumps(editors)},
+  additional_credits: [{additional_credits_data}],
+  content: {{
+    component: Puzzle,
+  }},
+  solution: {{
+    component: Solution,
+  }},
+  hints: [{hint_data}],
+  canned_responses: [{canned_response_data}],
+}};
+
+export default puzzle;
+"""
+
+    return HttpResponse(puzzle_data, content_type="text/plain")
+
+
 @auto_postprodding_required
 @permission_required(
     ["puzzle_editing.change_puzzlepostprod", "puzzle_editing.change_round"],
