@@ -2454,7 +2454,11 @@ def testsolve_escape(request: AuthenticatedHttpRequest, id: int) -> HttpResponse
         session=id,
         user=request.user,
     )
+    session = participation.session
     participation.delete()
+    if len(session.active_participants()) == 0:
+        session.joinable = False
+        session.save()
     if (
         (c := discord.get_client())
         and participation.session.discord_thread_id
