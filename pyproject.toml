@@ -24,7 +24,7 @@ django-dirtyfields = "^1.9.3"
 django-import-export = "^4.1.1"
 django-ses = "^4.1.0"
 gitpython = "^3.1.43"
-gunicorn = {extras = ["gevent"], version = "^22.0.0"}
+gunicorn = {extras = ["gevent"], version = "^23.0.0"}
 invoke = "^2.2.0"
 ipython = "^8.25.0"
 markdown = "^3.6"
