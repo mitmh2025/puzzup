@@ -2090,14 +2090,21 @@ def testsolve_finder(request: AuthenticatedHttpRequest) -> HttpResponse:
             user_id__in=solvers
         ).values_list("puzzle_id", "user_id"):
             spoiled[pid].add(uid)
+        already_solved = collections.defaultdict(set)
+        for pid, uid in TestsolveParticipation.objects.filter(
+            user_id__in=solvers
+        ).values_list("session__puzzle_id", "user_id"):
+            already_solved[pid].add(uid)
         for user in users:
             for pdata in puzzle_data:
-                if pdata.puzzle.id in authors[user.id]:
+                if user.id in authors[pdata.puzzle.id]:
                     pdata.user_data.append("📝 Author")
-                elif pdata.puzzle.id in editors[user.id]:
+                elif user.id in editors[pdata.puzzle.id]:
                     pdata.user_data.append("💬 Editor")
-                elif pdata.puzzle.id in spoiled[user.id]:
+                elif user.id in spoiled[pdata.puzzle.id]:
                     pdata.user_data.append("👀 Spoiled")
+                elif user.id in already_solved[pdata.puzzle.id]:
+                    pdata.user_data.append("✅ Solved")
                 else:
                     pdata.user_data.append("❓ Unspoiled")
                     pdata.unspoiled_count += 1
@@ -2454,7 +2461,11 @@ def testsolve_escape(request: AuthenticatedHttpRequest, id: int) -> HttpResponse
         session=id,
         user=request.user,
     )
+    session = participation.session
     participation.delete()
+    if len(session.active_participants()) == 0:
+        session.joinable = False
+        session.save()
     if (
         (c := discord.get_client())
         and participation.session.discord_thread_id
