@@ -1749,7 +1749,7 @@ class Hint(models.Model):
         max_length=1000,
         blank=False,
         null=False,
-        help_text='A description of when this hint should apply; e.g. "The solvers have not yet figured out that the mirrors represent word transformations"',
+        help_text='A description of when this hint should apply; e.g. "Solvers have done X and currently have..."',
     )
     keywords = models.CharField(
         max_length=100,
