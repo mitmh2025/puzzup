@@ -318,6 +318,11 @@ def _sync_puzzle_info_post(c: Client | None, puzzle: m.Puzzle) -> None:
                     f"* Here's a Google Doc where you can write your puzzle content: [Puzzle content]({settings.PUZZUP_URL}{urls.reverse('puzzle_content', kwargs={'id': puzzle.id})})\n"
                     f"* And another Google Doc for your solution here: [Puzzle solution]({settings.PUZZUP_URL}{urls.reverse('puzzle_solution', kwargs={'id': puzzle.id})})\n"
                     f"* Finally, a Google Drive folder where you can put any additional resources: [Puzzle resources]({settings.PUZZUP_URL}{urls.reverse('puzzle_resource', kwargs={'id': puzzle.id})})\n"
+                    "* And if anyone needs a refresher on our puzzle-writing workflow, here are some helpful informational links:\n"
+                    "  * [Lifecycle of a Puzzle](https://docs.google.com/document/d/1Wo4_iRIb0nBEAfg9LmBLwuwO-EY-SHYKopeIPSh03O8/edit)\n"
+                    "  * [Puzzle Philosophy](https://docs.google.com/document/d/1HbXOgu337vRS8MSLRSX6o3ReO_IezGdP-R8LVOeNJzk/edit)\n"
+                    "  * [Expectations for Authors and Editors](https://docs.google.com/document/d/1uuS6Gj7tIe2qr_Nd1Gq_Xh6mSyAx7Qi_3bQMD04qemc/edit)\n"
+                    "  * [Canned Hint Style Guide](https://docs.google.com/document/d/1jkuTdEr4Rd-Mbwd_4XpeZzEPY4uzIkO51Rcg8QIbE-I/edit)"
                 ),
                 "fields": [
                     {
