@@ -1995,7 +1995,8 @@ def testsolve_start(request: AuthenticatedHttpRequest) -> HttpResponse:
             f"A few resources for you to work with:\n"
             f"* Here is the testsolve page in PuzzUp with the answer checker and feedback form: [PuzzUp]({testsolve_url})\n"
             f"* Here is a **read-only copy** of the puzzle for you to testsolve: [Google Doc]({puzzle_content_url})\n"
-            f"* Here is a Google Sheet to work in: [Google Sheet]({sheet_url})"
+            f"* Here is a Google Sheet to work in: [Google Sheet]({sheet_url})\n"
+            "* Here is our [How to Testsolve MH2025](https://docs.google.com/document/d/15Q8ikvrjIt_tBo1eMXn2N79aeLOL1vEelkz6lXjVEdM/edit) guide"
         )
         if late_testsolve:
             message_text += (

@@ -345,7 +345,8 @@
                 </h3>
                 {% if puzzle.has_postprod %}<p><b>See <a href="{{ puzzle.postprod_url }}">the postprodded puzzle</a>.</b></p>{% endif %}
                 {% if puzzle.content_google_doc_id %}
-                    <p><a href="{% url 'puzzle_content' puzzle.id %}" target="_blank">Edit content in Google Docs</a></p>
+                    <p><a href="{% url 'puzzle_content' puzzle.id %}" target="_blank">Edit content in Google Docs</a>.</p>
+                    <p>(This is what will be given directly to testsolvers and used as the foundation for post-production on the Hunt website)</p>
                 {% else %}
                     <div class="empty">(no puzzle yet)</div>
                 {% endif %}
