@@ -792,9 +792,6 @@ class Puzzle(DirtyFieldsMixin, models.Model):
 
 DISCORD_NOTICE_STATUS_GROUPS = [
     {
-        status.IN_DEVELOPMENT,
-    },
-    {
         status.AWAITING_ANSWER,
         status.WRITING_FLEXIBLE,
     },
