@@ -1,20 +1,21 @@
-import asyncio
 import re
 import urllib.parse
-from typing import TYPE_CHECKING, Self
+from typing import Self
 
-from aiogoogle import Aiogoogle  # type: ignore
-from aiogoogle.auth.creds import ServiceAccountCreds  # type: ignore
 from bs4 import BeautifulSoup
 from django.conf import settings
-
-if TYPE_CHECKING:
-    from puzzle_editing import models as m
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
 
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive",
 ]
+
+
+def enabled():
+    """Returns true if the django settings enable discord."""
+    return "credentials" in settings.DRIVE_SETTINGS
 
 
 TYPE_FOLDER = "application/vnd.google-apps.folder"
@@ -30,220 +31,155 @@ class GoogleManager:
         """
         Get a single instance per process.
         """
-        if (
-            cls.__instance is None
-            and "credentials" in settings.DRIVE_SETTINGS
-            and settings.PUZZLE_DRAFT_FOLDER_ID
-            and settings.PUZZLE_SOLUTION_FOLDER_ID
-            and settings.PUZZLE_RESOURCES_FOLDER_ID
-            and settings.TESTSOLVING_FOLDER_ID
-            and settings.FACTCHECKING_FOLDER_ID
-        ):
-            cls.__instance = cls(
-                puzzle_draft_folder_id=settings.PUZZLE_DRAFT_FOLDER_ID,
-                puzzle_solution_folder_id=settings.PUZZLE_SOLUTION_FOLDER_ID,
-                puzzle_resources_folder_id=settings.PUZZLE_RESOURCES_FOLDER_ID,
-                testsolving_folder_id=settings.TESTSOLVING_FOLDER_ID,
-                factchecking_folder_id=settings.FACTCHECKING_FOLDER_ID,
-            )
+        if cls.__instance is None:
+            cls.__instance = cls()
         return cls.__instance
 
-    def __init__(
-        self,
-        puzzle_draft_folder_id: str,
-        puzzle_solution_folder_id: str,
-        puzzle_resources_folder_id: str,
-        testsolving_folder_id: str,
-        factchecking_folder_id: str,
-    ) -> None:
-        self.creds = ServiceAccountCreds(
+    def __init__(self):
+        self.creds = service_account.Credentials.from_service_account_info(
+            settings.DRIVE_SETTINGS["credentials"],
             scopes=SCOPES,
-            **settings.DRIVE_SETTINGS["credentials"],
         )
-        self.puzzle_draft_folder_id = puzzle_draft_folder_id
-        self.puzzle_solution_folder_id = puzzle_solution_folder_id
-        self.puzzle_resources_folder_id = puzzle_resources_folder_id
-        self.testsolving_folder_id = testsolving_folder_id
-        self.factchecking_folder_id = factchecking_folder_id
+        self.drive = build("drive", "v3", credentials=self.creds)
+        self.spreadsheets = build("sheets", "v4", credentials=self.creds).spreadsheets()
 
-        async def fetch_apis():
-            async with Aiogoogle(service_account_creds=self.creds) as aiogoogle:
-                drive = await aiogoogle.discover("drive", "v3")
-                sheets = await aiogoogle.discover("sheets", "v4")
-                return drive, sheets
-
-        self.drive, self.sheets = asyncio.run(fetch_apis())
-
-    def make_aiogoogle(self) -> Aiogoogle:
-        return Aiogoogle(service_account_creds=self.creds)
-
-    async def _move_to_folder(
-        self, aiogoogle: Aiogoogle, file_id: str, folder_id: str
-    ) -> None:
+    def move_to_folder(self, file_id, folder_id):
         # file_id is allowed to be a folder
-        response = await aiogoogle.as_service_account(
-            self.drive.files.get(
-                fileId=file_id, fields="parents", supportsAllDrives=True
-            )
+        existing_parents = ",".join(
+            self.drive.files()
+            .get(fileId=file_id, fields="parents", supportsAllDrives=True)
+            .execute()["parents"]
         )
-        existing_parents = ",".join(response["parents"])
-        await aiogoogle.as_service_account(
-            self.drive.files.update(
-                fileId=file_id,
-                addParents=folder_id,
-                removeParents=existing_parents,
-                supportsAllDrives=True,
-            )
-        )
+        self.drive.files().update(
+            body={},
+            fileId=file_id,
+            addParents=folder_id,
+            removeParents=existing_parents,
+            supportsAllDrives=True,
+        ).execute()
 
-    async def _make_file_public_view(self, aiogoogle: Aiogoogle, file_id: str) -> None:
-        await aiogoogle.as_service_account(
-            self.drive.permissions.create(
-                fileId=file_id,
-                json={"role": "reader", "type": "anyone"},
-                supportsAllDrives=True,
-            )
-        )
+    def make_file_public_view(self, file_id: str) -> None:
+        self.drive.permissions().create(
+            fileId=file_id,
+            body={"role": "reader", "type": "anyone"},
+            supportsAllDrives=True,
+        ).execute()
 
-    async def _make_file_public_edit(self, aiogoogle: Aiogoogle, file_id: str) -> None:
-        await aiogoogle.as_service_account(
-            self.drive.permissions.create(
-                fileId=file_id,
-                json={"role": "writer", "type": "anyone"},
-                supportsAllDrives=True,
-            )
-        )
+    def make_file_public_edit(self, file_id: str) -> None:
+        self.drive.permissions().create(
+            fileId=file_id,
+            body={"role": "writer", "type": "anyone"},
+            supportsAllDrives=True,
+        ).execute()
 
-    async def _make_file_public_file_organizer(
-        self, aiogoogle: Aiogoogle, file_id: str
-    ) -> None:
-        await aiogoogle.as_service_account(
-            self.drive.permissions.create(
-                fileId=file_id,
-                json={"role": "fileOrganizer", "type": "anyone"},
-                supportsAllDrives=True,
-            )
-        )
+    def make_file_public_file_organizer(self, file_id: str) -> None:
+        self.drive.permissions().create(
+            fileId=file_id,
+            body={"role": "fileOrganizer", "type": "anyone"},
+            supportsAllDrives=True,
+        ).execute()
 
-    async def _create_file(
-        self, aiogoogle: Aiogoogle, name: str, parent: str, type: str
-    ) -> str:
-        response = await aiogoogle.as_service_account(
-            self.drive.files.create(
-                json={
-                    "name": name,
-                    "mimeType": type,
-                    "parents": [parent],
-                },
+    def create_file(self, name: str, parent: str, type: str) -> str:
+        file_metadata = {
+            "name": name,
+            "mimeType": type,
+            "parents": [parent],
+        }
+        return (
+            self.drive.files()
+            .create(
+                body=file_metadata,
                 supportsAllDrives=True,
                 fields="id",
             )
+            .execute()
+            .get("id")
         )
-        return response["id"]
 
-    async def create_puzzle_content_doc(
-        self, aiogoogle: Aiogoogle, puzzle: "m.Puzzle"
-    ) -> str:
-        content_id = await self._create_file(
-            aiogoogle,
+    def create_puzzle_content_doc(self, puzzle):
+        content_id = self.create_file(
             name=f"{puzzle.id:03d} ({puzzle.codename})",
             type=TYPE_DOC,
-            parent=self.puzzle_draft_folder_id,
+            parent=settings.PUZZLE_DRAFT_FOLDER_ID,
         )
-        await self._make_file_public_edit(aiogoogle, content_id)
+        self.make_file_public_edit(content_id)
         return content_id
 
-    async def create_puzzle_solution_doc(
-        self, aiogoogle: Aiogoogle, puzzle: "m.Puzzle"
-    ) -> str:
+    def create_puzzle_solution_doc(self, puzzle):
         # Create a solution document
-        solution_id = await self._create_file(
-            aiogoogle,
+        solution_id = self.create_file(
             name=f"{puzzle.id:03d} ({puzzle.codename}) Solution",
             type=TYPE_DOC,
-            parent=self.puzzle_solution_folder_id,
+            parent=settings.PUZZLE_SOLUTION_FOLDER_ID,
         )
-        await self._make_file_public_edit(aiogoogle, solution_id)
+        self.make_file_public_edit(solution_id)
         return solution_id
 
-    async def create_puzzle_resources_folder(
-        self, aiogoogle: Aiogoogle, puzzle: "m.Puzzle"
-    ) -> str:
-        resources_id = await self._create_file(
-            aiogoogle,
+    def create_puzzle_resources_folder(self, puzzle):
+        resources_id = self.create_file(
             name=f"{puzzle.id:03d} ({puzzle.codename}) Resources",
             type=TYPE_FOLDER,
-            parent=self.puzzle_resources_folder_id,
+            parent=settings.PUZZLE_RESOURCES_FOLDER_ID,
         )
-        await self._make_file_public_file_organizer(aiogoogle, resources_id)
+        self.make_file_public_file_organizer(resources_id)
+
         return resources_id
 
-    async def create_testsolving_folder(
-        self, aiogoogle: Aiogoogle, session: "m.TestsolveSession"
-    ) -> tuple[str, str]:
-        folder_id = await self._create_file(
-            aiogoogle,
+    def create_testsolving_folder(self, session):
+        folder_id = self.create_file(
             name=f"Testsolve #{session.id} ({session.puzzle.codename})",
             type=TYPE_FOLDER,
-            parent=self.testsolving_folder_id,
+            parent=settings.TESTSOLVING_FOLDER_ID,
         )
 
-        async def create_testsolve_sheet():
-            sheet_id = await self._create_sheet(
-                aiogoogle,
-                title=f"{session.puzzle.name} (Testsolve #{session.id} Worksheet)",
-                text="Puzzup Testsolve Session",
-                url=f"{settings.PUZZUP_URL}/testsolve/{session.id}",
-                folder_id=folder_id,
-            )
-            await self._make_file_public_edit(aiogoogle, sheet_id)
-            return sheet_id
-
-        async def create_testsolve_content():
-            response = await aiogoogle.as_service_account(
-                self.drive.files.copy(
-                    fileId=session.puzzle.content_google_doc_id,
-                    fields="id",
-                    supportsAllDrives=True,
-                    json={
-                        "name": f"{session.puzzle.name} (Testsolve #{session.id} read-only copy)",
-                        "parents": [folder_id],
-                    },
-                )
-            )
-            content_id = response["id"]
-            await self._make_file_public_view(aiogoogle, content_id)
-            return content_id
-
-        return await asyncio.gather(
-            create_testsolve_content(), create_testsolve_sheet()
+        sheet_id = self._create_sheet(
+            title=f"{session.puzzle.name} (Testsolve #{session.id} Worksheet)",
+            text="Puzzup Testsolve Session",
+            url=f"{settings.PUZZUP_URL}/testsolve/{session.id}",
+            folder_id=folder_id,
         )
+        self.make_file_public_edit(sheet_id)
 
-    async def create_factchecking_sheet(
-        self, aiogoogle: Aiogoogle, puzzle: "m.Puzzle"
-    ) -> str:
+        content_id = (
+            self.drive.files()
+            .copy(
+                fileId=session.puzzle.content_google_doc_id,
+                fields="id",
+                supportsAllDrives=True,
+                body={
+                    "name": f"{session.puzzle.name} (Testsolve #{session.id} read-only copy)",
+                    "parents": [folder_id],
+                },
+            )
+            .execute()
+            .get("id")
+        )
+        self.make_file_public_view(content_id)
+
+        return content_id, sheet_id
+
+    def create_factchecking_sheet(self, puzzle):
         # Look up the existing puzzle folder, if any
         file_name = puzzle.spoiler_free_title()
-        response = await aiogoogle.as_service_account(
-            self.drive.files.copy(
+        template_id = (
+            self.drive.files()
+            .copy(
                 fileId=settings.FACTCHECKING_TEMPLATE_ID,
                 fields="id",
                 supportsAllDrives=True,
-                json={"name": f"{puzzle.id} {file_name} Factcheck"},
+                body={"name": f"{puzzle.id} {file_name} Factcheck"},
             )
+            .execute()
+            .get("id")
         )
-        template_id = response["id"]
-
-        await self._move_to_folder(aiogoogle, template_id, self.factchecking_folder_id)
+        self.move_to_folder(template_id, settings.FACTCHECKING_FOLDER_ID)
         return template_id
 
-    async def _create_sheet(
-        self, aiogoogle: Aiogoogle, title: str, text: str, url: str, folder_id: str
-    ) -> str:
+    def _create_sheet(self, title, text, url, folder_id):
         """Creates spreadsheet where top-left cell is text that goes to given URL."""
-        response = await aiogoogle.as_service_account(
-            self.sheets.spreadsheets.create(
-                json={
+        spreadsheet_id = (
+            self.spreadsheets.create(
+                body={
                     "properties": {
                         "title": title,
                     },
@@ -271,19 +207,16 @@ class GoogleManager:
                 },
                 fields="spreadsheetId",
             )
+            .execute()
+            .get("spreadsheetId")
         )
-        spreadsheet_id = response["spreadsheetId"]
 
-        await self._move_to_folder(aiogoogle, spreadsheet_id, folder_id)
+        self.move_to_folder(spreadsheet_id, folder_id)
         return spreadsheet_id
 
-    async def get_gdoc_html(self, aiogoogle, file_id):
-        return await aiogoogle.as_service_account(
-            self.drive.files.export(
-                fileId=file_id,
-                mimeType="text/html",
-            )
-        )
+    def get_gdoc_html(self, file_id):
+        html = self.drive.files().export(fileId=file_id, mimeType="text/html").execute()
+        return self.clean_html(html)
 
     def clean_html(self, html):
         """Cleans up some garbage exported from Google Docs using beautiful soup."""

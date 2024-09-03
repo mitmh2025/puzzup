@@ -240,8 +240,6 @@ credentials_file = BASE_DIR / "credentials/drive-credentials.json"
 if credentials_file.is_file():
     with credentials_file.open() as f:
         DRIVE_SETTINGS["credentials"] = json.load(f)
-        if "universe_domain" in DRIVE_SETTINGS["credentials"]:
-            del DRIVE_SETTINGS["credentials"]["universe_domain"]
 TESTSOLVING_FOLDER_ID = os.environ.get("TESTSOLVING_FOLDER_ID")
 PUZZLE_DRAFT_FOLDER_ID = os.environ.get("PUZZLE_DRAFT_FOLDER_ID")
 PUZZLE_SOLUTION_FOLDER_ID = os.environ.get("PUZZLE_SOLUTION_FOLDER_ID")
