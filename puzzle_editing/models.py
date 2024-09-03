@@ -1,4 +1,3 @@
-import asyncio
 import datetime
 import logging
 import random
@@ -939,50 +938,23 @@ def pre_save_puzzle(sender, instance, **kwargs):
 
 
 @receiver(post_save, sender=Puzzle)
-def post_save_puzzle(sender, instance: Puzzle, created: bool, **kwargs) -> None:
+def post_save_puzzle(sender, instance, created, **kwargs):
     changed = False
 
     discord.sync_puzzle_channel(discord.get_client(), instance)
 
-    if gm := google.GoogleManager.instance():
-
-        async def make_puzzle_content(aiogoogle) -> str:
-            return await gm.create_puzzle_content_doc(aiogoogle, instance)
-
-        async def make_puzzle_solution(aiogoogle) -> str:
-            return await gm.create_puzzle_solution_doc(aiogoogle, instance)
-
-        async def make_puzzle_resources(aiogoogle) -> str:
-            return await gm.create_puzzle_resources_folder(aiogoogle, instance)
-
-        async def noop() -> None:
-            return None
-
-        async def make_puzzle_files(
-            make_content: bool, make_solution: bool, make_resources: bool
-        ) -> tuple[str | None, str | None, str | None]:
-            async with gm.make_aiogoogle() as aiogoogle:
-                return await asyncio.gather(
-                    make_puzzle_content(aiogoogle) if make_content else noop(),
-                    make_puzzle_solution(aiogoogle) if make_solution else noop(),
-                    make_puzzle_resources(aiogoogle) if make_resources else noop(),
-                )
-
-        content_id, solution_id, resources_id = asyncio.run(
-            make_puzzle_files(
-                not instance.content_google_doc_id,
-                not instance.solution_google_doc_id,
-                not instance.resource_google_folder_id,
+    if google.enabled():
+        gm = google.GoogleManager.instance()
+        if not instance.content_google_doc_id:
+            instance.content_google_doc_id = gm.create_puzzle_content_doc(instance)
+            changed = True
+        if not instance.solution_google_doc_id:
+            instance.solution_google_doc_id = gm.create_puzzle_solution_doc(instance)
+            changed = True
+        if not instance.resource_google_folder_id:
+            instance.resource_google_folder_id = gm.create_puzzle_resources_folder(
+                instance
             )
-        )
-        if content_id:
-            instance.content_google_doc_id = content_id
-            changed = True
-        if solution_id:
-            instance.solution_google_doc_id = solution_id
-            changed = True
-        if resources_id:
-            instance.resource_google_folder_id = resources_id
             changed = True
 
     if instance.status == status.NEEDS_FACTCHECK and not getattr(
@@ -1225,20 +1197,15 @@ class PuzzleFactcheck(models.Model):
 
 
 @receiver(post_save, sender=PuzzleFactcheck)
-def post_save_factcheck(
-    sender, instance: PuzzleFactcheck, created: bool, **kwargs
-) -> None:
+def post_save_factcheck(sender, instance, created, **kwargs):
     if not created:
         return
 
     changed = False
-    if gm := google.GoogleManager.instance():
-
-        async def make_factchecking_sheet() -> str:
-            async with gm.make_aiogoogle() as aiogoogle:
-                return await gm.create_factchecking_sheet(aiogoogle, instance.puzzle)
-
-        instance.google_sheet_id = asyncio.run(make_factchecking_sheet())
+    if google.enabled():
+        instance.google_sheet_id = (
+            google.GoogleManager.instance().create_factchecking_sheet(instance.puzzle)
+        )
         changed = True
 
     if changed:
@@ -1435,16 +1402,13 @@ def post_save_testsolve_session(
         return
 
     content_id, sheet_id = "", ""
-    if gm := google.GoogleManager.instance():
-
-        async def make_testsolving_folder() -> tuple[str, str]:
-            async with gm.make_aiogoogle() as aiogoogle:
-                return await gm.create_testsolving_folder(aiogoogle, instance)
-
-        try:
-            content_id, sheet_id = asyncio.run(make_testsolving_folder())
-        except Exception as e:
-            logger.exception("Failed to create Google sheet", exc_info=e)
+    try:
+        (
+            content_id,
+            sheet_id,
+        ) = google.GoogleManager.instance().create_testsolving_folder(instance)
+    except Exception as e:
+        logger.exception("Failed to create Google sheet", exc_info=e)
 
     try:
         c = discord.get_client()
