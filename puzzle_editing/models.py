@@ -1401,6 +1401,13 @@ def post_save_testsolve_session(
     if not created:
         return
 
+    try:
+        c = discord.get_client()
+        if c:
+            discord.make_testsolve_thread(c, instance)
+    except Exception as e:
+        logger.exception("Failed to create Discord thread", exc_info=e)
+
     content_id, sheet_id = "", ""
     try:
         (
@@ -1409,13 +1416,6 @@ def post_save_testsolve_session(
         ) = google.GoogleManager.instance().create_testsolving_folder(instance)
     except Exception as e:
         logger.exception("Failed to create Google sheet", exc_info=e)
-
-    try:
-        c = discord.get_client()
-        if c:
-            discord.make_testsolve_thread(c, instance)
-    except Exception as e:
-        logger.exception("Failed to create Discord thread", exc_info=e)
 
     changed = False
     if sheet_id:
