@@ -1975,7 +1975,7 @@ def testsolve_start(request: AuthenticatedHttpRequest) -> HttpResponse:
         len(participants) == 1 and request.user in participants and not late_testsolve
     )
     session = TestsolveSession(
-        puzzle=puzzle, joinable=is_joinable, late_testsolve=late_testsolve
+        puzzle=puzzle, joinable=False, late_testsolve=late_testsolve
     )
     session.save()
 
@@ -2031,6 +2031,9 @@ def testsolve_start(request: AuthenticatedHttpRequest) -> HttpResponse:
 
     for p in participants:
         TestsolveParticipation(session=session, user=p, in_discord_thread=True).save()
+
+    session.joinable = is_joinable
+    session.save()
 
     add_comment(
         request=request,
