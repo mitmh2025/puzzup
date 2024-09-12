@@ -2274,12 +2274,12 @@ def testsolve_one(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
                     session.joinable = False
                     session.save()
 
-                    # Send a congratulatory message to the thread.
-                    discord.safe_post_message(
-                        c,
-                        session.discord_thread_id,
-                        f":tada: Congratulations on solving this puzzle! :tada:\nTime since testsolve started: {session.time_since_started}",
-                    )
+                # Send a congratulatory message to the thread.
+                discord.safe_post_message(
+                    c,
+                    session.discord_thread_id,
+                    f":tada: Congratulations on solving this puzzle! :tada:\nTime since testsolve started: {session.time_since_started}",
+                )
 
                 if changing_status:
                     guess_comment += f" Automatically moving puzzle to {status.get_display(status.WRITING)}."

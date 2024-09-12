@@ -1622,20 +1622,20 @@ grpcio-gcp = ["grpcio-gcp (>=0.2.2,<1.0.dev0)"]
 
 [[package]]
 name = "google-api-python-client"
-version = "2.116.0"
+version = "2.144.0"
 description = "Google API Client Library for Python"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "google-api-python-client-2.116.0.tar.gz", hash = "sha256:f9f32361e16114d62929638fe07f77be30216b079ad316dc2ced859d9f72e5ad"},
-    {file = "google_api_python_client-2.116.0-py2.py3-none-any.whl", hash = "sha256:846e44417c6b7385fa5f5a46cb6b9d23327754c560830245ee53a577c5e44cec"},
+    {file = "google_api_python_client-2.144.0-py2.py3-none-any.whl", hash = "sha256:f9c333ac4454a012adca90c297f9a22611a8953f3aae5481f90b3a56b9bdd413"},
+    {file = "google_api_python_client-2.144.0.tar.gz", hash = "sha256:fe00851b257157bca600e1692ed8a54762c4a5c7d9eb7f6d4822059424b0d0a9"},
 ]
 
 [package.dependencies]
 google-api-core = ">=1.31.5,<2.0.dev0 || >2.3.0,<3.0.0.dev0"
-google-auth = ">=1.19.0,<3.0.0.dev0"
-google-auth-httplib2 = ">=0.1.0"
-httplib2 = ">=0.15.0,<1.dev0"
+google-auth = ">=1.32.0,<2.24.0 || >2.24.0,<2.25.0 || >2.25.0,<3.0.0.dev0"
+google-auth-httplib2 = ">=0.2.0,<1.0.0"
+httplib2 = ">=0.19.0,<1.dev0"
 uritemplate = ">=3.0.1,<5"
 
 [[package]]
@@ -1694,13 +1694,13 @@ httplib2 = ">=0.19.0"
 
 [[package]]
 name = "google-auth-stubs"
-version = "0.2.0"
+version = "0.3.0"
 description = "Type stubs for google-auth"
 optional = false
-python-versions = ">=3.6.2,<4.0.0"
+python-versions = "<4.0.0,>=3.6.2"
 files = [
-    {file = "google-auth-stubs-0.2.0.tar.gz", hash = "sha256:96085d3b7f704f44231a19683a57f7e77e964168ad2251302beae9136405d0d7"},
-    {file = "google_auth_stubs-0.2.0-py3-none-any.whl", hash = "sha256:98ed66dfd75687569c257a0cbb09c0f614eed22106955edcb2f05c6617899c6a"},
+    {file = "google_auth_stubs-0.3.0-py3-none-any.whl", hash = "sha256:0afb7d537956447774d98879dd5fddd0543e0a5f1b582787adb6ce392d6fdd25"},
+    {file = "google_auth_stubs-0.3.0.tar.gz", hash = "sha256:0e8834a7130c99d4338d28892df082c64c6dc3bc57abdab9a095d93e6a3d737e"},
 ]
 
 [package.dependencies]
@@ -2923,13 +2923,13 @@ windows-terminal = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "pylint"
-version = "3.2.6"
+version = "3.2.7"
 description = "python code static checker"
 optional = false
 python-versions = ">=3.8.0"
 files = [
-    {file = "pylint-3.2.6-py3-none-any.whl", hash = "sha256:03c8e3baa1d9fb995b12c1dbe00aa6c4bcef210c2a2634374aedeb22fb4a8f8f"},
-    {file = "pylint-3.2.6.tar.gz", hash = "sha256:a5d01678349454806cff6d886fb072294f56a58c4761278c97fb557d708e1eb3"},
+    {file = "pylint-3.2.7-py3-none-any.whl", hash = "sha256:02f4aedeac91be69fb3b4bea997ce580a4ac68ce58b89eaefeaf06749df73f4b"},
+    {file = "pylint-3.2.7.tar.gz", hash = "sha256:1b7a721b575eaeaa7d39db076b6e7743c993ea44f57979127c517c6c572c803e"},
 ]
 
 [package.dependencies]
@@ -4052,4 +4052,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.12,<3.13"
-content-hash = "af4dea4818d3d8b238a3f93e2530f426c36014a23abb59cd95abb80b7f1c0567"
+content-hash = "0d36a7d8000e9207bceff5c1bf8b1283e4f12049485d486f850b2eb0f682f6b7"
