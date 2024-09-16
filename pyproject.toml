@@ -27,7 +27,7 @@ google-api-python-client = "2.144.0"
 gunicorn = {extras = ["gevent"], version = "^23.0.0"}
 invoke = "^2.2.0"
 ipython = "^8.27.0"
-markdown = "^3.6"
+markdown = "^3.7"
 matplotlib = "^3.9.2"
 nh3 = "^0.2.18"
 numpy = "^2.1.0"
