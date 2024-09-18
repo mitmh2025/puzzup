@@ -50,11 +50,7 @@
                         {% if coordinator %}
                             <td>{{ session.get_done_participants_display }}</td>
                         {% endif %}
-                        {% if session.is_expired %}
-                            <td style="background-color: lightsalmon;">{{ session.time_since_started }}</td>
-                        {% else %}
-                            <td>{{ session.time_since_started }}</td>
-                        {% endif %}
+                        <td sorttable_customkey="-{{ session.started|date:"U" }}"{% if session.is_expired %} style="background-color: lightsalmon;"{% endif %}>{{ session.time_since_started }}</td>
                         {% if show_notes %}
                             <td class="small-md">{{ session.notes|markdown }}</td>
                         {% endif %}
