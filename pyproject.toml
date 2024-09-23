@@ -45,7 +45,7 @@ whitenoise = "^6.7.0"
 daphne = "^4.1.2"
 django-stubs = {extras = ["compatible-mypy"], version = "^4.2.7"}
 djhtml = "^3.0.6"
-google-api-python-client-stubs = "^1.23.0"
+google-api-python-client-stubs = "^1.27.0"
 google-auth-stubs = "^0.3.0"
 mypy = "<1.8.0"
 pre-commit = "^3.8.0"
