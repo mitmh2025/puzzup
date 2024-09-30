@@ -474,8 +474,8 @@ class PuzzleInfoForm(forms.ModelForm):
         model = Puzzle
         fields = (
             "name",
-            "authors",
             "lead_author",
+            "authors",
             "authors_addl",
             "summary",
             "description",
