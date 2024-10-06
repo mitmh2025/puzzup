@@ -1401,6 +1401,7 @@ import Solution from "./solution";
 const puzzle: PuzzleDefinition = {{
   title: {json.dumps(title)},
   slug: {json.dumps(metadata["puzzle_slug"])},
+  initial_description: {json.dumps(puzzle.summary)},
   answer: {json.dumps(metadata["answer"])},
   authors: {json.dumps(authors)},
   editors: {json.dumps(editors)},
