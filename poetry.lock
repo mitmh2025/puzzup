@@ -2991,19 +2991,18 @@ pylint = ">=1.7"
 
 [[package]]
 name = "pylsp-mypy"
-version = "0.6.8"
+version = "0.6.9"
 description = "Mypy linter for the Python LSP Server"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pylsp-mypy-0.6.8.tar.gz", hash = "sha256:3f8307ca07d7e253e50e38c5fe31c371ceace0bc33d31c3429fa035d6d41bd5f"},
-    {file = "pylsp_mypy-0.6.8-py3-none-any.whl", hash = "sha256:3ea7c406d0f100317a212d8cd39075a2c139f1a4a2866d4412fe531b3f23b381"},
+    {file = "pylsp_mypy-0.6.9-py3-none-any.whl", hash = "sha256:9b73ece2977b22b5fc75dfec1cc491bf2031955e3da4062d924a5cc22a278151"},
+    {file = "pylsp_mypy-0.6.9.tar.gz", hash = "sha256:d28994a6ba123c3918ce3274a5cad768418650e575001002101c425ad6c7bbaa"},
 ]
 
 [package.dependencies]
 mypy = ">=0.981"
 python-lsp-server = ">=1.7.0"
-tomli = ">=1.1.0"
 
 [package.extras]
 test = ["coverage", "pytest", "pytest-cov", "tox"]
@@ -3496,17 +3495,6 @@ pandas = ["pandas"]
 xls = ["xlrd", "xlwt"]
 xlsx = ["openpyxl (>=2.6.0)"]
 yaml = ["pyyaml"]
-
-[[package]]
-name = "tomli"
-version = "2.0.1"
-description = "A lil' TOML parser"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "tomli-2.0.1-py3-none-any.whl", hash = "sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc"},
-    {file = "tomli-2.0.1.tar.gz", hash = "sha256:de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f"},
-]
 
 [[package]]
 name = "tomlkit"
@@ -4064,4 +4052,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.12,<3.13"
-content-hash = "603cf482e2f732346ab0a08ff77572b612cd1da4f9df5d2d33878552409f5364"
+content-hash = "f89ed1f15805ec179a3007da5210f5a9af531fab9bbd7bcd295160b05987b1f6"
