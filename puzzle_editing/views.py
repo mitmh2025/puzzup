@@ -41,7 +41,7 @@ from django.db.models import (
     Subquery,
 )
 from django.db.models.functions import Lower
-from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.http import Http404, HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils.http import urlencode
@@ -3065,6 +3065,10 @@ def rounds(request: AuthenticatedHttpRequest, id: int | None = None) -> HttpResp
         }
         for round in round_objs
     ]
+
+    if id and not rounds:
+        msg = "Round not found"
+        raise Http404(msg)
 
     return render(
         request,
