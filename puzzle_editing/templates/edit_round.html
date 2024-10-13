@@ -34,6 +34,7 @@
 
         <h2>Delete round</h2>
         <form method="post">
+            {% csrf_token %}
             {% if has_answers %}Remove all this round's answers in order to delete it.{% else %}
                 <input type="checkbox" name="sure-delete" class="sure-delete" id="sure-delete"><label for="sure-delete">I want to delete the {{round.name}} round.</label><br>
                 <input type="submit" name="delete" value="Delete round" class="delete-round-button">
