@@ -13,6 +13,7 @@ WRITING_FLEXIBLE = "WF"
 TESTSOLVING = "T"
 NEEDS_SOLUTION = "NS"
 AWAITING_ANSWER_FLEXIBLE = "AF"
+AWAITING_MANUFACTURING = "AM"
 NEEDS_POSTPROD = "NP"
 AWAITING_POSTPROD_APPROVAL = "AP"
 NEEDS_FACTCHECK = "NF"
@@ -34,6 +35,7 @@ STATUSES = [
     TESTSOLVING,
     NEEDS_SOLUTION,
     AWAITING_ANSWER_FLEXIBLE,
+    AWAITING_MANUFACTURING,
     NEEDS_POSTPROD,
     AWAITING_POSTPROD_APPROVAL,
     NEEDS_FACTCHECK,
@@ -69,6 +71,7 @@ def past_testsolving(status):
 EIC = "editor-in-chief"
 AUTHORS_AND_EDITORS = "the author(s) and editors"
 TESTSOLVERS = "testsolve coordinators"
+FABRICATORS = "fabricators"
 POSTPRODDERS = "postprodders"
 FACTCHECKERS = "factcheckers"
 NOBODY = "nobody"
@@ -77,6 +80,7 @@ BLOCKERS = [
     EIC,
     AUTHORS_AND_EDITORS,
     TESTSOLVERS,
+    FABRICATORS,
     POSTPRODDERS,
     FACTCHECKERS,
     NOBODY,
@@ -138,12 +142,19 @@ BLOCKERS_AND_TRANSITIONS: dict[str, tuple[str, list[tuple[str, str]]]] = {
                 AWAITING_ANSWER_FLEXIBLE,
                 "✅ Solution finshed 🤷🏽‍♀️ need round and answer",
             ),
+            (AWAITING_MANUFACTURING, "✅ Solution finshed 🔨 needs manufacturing"),
         ],
     ),
     AWAITING_ANSWER_FLEXIBLE: (
         EIC,
         [
             (NEEDS_POSTPROD, "✅ Round and answer assigned 🪵 request postprod"),
+        ],
+    ),
+    AWAITING_MANUFACTURING: (
+        FABRICATORS,
+        [
+            (NEEDS_POSTPROD, "🪵 Ready for postprod"),
         ],
     ),
     NEEDS_POSTPROD: (
@@ -212,6 +223,7 @@ DESCRIPTIONS = {
     TESTSOLVING: "In Testsolving",
     NEEDS_SOLUTION: "Finalizing Solution",
     AWAITING_ANSWER_FLEXIBLE: "Puzzle Written, Waiting for Round",
+    AWAITING_MANUFACTURING: "Awaiting Manufacturing",
     NEEDS_POSTPROD: "Ready for Postprodding",
     AWAITING_POSTPROD_APPROVAL: "Awaiting Approval After Postprod",
     NEEDS_FACTCHECK: "Factchecking",
@@ -232,6 +244,7 @@ EMOJIS = {
     TESTSOLVING: "💡",
     AWAITING_ANSWER_FLEXIBLE: "⏳",
     NEEDS_SOLUTION: "🧪",
+    AWAITING_MANUFACTURING: "🔨",
     NEEDS_POSTPROD: "🪵",
     AWAITING_POSTPROD_APPROVAL: "🧐",
     NEEDS_FINAL_DAY_FACTCHECK: "📆",
