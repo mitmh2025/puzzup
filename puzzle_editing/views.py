@@ -87,7 +87,7 @@ from puzzle_editing.forms import (
     UserMultipleChoiceField,
     UserTimezoneForm,
 )
-from puzzle_editing.graph import curr_puzzle_graph_b64
+from puzzle_editing.graph import curr_puzzle_graph_b64, curr_round_graph_b64
 from puzzle_editing.models import (
     CommentReaction,
     DiscordTextChannelCache,
@@ -3430,6 +3430,7 @@ def statistics(request: AuthenticatedHttpRequest) -> HttpResponse:
         .prefetch_related("answers__puzzles")
         .order_by("name")
     ]
+    byround_base64 = curr_round_graph_b64(byround, height=len(byround))
 
     return render(
         request,
@@ -3440,6 +3441,7 @@ def statistics(request: AuthenticatedHttpRequest) -> HttpResponse:
             "answers": answers,
             "byround": byround,
             "image_base64": image_base64,
+            "byround_base64": byround_base64,
             "past_writing": past_writing,
             "past_testsolving": past_testsolving,
             "target_count": target_count,

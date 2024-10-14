@@ -1622,13 +1622,13 @@ grpcio-gcp = ["grpcio-gcp (>=0.2.2,<1.0.dev0)"]
 
 [[package]]
 name = "google-api-python-client"
-version = "2.147.0"
+version = "2.149.0"
 description = "Google API Client Library for Python"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "google_api_python_client-2.147.0-py2.py3-none-any.whl", hash = "sha256:c6ecfa193c695baa41e84562d8f8f244fcd164419eca3fc9fd7565646668f9b2"},
-    {file = "google_api_python_client-2.147.0.tar.gz", hash = "sha256:e864c2cf61d34c00f05278b8bdb72b93b6fa34f0de9ead51d20435f3b65f91be"},
+    {file = "google_api_python_client-2.149.0-py2.py3-none-any.whl", hash = "sha256:1a5232e9cfed8c201799d9327e4d44dc7ea7daa3c6e1627fca41aa201539c0da"},
+    {file = "google_api_python_client-2.149.0.tar.gz", hash = "sha256:b9d68c6b14ec72580d66001bd33c5816b78e2134b93ccc5cf8f624516b561750"},
 ]
 
 [package.dependencies]
@@ -1640,17 +1640,17 @@ uritemplate = ">=3.0.1,<5"
 
 [[package]]
 name = "google-api-python-client-stubs"
-version = "1.27.0"
+version = "1.28.0"
 description = "Type stubs for google-api-python-client"
 optional = false
-python-versions = "<4.0,>=3.7"
+python-versions = ">=3.7"
 files = [
-    {file = "google_api_python_client_stubs-1.27.0-py3-none-any.whl", hash = "sha256:3c1f9f2a7cac8d1e9a7e84ed24e6c29cf4c643b0f94e39ed09ac1b7e91ab239a"},
-    {file = "google_api_python_client_stubs-1.27.0.tar.gz", hash = "sha256:148e16613e070969727f39691e23a73cdb87c65a4fc8133abd4c41d17b80b313"},
+    {file = "google_api_python_client_stubs-1.28.0-py3-none-any.whl", hash = "sha256:75b3dfe67b9d74ac3b58d78725326836769d0b2df1cbef354a5455a5cc57d68d"},
+    {file = "google_api_python_client_stubs-1.28.0.tar.gz", hash = "sha256:7327c058fb5ba975309922f962f17931b9c82af51d95a5dc04061ed0c20b9f06"},
 ]
 
 [package.dependencies]
-google-api-python-client = ">=2.141.0"
+google-api-python-client = ">=2.147.0"
 types-httplib2 = ">=0.22.0.2"
 typing-extensions = ">=3.10.0"
 
@@ -2959,17 +2959,17 @@ testutils = ["gitpython (>3)"]
 
 [[package]]
 name = "pylint-django"
-version = "2.5.5"
+version = "2.6.1"
 description = "A Pylint plugin to help Pylint understand the Django web framework"
 optional = false
-python-versions = ">=3.7,<4.0"
+python-versions = "<4.0,>=3.9"
 files = [
-    {file = "pylint_django-2.5.5-py3-none-any.whl", hash = "sha256:5abd5c2228e0e5e2a4cb6d0b4fc1d1cef1e773d0be911412f4dd4fc1a1a440b7"},
-    {file = "pylint_django-2.5.5.tar.gz", hash = "sha256:2f339e4bf55776958283395c5139c37700c91bd5ef1d8251ef6ac88b5abbba9b"},
+    {file = "pylint-django-2.6.1.tar.gz", hash = "sha256:19e8c85a8573a04e3de7be2ba91e9a7c818ebf05e1b617be2bbae67a906b725f"},
+    {file = "pylint_django-2.6.1-py3-none-any.whl", hash = "sha256:359f68fe8c810ee6bc8e1ab4c83c19b15a43b234a24b08978f47a23462b5ce28"},
 ]
 
 [package.dependencies]
-pylint = ">=2.0,<4"
+pylint = ">=3.0,<4"
 pylint-plugin-utils = ">=0.8"
 
 [package.extras]
@@ -3303,13 +3303,13 @@ crt = ["botocore[crt] (>=1.33.2,<2.0a.0)"]
 
 [[package]]
 name = "sentry-sdk"
-version = "2.14.0"
+version = "2.16.0"
 description = "Python client for Sentry (https://sentry.io)"
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "sentry_sdk-2.14.0-py2.py3-none-any.whl", hash = "sha256:b8bc3dc51d06590df1291b7519b85c75e2ced4f28d9ea655b6d54033503b5bf4"},
-    {file = "sentry_sdk-2.14.0.tar.gz", hash = "sha256:1e0e2eaf6dad918c7d1e0edac868a7bf20017b177f242cefe2a6bcd47955961d"},
+    {file = "sentry_sdk-2.16.0-py2.py3-none-any.whl", hash = "sha256:49139c31ebcd398f4f6396b18910610a0c1602f6e67083240c33019d1f6aa30c"},
+    {file = "sentry_sdk-2.16.0.tar.gz", hash = "sha256:90f733b32e15dfc1999e6b7aca67a38688a567329de4d6e184154a73f96c6892"},
 ]
 
 [package.dependencies]
@@ -3332,6 +3332,7 @@ falcon = ["falcon (>=1.4)"]
 fastapi = ["fastapi (>=0.79.0)"]
 flask = ["blinker (>=1.1)", "flask (>=0.11)", "markupsafe"]
 grpcio = ["grpcio (>=1.21.1)", "protobuf (>=3.8.0)"]
+http2 = ["httpcore[http2] (==1.*)"]
 httpx = ["httpx (>=0.16.0)"]
 huey = ["huey (>=2)"]
 huggingface-hub = ["huggingface-hub (>=0.22)"]
@@ -4052,4 +4053,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.12,<3.13"
-content-hash = "d7cb8944015529971f92c0b151a6fe54be7b125ea8b524c848ead0b19573da0e"
+content-hash = "6f971e62ac7dcd42f753400ae4944250217e06b8bdedfe7d101cf4f6cc20fadc"
