@@ -1640,17 +1640,17 @@ uritemplate = ">=3.0.1,<5"
 
 [[package]]
 name = "google-api-python-client-stubs"
-version = "1.27.0"
+version = "1.28.0"
 description = "Type stubs for google-api-python-client"
 optional = false
-python-versions = "<4.0,>=3.7"
+python-versions = ">=3.7"
 files = [
-    {file = "google_api_python_client_stubs-1.27.0-py3-none-any.whl", hash = "sha256:3c1f9f2a7cac8d1e9a7e84ed24e6c29cf4c643b0f94e39ed09ac1b7e91ab239a"},
-    {file = "google_api_python_client_stubs-1.27.0.tar.gz", hash = "sha256:148e16613e070969727f39691e23a73cdb87c65a4fc8133abd4c41d17b80b313"},
+    {file = "google_api_python_client_stubs-1.28.0-py3-none-any.whl", hash = "sha256:75b3dfe67b9d74ac3b58d78725326836769d0b2df1cbef354a5455a5cc57d68d"},
+    {file = "google_api_python_client_stubs-1.28.0.tar.gz", hash = "sha256:7327c058fb5ba975309922f962f17931b9c82af51d95a5dc04061ed0c20b9f06"},
 ]
 
 [package.dependencies]
-google-api-python-client = ">=2.141.0"
+google-api-python-client = ">=2.147.0"
 types-httplib2 = ">=0.22.0.2"
 typing-extensions = ">=3.10.0"
 
@@ -4052,4 +4052,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.12,<3.13"
-content-hash = "d7cb8944015529971f92c0b151a6fe54be7b125ea8b524c848ead0b19573da0e"
+content-hash = "e6ea2ed05067c713c2dfa88df318efa797c3aa67028c9a053593007993942c9d"
