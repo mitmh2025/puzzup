@@ -3410,6 +3410,27 @@ def statistics(request: AuthenticatedHttpRequest) -> HttpResponse:
         request.GET.get("time", "alltime"), target_count
     )
 
+    byround = [
+        {
+            "name": round.name,
+            "unassigned": round.answers.filter(puzzles__isnull=True).count(),
+            "writing": round.answers.filter(
+                puzzles__status__in=[
+                    s for s in status.STATUSES if not status.past_writing(s)
+                ]
+            ).count(),
+            "testing": round.answers.filter(puzzles__status=status.TESTSOLVING).count(),
+            "done": round.answers.filter(
+                puzzles__status__in=[
+                    s for s in status.STATUSES if status.past_testsolving(s)
+                ]
+            ).count(),
+        }
+        for round in Round.objects.all()
+        .prefetch_related("answers__puzzles")
+        .order_by("name")
+    ]
+
     return render(
         request,
         "statistics.html",
@@ -3417,6 +3438,7 @@ def statistics(request: AuthenticatedHttpRequest) -> HttpResponse:
             "status": statuses,
             "tags": tags,
             "answers": answers,
+            "byround": byround,
             "image_base64": image_base64,
             "past_writing": past_writing,
             "past_testsolving": past_testsolving,
