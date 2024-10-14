@@ -36,6 +36,33 @@
         </div>
     </div>
 
+    {% if byround %}
+        <div class="box">
+            <div>
+                <h2>By Round</h2>
+                <p>Note: This tabulation may not exactly match reality in cases where PuzzUp is not able to exactly represent our hunt structure.</p>
+                <table class="classic">
+                    <tr align="left">
+                        <th>Round</th>
+                        <th>Unassigned</th>
+                        <th>Writing</th>
+                        <th>Testsolving</th>
+                        <th>Done</th>
+                    </tr>
+                    {% for r in byround %}
+                        <tr>
+                            <td>{{ r.name }}</td>
+                            <td>{{ r.unassigned }}</td>
+                            <td>{{ r.writing }}</td>
+                            <td>{{ r.testing }}</td>
+                            <td>{{ r.done }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+    {% endif %}
+
     <div class="box">
         <div>
             <h2>Other Stuff</h2>
