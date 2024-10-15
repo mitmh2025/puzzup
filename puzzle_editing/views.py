@@ -3410,7 +3410,8 @@ def statistics(request: AuthenticatedHttpRequest) -> HttpResponse:
         request.GET.get("time", "alltime"), target_count
     )
 
-    byround = [
+    FLOATER_ROUND_NAMES = ["Floaters", "Gala Interactions", "Interim Answers"]
+    byround_all = [
         {
             "name": round.name,
             "unassigned": round.answers.filter(puzzles__isnull=True).count(),
@@ -3426,10 +3427,60 @@ def statistics(request: AuthenticatedHttpRequest) -> HttpResponse:
                 ]
             ).count(),
         }
-        for round in Round.objects.all()
+        for round in Round.objects.exclude(name__in=FLOATER_ROUND_NAMES)
         .prefetch_related("answers__puzzles")
         .order_by("name")
     ]
+
+    floaters = {
+        "name": "Floaters",
+        "unassigned": 0,
+        "writing": 0,
+        "testing": 0,
+        "done": 0,
+    }
+    # floaters, interim answers, and gala interactions are all functionally floaters
+    # for each of these, if the puzzle has > 1 answer, then don't count it
+    # against the floaters
+    for floater_round in FLOATER_ROUND_NAMES:
+        puzzles_in_round = (
+            Puzzle.objects.annotate(num_answers=Count("answers"))
+            .filter(answers__round=floater_round)
+            .filter(num_answers=1)
+        )
+        floaters["writing"] += puzzles_in_round.filter(
+            status__in=[s for s in status.STATUSES if not status.past_writing(s)]
+        ).count()
+        floaters["testing"] += puzzles_in_round.filter(
+            status=status.TESTSOLVING
+        ).count()
+        floaters["done"] += puzzles_in_round.filter(
+            status__in=[s for s in status.STATUSES if status.past_testsolving(s)]
+        ).count()
+
+    # manually massage byround to collapse some rounds
+    byround = []
+    locations = {
+        "name": "Locations",
+        "unassigned": 0,
+        "writing": 0,
+        "testing": 0,
+        "done": 0,
+    }
+    for data in byround_all:
+        if "1st Round" in data["name"]:
+            # this should collapse all the location rounds + the metas into a single entry
+            locations["unassigned"] += data["unassigned"]
+            locations["writing"] += data["writing"]
+            locations["testing"] += data["testing"]
+            locations["done"] += data["done"]
+        elif data["name"] in FLOATER_ROUND_NAMES:
+            # skip these in case they somehow ended up in the count
+            pass
+        else:
+            byround.append(data)
+    byround.extend([floaters, locations])
+
     byround_base64 = curr_round_graph_b64(byround, height=len(byround))
 
     return render(
