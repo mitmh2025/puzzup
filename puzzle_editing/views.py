@@ -3460,7 +3460,7 @@ def statistics(request: AuthenticatedHttpRequest) -> HttpResponse:
 
     # manually massage byround to collapse some rounds
     byround: list[dict[str, Any]] = []
-    locations: dict[str, Any]  = {
+    locations: dict[str, Any] = {
         "name": "Locations",
         "unassigned": 0,
         "writing": 0,
@@ -3478,13 +3478,15 @@ def statistics(request: AuthenticatedHttpRequest) -> HttpResponse:
             # skip these in case they somehow ended up in the count
             pass
         elif data["name"] == "Illegal Search":
-            byround.append({
-                "name": "Illegal Search",
-                "unassigned": 2,  # hardcode
-                "writing": data["writing"],
-                "testing": data["testing"],
-                "done": data["done"],
-            })
+            byround.append(
+                {
+                    "name": "Illegal Search",
+                    "unassigned": 2,  # hardcode
+                    "writing": data["writing"],
+                    "testing": data["testing"],
+                    "done": data["done"],
+                }
+            )
         else:
             byround.append(data)
     byround.extend([floaters, locations])
