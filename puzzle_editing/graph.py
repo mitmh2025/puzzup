@@ -112,7 +112,7 @@ STATUS_LABELS = {
     "unassigned": "Unassigned",
     "writing": "In writing or revision",
     "testing": "In testing",
-    "done": "Done",
+    "done": "Past testing",
 }
 
 
