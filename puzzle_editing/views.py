@@ -17,7 +17,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from functools import reduce
 from pathlib import Path
-from typing import TypedDict
+from typing import Any, TypedDict
 
 import boto3
 import requests
