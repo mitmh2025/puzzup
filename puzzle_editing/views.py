@@ -3411,9 +3411,9 @@ def statistics(request: AuthenticatedHttpRequest) -> HttpResponse:
     )
 
     FLOATER_ROUND_NAMES = ["Floaters", "Gala Interactions", "Interim Answers"]
-    byround_all = [
+    byround_all: list[dict[str, Any]] = [
         {
-            "name": round.name,
+            "name": round.name.replace("Side Investigation: ", ""),
             "unassigned": round.answers.filter(puzzles__isnull=True).count(),
             "writing": round.answers.filter(
                 puzzles__status__in=[
@@ -3432,7 +3432,7 @@ def statistics(request: AuthenticatedHttpRequest) -> HttpResponse:
         .order_by("name")
     ]
 
-    floaters = {
+    floaters: dict[str, Any] = {
         "name": "Floaters",
         "unassigned": 0,
         "writing": 0,
@@ -3459,8 +3459,8 @@ def statistics(request: AuthenticatedHttpRequest) -> HttpResponse:
         ).count()
 
     # manually massage byround to collapse some rounds
-    byround = []
-    locations = {
+    byround: list[dict[str, Any]] = []
+    locations: dict[str, Any]  = {
         "name": "Locations",
         "unassigned": 0,
         "writing": 0,
@@ -3477,6 +3477,14 @@ def statistics(request: AuthenticatedHttpRequest) -> HttpResponse:
         elif data["name"] in FLOATER_ROUND_NAMES:
             # skip these in case they somehow ended up in the count
             pass
+        elif data["name"] == "Illegal Search":
+            byround.append({
+                "name": "Illegal Search",
+                "unassigned": 2,  # hardcode
+                "writing": data["writing"],
+                "testing": data["testing"],
+                "done": data["done"],
+            })
         else:
             byround.append(data)
     byround.extend([floaters, locations])
