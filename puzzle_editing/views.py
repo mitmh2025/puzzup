@@ -2607,7 +2607,14 @@ def testsolve_finish(request: AuthenticatedHttpRequest, id: int) -> HttpResponse
 
             change_status = False
             if first_finish:
-                change_status = session.ended and puzzle.status == status.TESTSOLVING
+                transition_time = puzzle.most_recent_transition_to_status(
+                    status.TESTSOLVING
+                )
+                change_status = (
+                    session.ended
+                    and puzzle.status == status.TESTSOLVING
+                    and (transition_time is None or transition_time < session.started)
+                )
             comment_content = "\n\n".join(
                 filter(
                     None,
@@ -2674,7 +2681,12 @@ def testsolve_close(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
             instance=session,
         )
         if completed_form.is_valid():
-            change_status = puzzle.status == status.TESTSOLVING
+            transition_time = puzzle.most_recent_transition_to_status(
+                status.TESTSOLVING
+            )
+            change_status = puzzle.status == status.TESTSOLVING and (
+                transition_time is None or transition_time < session.started
+            )
             # Post a comment and send to discord when closing
             if not session.ended:
                 comment_content = "\n\n".join(

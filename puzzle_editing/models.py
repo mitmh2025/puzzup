@@ -587,6 +587,10 @@ class Puzzle(DirtyFieldsMixin, models.Model):
             for s, description in status.get_transitions(self.status)
         ]
 
+    def most_recent_transition_to_status(self, stat):
+        comment = self.comments.filter(status_change=stat).order_by("-date").first()
+        return comment.date if comment else None
+
     def get_emails(self, exclude_emails=()):
         # tcs = User.objects.filter(groups__name__in=['Testsolve Coordinators']).exclude(email="").values_list("email", flat=True)
 
