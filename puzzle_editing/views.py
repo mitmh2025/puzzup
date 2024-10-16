@@ -3445,7 +3445,7 @@ def statistics(request: AuthenticatedHttpRequest) -> HttpResponse:
     for floater_round in FLOATER_ROUND_NAMES:
         puzzles_in_round = (
             Puzzle.objects.annotate(num_answers=Count("answers"))
-            .filter(answers__round=floater_round)
+            .filter(answers__round__name=floater_round)
             .filter(num_answers=1)
         )
         floaters["writing"] += puzzles_in_round.filter(
