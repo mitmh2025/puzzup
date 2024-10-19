@@ -1,3 +1,5 @@
+{% load markdown %}
+
 <div class="box">
     <h2>
         Logistics Info
@@ -75,6 +77,14 @@
             <span>Yes</span>
         {% else %}
             <span>No</span>
+        {% endif %}
+    </div>
+    <div>
+        Factcheck Notes:
+        {% if logistics_info.logistics_factcheck_notes %}
+            <span>{{ logistics_info.logistics_factcheck_notes|markdown }}</span>
+        {% else %}
+            <span class="empty">(not rated)</span>
         {% endif %}
     </div>
     <div>
