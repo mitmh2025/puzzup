@@ -3473,7 +3473,7 @@ def statistics(request: AuthenticatedHttpRequest) -> HttpResponse:
     # manually massage byround to collapse some rounds
     byround: list[dict[str, Any]] = []
     locations: dict[str, Any] = {
-        "name": "Locations",
+        "name": "Missing Diamond",
         "unassigned": 0,
         "writing": 0,
         "testing": 0,
