@@ -3473,7 +3473,7 @@ def statistics(request: AuthenticatedHttpRequest) -> HttpResponse:
     # manually massage byround to collapse some rounds
     byround: list[dict[str, Any]] = []
     locations: dict[str, Any] = {
-        "name": "Locations",
+        "name": "Missing Diamond",
         "unassigned": 0,
         "writing": 0,
         "testing": 0,
@@ -3504,7 +3504,7 @@ def statistics(request: AuthenticatedHttpRequest) -> HttpResponse:
     byround.insert(0, locations)
     byround.append(floaters)
 
-    byround_base64 = curr_round_graph_b64(byround, height=len(byround))
+    byround_base64 = curr_round_graph_b64(byround, height=2 * len(byround))
 
     return render(
         request,
