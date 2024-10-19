@@ -475,6 +475,9 @@ class Puzzle(DirtyFieldsMixin, models.Model):
         help_text="Are any facts or statuses of things outside the puzzle used in the puzzle that could possibly change before hunt, e.g. the ice cream flavors available at a certain store, or content on an external webpage? If so, factchecking will do a final day check.",
         default=False,
     )
+    logistics_factcheck_notes = models.TextField(
+        blank=True, help_text="Any special notes for factchecking about this puzzle."
+    )
     # Additional logistics information
     logistics_number_testsolvers = models.CharField(max_length=512, blank=True)
     logistics_testsolve_length = models.CharField(max_length=512, blank=True)
