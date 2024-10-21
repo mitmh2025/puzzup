@@ -44,7 +44,7 @@ whitenoise = "^6.7.0"
 [tool.poetry.group.dev.dependencies]
 daphne = "^4.1.2"
 django-stubs = {extras = ["compatible-mypy"], version = "^4.2.7"}
-djhtml = "^3.0.6"
+djhtml = "^3.0.7"
 google-api-python-client-stubs = "^1.28.0"
 google-auth-stubs = "^0.3.0"
 mypy = "<1.8.0"
