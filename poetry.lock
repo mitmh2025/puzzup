@@ -1300,12 +1300,12 @@ typing-extensions = "*"
 
 [[package]]
 name = "djhtml"
-version = "3.0.6"
+version = "3.0.7"
 description = "Django/Jinja template indenter"
 optional = false
 python-versions = "*"
 files = [
-    {file = "djhtml-3.0.6.tar.gz", hash = "sha256:abfc4d7b4730432ca6a98322fbdf8ae9d6ba254ea57ba3759a10ecb293bc57de"},
+    {file = "djhtml-3.0.7.tar.gz", hash = "sha256:558c905b092a0c8afcbed27dea2f50aa6eb853a658b309e4e0f2bb378bdf6178"},
 ]
 
 [package.extras]
@@ -4053,4 +4053,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.12,<3.13"
-content-hash = "c36f7f62a0b3f92fcfc5c4d9203369e83b611b89f067ae6552cb6c29b167c968"
+content-hash = "1928bafc16eef8c44f6fc6364308ecb71311751a4c27afb79f05a73ab7f21207"
