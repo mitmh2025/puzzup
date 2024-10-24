@@ -823,6 +823,7 @@ def puzzle(
             puzzle.factcheckers.add(user)
             discord.sync_puzzle_channel(c, puzzle)
             if puzzle.discord_channel_id:
+                discord.set_puzzle_visibility(c, puzzle, user, True)
                 discord.announce_ppl(c, puzzle.discord_channel_id, factcheckers=[user])
             add_system_comment_here("Added factchecker " + str(user))
         elif "remove_factchecker" in request.POST:
@@ -832,6 +833,10 @@ def puzzle(
         elif "add_postprodder" in request.POST:
             check_permission("puzzle_editing.change_puzzlepostprod")
             puzzle.postprodders.add(user)
+            discord.sync_puzzle_channel(c, puzzle)
+            if puzzle.discord_channel_id:
+                discord.set_puzzle_visibility(c, puzzle, user, True)
+                discord.announce_ppl(c, puzzle.discord_channel_id, postprodders=[user])
             add_system_comment_here("Added postprodder " + str(user))
         elif "remove_postprodder" in request.POST:
             check_permission("puzzle_editing.change_puzzlepostprod")
@@ -1590,7 +1595,7 @@ def puzzle_people(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
         if form.is_valid():
             added = {}
             if form.changed_data:
-                for key in ["authors", "editors", "factcheckers"]:
+                for key in ["authors", "editors", "postprodders", "factcheckers"]:
                     if key not in form.cleaned_data:
                         continue
                     added[key] = set(form.cleaned_data[key]) - set(

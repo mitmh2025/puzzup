@@ -122,7 +122,10 @@ def init_perms(c: Client, u: m.User):
     if not c or not u.discord_user_id:
         return
     must_see_puzzle = (
-        Q(authors__pk=u.pk) | Q(editors__pk=u.pk) | Q(factcheckers__pk=u.pk)
+        Q(authors__pk=u.pk)
+        | Q(editors__pk=u.pk)
+        | Q(postprodders__pk=u.pk)
+        | Q(factcheckers__pk=u.pk)
     )
     puzzles = set(m.Puzzle.objects.filter(must_see_puzzle))
     for p in puzzles:
@@ -189,6 +192,7 @@ def _build_puzzle_channel_updates(
     autheds = itertools.chain(
         puzzle.authors.all(),
         puzzle.editors.all(),
+        puzzle.postprodders.all(),
         puzzle.factcheckers.all(),
     )
     must_see = {a.discord_user_id for a in autheds if a.discord_user_id}
@@ -456,6 +460,7 @@ def announce_ppl(
     channel_id: str,
     authors: Iterable[m.User] = (),
     editors: Iterable[m.User] = (),
+    postprodders: Iterable[m.User] = (),
     factcheckers: Iterable[m.User] = (),
 ):
     """Announces new spoiled users and editors.
@@ -467,6 +472,7 @@ def announce_ppl(
     msg = []
     authors = set(authors)
     editors = set(editors)
+    postprodders = set(postprodders)
     factcheckers = set(factcheckers)
     if authors:
         tags = mention_users(authors, skip_missing=False)
@@ -474,6 +480,9 @@ def announce_ppl(
     if editors:
         tags = mention_users(editors, skip_missing=False)
         msg.append(f"New editor(s): {', '.join(tags)}")
+    if postprodders:
+        tags = mention_users(postprodders, skip_missing=False)
+        msg.append(f"New postprodder(s): {', '.join(tags)}")
     if factcheckers:
         tags = mention_users(factcheckers, skip_missing=False)
         msg.append(f"New factcheckers(s): {', '.join(tags)}")
