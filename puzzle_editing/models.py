@@ -322,18 +322,24 @@ class PuzzleTag(models.Model):
 
 
 def generate_codename():
+    used_codenames = Puzzle.objects.values_list("codename", flat=True)
+    used_adjs = {name.split("-", 1)[0] for name in used_codenames}
+    used_nouns = {name.split("-", 1)[-1] for name in used_codenames}
+
     with (settings.BASE_DIR / "puzzle_editing/data/nouns-eng.txt").open() as f:
-        nouns = [line.strip() for line in f.readlines()]
+        nouns = {line.strip() for line in f.readlines()}
+    nouns = list(nouns - used_nouns if nouns - used_nouns else nouns)
     random.shuffle(nouns)
 
     with (settings.BASE_DIR / "puzzle_editing/data/adj-eng.txt").open() as g:
-        adjs = [line.strip() for line in g.readlines()]
+        adjs = {line.strip() for line in g.readlines()}
+    adjs = list(set(adjs) - used_adjs if set(adjs) - used_adjs else adjs)
     random.shuffle(adjs)
 
     try:
         name = adjs.pop() + "-" + nouns.pop()
         while Puzzle.objects.filter(codename=name).exists():
-            name = adjs.pop() + " " + nouns.pop()
+            name = adjs.pop() + "-" + nouns.pop()
     except IndexError:
         return "Make up your own name!"
 
