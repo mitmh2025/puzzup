@@ -3864,13 +3864,13 @@ files = [
 
 [[package]]
 name = "whitenoise"
-version = "6.7.0"
+version = "6.8.2"
 description = "Radically simplified static file serving for WSGI applications"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 files = [
-    {file = "whitenoise-6.7.0-py3-none-any.whl", hash = "sha256:a1ae85e01fdc9815d12fa33f17765bc132ed2c54fa76daf9e39e879dd93566f6"},
-    {file = "whitenoise-6.7.0.tar.gz", hash = "sha256:58c7a6cd811e275a6c91af22e96e87da0b1109e9a53bb7464116ef4c963bf636"},
+    {file = "whitenoise-6.8.2-py3-none-any.whl", hash = "sha256:df12dce147a043d1956d81d288c6f0044147c6d2ab9726e5772ac50fb45d2280"},
+    {file = "whitenoise-6.8.2.tar.gz", hash = "sha256:486bd7267a375fa9650b136daaec156ac572971acc8bf99add90817a530dd1d4"},
 ]
 
 [package.extras]
@@ -4053,4 +4053,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.12,<3.13"
-content-hash = "00e17d59bc6cda28c49f9b84365ada9670c4bb0f103dc8c5c2b23c572da0d2db"
+content-hash = "ff6245f1862c9230a7f91f5a32c734d96c6fbfe9bbc13e5cfffc69ee19ed759e"
