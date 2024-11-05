@@ -3498,7 +3498,7 @@ def statistics(request: AuthenticatedHttpRequest) -> HttpResponse:
             byround.append(
                 {
                     "name": "Illegal Search",
-                    "unassigned": 2,  # hardcode
+                    "unassigned": 1,  # hardcode
                     "writing": data["writing"],
                     "testing": data["testing"],
                     "done": data["done"],
