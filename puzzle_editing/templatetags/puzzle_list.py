@@ -182,6 +182,7 @@ def puzzle_list(
     show_last_update=False,
     show_requests=False,
     show_copy_to_clipboard=False,
+    hide_factcheck_assigned=False,
 ) -> Mapping[str, Any]:
     req = context["request"]
     perms = context["perms"]
@@ -252,4 +253,5 @@ def puzzle_list(
         "show_last_update": show_last_update,
         "show_requests": show_requests,
         "show_copy_to_clipboard": show_copy_to_clipboard,
+        "hide_factcheck_assigned": hide_factcheck_assigned,
     }

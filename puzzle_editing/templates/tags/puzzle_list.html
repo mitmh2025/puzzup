@@ -9,7 +9,7 @@
     <input id="hide-deferred-{{ random_id }}" type="checkbox" class="hide-deferred" checked> <label
         for="hide-deferred-{{ random_id }}">Hide deferred puzzles</label>
     {% if show_factcheck %}
-        <input id="hide-fact-assigned-{{ random_id }}" type="checkbox" class="hide-fact-assigned" checked> <label
+        <input id="hide-fact-assigned-{{ random_id }}" type="checkbox" class="hide-fact-assigned" {% if hide_factcheck_assigned %}checked{% endif %}> <label
             for="hide-fact-assigned-{{ random_id }}">Hide assigned</label>
     {% endif %}
     <input id="hide-visited-{{ random_id }}" type="checkbox" class="hide-visited"> <label
