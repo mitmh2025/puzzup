@@ -820,6 +820,7 @@ def puzzle(
             add_system_comment_here("Removed editor " + str(user))
         elif "add_factchecker" in request.POST:
             check_permission("puzzle_editing.change_puzzlefactcheck")
+            puzzle.spoiled.add(user)
             puzzle.factcheckers.add(user)
             discord.sync_puzzle_channel(c, puzzle)
             if puzzle.discord_channel_id:
@@ -832,6 +833,7 @@ def puzzle(
             add_system_comment_here("Removed factchecker " + str(user))
         elif "add_postprodder" in request.POST:
             check_permission("puzzle_editing.change_puzzlepostprod")
+            puzzle.spoiled.add(user)
             puzzle.postprodders.add(user)
             discord.sync_puzzle_channel(c, puzzle)
             if puzzle.discord_channel_id:
