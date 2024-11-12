@@ -23,6 +23,23 @@
                     {% csrf_token %}
                     <input class="button is-info" type="submit" name="do_spoil" value="Spoil me">
                 </form>
+                <form method="POST" action="{{ puzzle.get_absolute_url }}" id="self-buttons">
+                    {% csrf_token %}
+                    {% if perms.puzzle_editing.change_puzzlefactcheck %}
+                        {% if not is_factchecker %}
+                            <br>
+                            <input type="submit" name="add_factchecker" value="Add me as factchecker" class="button is-info">
+                            <br>
+                        {% endif %}
+                    {% endif %}
+                    {% if perms.puzzle_editing.change_puzzlepostprod %}
+                        {% if not is_postprodder %}
+                            <br>
+                            <input type="submit" name="add_postprodder" value="Add me as postprodder" class="button is-info">
+                            <br>
+                        {% endif %}
+                    {% endif %}
+                </form>
                 <br>
                 {% if TESTSOLVING_ALLOWED %}
                     {% if is_in_testsolving %}
