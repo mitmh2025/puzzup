@@ -28,14 +28,14 @@
                     {% if perms.puzzle_editing.change_puzzlefactcheck %}
                         {% if not is_factchecker %}
                             <br>
-                            <input type="submit" name="add_factchecker" value="Add me as factchecker" class="button is-info">
+                            <input type="submit" name="add_factchecker" value="Spoil me and add me as factchecker" class="button is-info">
                             <br>
                         {% endif %}
                     {% endif %}
                     {% if perms.puzzle_editing.change_puzzlepostprod %}
                         {% if not is_postprodder %}
                             <br>
-                            <input type="submit" name="add_postprodder" value="Add me as postprodder" class="button is-info">
+                            <input type="submit" name="add_postprodder" value="Spoil me and add me as postprodder" class="button is-info">
                             <br>
                         {% endif %}
                     {% endif %}
