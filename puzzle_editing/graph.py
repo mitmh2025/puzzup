@@ -50,7 +50,7 @@ include = list(reversed([s for s in status.STATUSES if s not in exclude]))
 
 def curr_puzzle_graph_b64(time: str, target_count, width: int = 20, height: int = 10):
     comments = (
-        PuzzleComment.objects.filter(is_system=True)
+        PuzzleComment.objects.exclude(status_change="")
         .order_by("date")
         .select_related("puzzle")
     )
