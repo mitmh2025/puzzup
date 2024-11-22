@@ -174,6 +174,7 @@ BLOCKERS_AND_TRANSITIONS: dict[str, tuple[str, list[tuple[str, str]]]] = {
         FACTCHECKERS,
         [
             (NEEDS_FINAL_REVISIONS, "🟡 Needs revisions"),
+            (NEEDS_POSTPROD, "❌ Request revisions to postprod"),
             (NEEDS_FINAL_DAY_FACTCHECK, "📆 Needs final day factcheck"),
             (DONE, "⏩🎆 Mark as done! 🎆⏩"),
         ],
@@ -182,6 +183,7 @@ BLOCKERS_AND_TRANSITIONS: dict[str, tuple[str, list[tuple[str, str]]]] = {
         AUTHORS_AND_EDITORS,
         [
             (NEEDS_FACTCHECK, "📝 Review revisions"),
+            (NEEDS_POSTPROD, "❌ Request revisions to postprod"),
         ],
     ),
     NEEDS_FINAL_DAY_FACTCHECK: (
