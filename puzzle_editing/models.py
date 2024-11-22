@@ -816,6 +816,11 @@ DISCORD_NOTICE_STATUS_GROUPS = [
         status.AWAITING_ANSWER_FLEXIBLE,
         status.NEEDS_POSTPROD,
     },
+    {
+        # Both of these are equivalent to done
+        status.NEEDS_FINAL_DAY_FACTCHECK,
+        status.DONE,
+    },
 ]
 
 DISCORD_NOTICE_CELEBRATION_SENTENCE = (
