@@ -909,6 +909,10 @@ def send_status_notifications(puzzle: Puzzle) -> None:
         message += f" Congrats to author(s) {", ".join(discord.mention_users(puzzle.authors.all()))}"
         if puzzle.editors.exists():
             message += f" and editor(s) {', '.join(discord.mention_users(puzzle.editors.all()))}"
+        if puzzle.postprodders.exists():
+            message += f" and postprodder(s) {', '.join(discord.mention_users(puzzle.postprodders.all()))}"
+        if puzzle.factcheckers.exists():
+            message += f" and factchecker(s) {', '.join(discord.mention_users(puzzle.factcheckers.all()))}"
         message += f" on moving{" (metapuzzle)" if puzzle.is_meta else ""} {puzzle.codename}{" **back**" if re_testing else ""} to {status_display}{f" {status_emoji}" if status_emoji else ""}!"
 
         if puzzle.status == status.TESTSOLVING:
