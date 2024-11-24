@@ -3496,16 +3496,6 @@ def statistics(request: AuthenticatedHttpRequest) -> HttpResponse:
         elif data["name"] in FLOATER_ROUND_NAMES:
             # skip these in case they somehow ended up in the count
             pass
-        elif data["name"] == "Illegal Search":
-            byround.append(
-                {
-                    "name": "Illegal Search",
-                    "unassigned": 1,  # hardcode
-                    "writing": data["writing"],
-                    "testing": data["testing"],
-                    "done": data["done"],
-                }
-            )
         else:
             byround.append(data)
     byround.insert(0, locations)
