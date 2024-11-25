@@ -3438,13 +3438,22 @@ def statistics(request: AuthenticatedHttpRequest) -> HttpResponse:
                 puzzles__status__in=[
                     s for s in status.STATUSES if not status.past_writing(s)
                 ]
-            ).count(),
-            "testing": round.answers.filter(puzzles__status=status.TESTSOLVING).count(),
+            )
+            .values("puzzles__id")
+            .distinct()
+            .count(),
+            "testing": round.answers.filter(puzzles__status=status.TESTSOLVING)
+            .values("puzzles__id")
+            .distinct()
+            .count(),
             "done": round.answers.filter(
                 puzzles__status__in=[
                     s for s in status.STATUSES if status.past_testsolving(s)
                 ]
-            ).count(),
+            )
+            .values("puzzles__id")
+            .distinct()
+            .count(),
         }
         for round in Round.objects.exclude(name__in=FLOATER_ROUND_NAMES)
         .prefetch_related("answers__puzzles")
@@ -3496,6 +3505,16 @@ def statistics(request: AuthenticatedHttpRequest) -> HttpResponse:
         elif data["name"] in FLOATER_ROUND_NAMES:
             # skip these in case they somehow ended up in the count
             pass
+        elif data["name"] == "Illegal Search":
+            byround.append(
+                {
+                    "name": "Illegal Search",
+                    "unassigned": 0,  # hardcode
+                    "writing": data["writing"],
+                    "testing": data["testing"],
+                    "done": data["done"],
+                }
+            )
         else:
             byround.append(data)
     byround.insert(0, locations)
