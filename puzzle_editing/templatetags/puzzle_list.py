@@ -47,6 +47,12 @@ def make_puzzle_data(puzzles, user, do_query_filter_in, show_factcheck=False):
         #     ),
         # )
     )
+    if show_factcheck:
+        puzzles = puzzles.annotate(
+            has_factchecker=Exists(
+                User.objects.filter(factchecking_puzzles=OuterRef("pk"))
+            )
+        )
 
     puzzles = list(puzzles)
 
