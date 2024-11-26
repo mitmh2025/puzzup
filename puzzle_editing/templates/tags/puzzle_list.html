@@ -114,7 +114,7 @@
             </tr>
             {% for puzzle in puzzles %}
                 <tr
-                    class="puzzle-row {% if puzzle.status == dead_status %}dead{% elif puzzle.status == deferred_status %}deferred{% elif puzzle.status in past_needs_solution_statuses %}past_needs_solution{% endif %} {% if puzzle.is_spoiled %}spoiled {% if not puzzle.last_visited_date or puzzle.last_comment_date and puzzle.last_comment_date > puzzle.last_visited_date %}unvisited{% endif %}{% endif %} {% if puzzle.has_answer %}answered{%endif%} {% if show_factcheck and puzzle.factcheckers.count > 0 %}factchecker{%endif%}">
+                    class="puzzle-row {% if puzzle.status == dead_status %}dead{% elif puzzle.status == deferred_status %}deferred{% elif puzzle.status in past_needs_solution_statuses %}past_needs_solution{% endif %} {% if puzzle.is_spoiled %}spoiled {% if not puzzle.last_visited_date or puzzle.last_comment_date and puzzle.last_comment_date > puzzle.last_visited_date %}unvisited{% endif %}{% endif %} {% if puzzle.has_answer %}answered{%endif%} {% if show_factcheck and puzzle.has_factchecker %}factchecker{%endif%}">
 
                     {% if limit is None or forloop.counter0 < limit %}
                         {% if show_emoji %}
@@ -125,7 +125,7 @@
                             {% elif puzzle.is_factchecking %}
                                 <td sorttable_customkey="3" data-tippy-content="You are a factchecker">🛂</td>
                             {% elif puzzle.is_postprodding %}
-                                <td sorttable_customkey="4" data-tippy-content="You are a factchecker">🖼️</td>
+                                <td sorttable_customkey="4" data-tippy-content="You are a postprodder">🖼️</td>
                             {% elif puzzle.is_spoiled %}
                                 <td sorttable_customkey="98" data-tippy-content="You are spoiled">👀</td>
                             {% else %}
