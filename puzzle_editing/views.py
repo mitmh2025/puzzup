@@ -885,10 +885,7 @@ def puzzle(
             # Not worth crashing over. Just do our best.
             status_change_dirty = request.POST.get("add_comment_change_status")
             status_change = ""
-            if (
-                status_change_dirty
-                and status_change_dirty in status.BLOCKERS_AND_TRANSITIONS
-            ):
+            if status_change_dirty and status_change_dirty in status.STATUSES:
                 status_change = status_change_dirty
 
             if status_change and puzzle.status != status_change:
