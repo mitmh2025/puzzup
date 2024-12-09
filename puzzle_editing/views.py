@@ -1330,15 +1330,22 @@ def puzzle_ts(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
 
     additional_credits = []
     for cred in puzzle.other_credits.all():
-        what = dict(PuzzleCredit.CreditType.choices)[cred.credit_type]
-        who = [get_credits_name(u) for u in cred.users.all()] or [cred.text]
-        who.sort(key=lambda a: a.upper())
-        additional_credits.append(
-            f"""{{
+        if cred.text:
+            additional_credits.append(
+                f"""{{
+  freeform: {json.dumps(cred.text)},
+}}"""
+            )
+        else:
+            what = dict(PuzzleCredit.CreditType.choices)[cred.credit_type]
+            who = [get_credits_name(u) for u in cred.users.all()] or [cred.text]
+            who.sort(key=lambda a: a.upper())
+            additional_credits.append(
+                f"""{{
   for_what: {json.dumps(what)},
   who: {json.dumps(who)},
 }}"""
-        )
+            )
     additional_credits_data = (
         "\n"
         + ",\n".join([reindent(credit, spaces=4) for credit in additional_credits])
