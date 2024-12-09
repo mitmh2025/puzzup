@@ -13,7 +13,7 @@ authors = ["betaveros", "mitchgu", "jakob223", "dvorak42", "fortenforge", "Sandy
 python = ">=3.12,<3.13"
 asgiref = "^3.8.1"
 beautifulsoup4 = "^4.12.3"
-boto3 = "^1.35.68"
+boto3 = "^1.35.76"
 discord-interactions = "^0.4.0"
 discord-py = "^2.4.0"
 dj-database-url = "^2.3.0"
