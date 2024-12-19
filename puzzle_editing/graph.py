@@ -83,14 +83,23 @@ def curr_puzzle_graph_b64(time: str, target_count, width: int = 20, height: int 
     ax.stackplot(np.array(x), np.transpose(y), labels=labels, colors=col[-1::-1])
     if target_count is not None:
         if time not in timetypes:
-            glide_path_start = sum(
+            testing_glide_path_start = sum(
                 c for i, c in enumerate(y[-1]) if status.past_testsolving(include[i])
+            )
+            factchecking_glide_path_start = sum(
+                c for i, c in enumerate(y[-1]) if status.past_factchecking(include[i])
             )
             plt.xlim(right=settings.HUNT_TIME)
             ax.plot(
                 np.array([x[-1], settings.HUNT_TIME]),
-                np.array([glide_path_start, target_count]),
+                np.array([testing_glide_path_start, target_count]),
                 "r--",
+            )
+            ax.plot(
+                np.array([x[-1], settings.HUNT_TIME]),
+                np.array([factchecking_glide_path_start, target_count]),
+                color="orange",
+                linestyle="dashed",
             )
         ax.plot(
             np.array(plt.xlim()),
@@ -112,7 +121,7 @@ STATUS_LABELS = {
     "unassigned": "Unassigned",
     "writing": "In writing or revision",
     "testing": "In testing",
-    "done": "Past testing",
+    "past_testing": "Past testing",
 }
 
 
@@ -120,7 +129,7 @@ STATUS_COLORS = {
     "unassigned": "#a61c00",
     "writing": "#df4032",
     "testing": "#fbbc02",
-    "done": "#33a853",
+    "past_testing": "#33a853",
 }
 
 
@@ -128,7 +137,8 @@ def curr_round_graph_b64(
     byround: list[dict[str, Any]], width: int = 20, height: int = 5
 ):
     x_max = max(
-        r["unassigned"] + r["writing"] + r["testing"] + r["done"] for r in byround
+        r["unassigned"] + r["writing"] + r["testing"] + r["past_testing"]
+        for r in byround
     )
     fig, ax = plt.subplots(figsize=(width, height))
     ax.invert_yaxis()
@@ -138,7 +148,7 @@ def curr_round_graph_b64(
 
     labels = [r["name"] for r in byround]
     offsets = np.zeros(len(byround))
-    for group in ["unassigned", "writing", "testing", "done"]:
+    for group in ["unassigned", "writing", "testing", "past_testing"]:
         color = STATUS_COLORS[group]
         values = [r[group] for r in byround]
         rects = ax.barh(

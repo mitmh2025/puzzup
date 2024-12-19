@@ -236,9 +236,9 @@ class HtmlCleaner:
         # Tag names mapped from html to React
         MAPPED_TAGS = {"table": "Table", "img": "SheetableImage"}
 
-        for attr in MAPPED_ATTRS:
+        for attr, react in MAPPED_ATTRS.items():
             for tag in self.soup.find_all(attrs={attr: True}):
-                tag[MAPPED_ATTRS[attr]] = tag[attr]
+                tag[react] = tag[attr]
                 del tag[attr]
 
         # Swap some tags for the React component version.

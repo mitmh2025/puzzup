@@ -66,6 +66,12 @@ def past_testsolving(status):
     ) <= get_status_rank(DONE)
 
 
+def past_factchecking(status):
+    return get_status_rank(status) > get_status_rank(
+        NEEDS_FINAL_REVISIONS
+    ) and get_status_rank(status) <= get_status_rank(DONE)
+
+
 # Possible blockers:
 
 EIC = "editor-in-chief"

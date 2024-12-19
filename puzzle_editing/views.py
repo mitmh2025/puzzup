@@ -3375,6 +3375,7 @@ def tags(request: AuthenticatedHttpRequest) -> HttpResponse:
 def statistics(request: AuthenticatedHttpRequest) -> HttpResponse:
     past_writing = 0
     past_testsolving = 0
+    done = 0
     non_puzzle_schedule_tags = ["meta", "navigation", "event"]
 
     all_counts = (
@@ -3406,6 +3407,8 @@ def statistics(request: AuthenticatedHttpRequest) -> HttpResponse:
             past_writing += p["count"]
         if status.past_testsolving(p["status"]):
             past_testsolving += p["count"]
+        if status.past_factchecking(p["status"]):
+            done += p["count"]
 
         for tag in tags:
             status_obj[tag.name] = tag_counts[tag.name].get(p["status"], 0)
@@ -3415,6 +3418,8 @@ def statistics(request: AuthenticatedHttpRequest) -> HttpResponse:
                     past_writing -= status_obj[tag.name]
                 if status.past_testsolving(p["status"]):
                     past_testsolving -= status_obj[tag.name]
+                if status.past_factchecking(p["status"]):
+                    done -= status_obj[tag.name]
         statuses.append(status_obj)
     answers = {
         "assigned": PuzzleAnswer.objects.filter(puzzles__isnull=False).count(),
@@ -3450,7 +3455,7 @@ def statistics(request: AuthenticatedHttpRequest) -> HttpResponse:
             .values("puzzles__id")
             .distinct()
             .count(),
-            "done": round.answers.filter(
+            "past_testing": round.answers.filter(
                 puzzles__status__in=[
                     s for s in status.STATUSES if status.past_testsolving(s)
                 ]
@@ -3469,7 +3474,7 @@ def statistics(request: AuthenticatedHttpRequest) -> HttpResponse:
         "unassigned": 0,
         "writing": 0,
         "testing": 0,
-        "done": 0,
+        "past_testing": 0,
     }
     # floaters, interim answers, and gala interactions are all functionally floaters
     # for each of these, if the puzzle has > 1 answer, then don't count it
@@ -3486,7 +3491,7 @@ def statistics(request: AuthenticatedHttpRequest) -> HttpResponse:
         floaters["testing"] += puzzles_in_round.filter(
             status=status.TESTSOLVING
         ).count()
-        floaters["done"] += puzzles_in_round.filter(
+        floaters["past_testing"] += puzzles_in_round.filter(
             status__in=[s for s in status.STATUSES if status.past_testsolving(s)]
         ).count()
 
@@ -3497,7 +3502,7 @@ def statistics(request: AuthenticatedHttpRequest) -> HttpResponse:
         "unassigned": 0,
         "writing": 0,
         "testing": 0,
-        "done": 0,
+        "past_testing": 0,
     }
     for data in byround_all:
         if "1st Round" in data["name"]:
@@ -3505,7 +3510,7 @@ def statistics(request: AuthenticatedHttpRequest) -> HttpResponse:
             locations["unassigned"] += data["unassigned"]
             locations["writing"] += data["writing"]
             locations["testing"] += data["testing"]
-            locations["done"] += data["done"]
+            locations["past_testing"] += data["past_testing"]
         elif data["name"] in FLOATER_ROUND_NAMES:
             # skip these in case they somehow ended up in the count
             pass
@@ -3516,7 +3521,7 @@ def statistics(request: AuthenticatedHttpRequest) -> HttpResponse:
                     "unassigned": 0,  # hardcode
                     "writing": data["writing"],
                     "testing": data["testing"],
-                    "done": data["done"],
+                    "past_testing": data["past_testing"],
                 }
             )
         else:
@@ -3538,6 +3543,7 @@ def statistics(request: AuthenticatedHttpRequest) -> HttpResponse:
             "byround_base64": byround_base64,
             "past_writing": past_writing,
             "past_testsolving": past_testsolving,
+            "done": done,
             "target_count": target_count,
             "unreleased_count": unreleased_count,
         },

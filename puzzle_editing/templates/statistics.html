@@ -47,7 +47,7 @@
                         <th>Unassigned</th>
                         <th>Writing</th>
                         <th>Testsolving</th>
-                        <th>Done</th>
+                        <th>Past testing</th>
                     </tr>
                     {% for r in byround %}
                         <tr>
@@ -55,7 +55,7 @@
                             <td>{{ r.unassigned }}</td>
                             <td>{{ r.writing }}</td>
                             <td>{{ r.testing }}</td>
-                            <td>{{ r.done }}</td>
+                            <td>{{ r.past_testing }}</td>
                         </tr>
                     {% endfor %}
                 </table>
@@ -113,6 +113,10 @@
                 <tr>
                     <td>…past testsolving</td>
                     <td>{{ past_testsolving }}</td>
+                </tr>
+                <tr>
+                    <td>…done</td>
+                    <td>{{ done }}</td>
                 </tr>
             </table>
         </div>
