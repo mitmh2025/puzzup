@@ -814,6 +814,7 @@ DISCORD_NOTICE_STATUS_GROUPS = [
         # Any of these indicate that the puzzle passed testsolving:
         status.NEEDS_SOLUTION,
         status.AWAITING_ANSWER_FLEXIBLE,
+        status.AWAITING_MANUFACTURING,
         status.NEEDS_POSTPROD,
     },
     {
