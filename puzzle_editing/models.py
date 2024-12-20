@@ -924,6 +924,7 @@ def send_status_notifications(puzzle: Puzzle) -> None:
         if puzzle.status in (
             status.NEEDS_SOLUTION,
             status.AWAITING_ANSWER_FLEXIBLE,
+            status.AWAITING_MANUFACTURING,
             status.NEEDS_POSTPROD,
         ):
             message += " That means this puzzle has graduated from testsolving!"
