@@ -1591,13 +1591,13 @@ files = [
 
 [[package]]
 name = "ipython"
-version = "8.30.0"
+version = "8.31.0"
 description = "IPython: Productive Interactive Computing"
 optional = false
 python-versions = ">=3.10"
 files = [
-    {file = "ipython-8.30.0-py3-none-any.whl", hash = "sha256:85ec56a7e20f6c38fce7727dcca699ae4ffc85985aa7b23635a8008f918ae321"},
-    {file = "ipython-8.30.0.tar.gz", hash = "sha256:cb0a405a306d2995a5cbb9901894d240784a9f341394c6ba3f4fe8c6eb89ff6e"},
+    {file = "ipython-8.31.0-py3-none-any.whl", hash = "sha256:46ec58f8d3d076a61d128fe517a51eb730e3aaf0c184ea8c17d16e366660c6a6"},
+    {file = "ipython-8.31.0.tar.gz", hash = "sha256:b6a2274606bec6166405ff05e54932ed6e5cfecaca1fc05f2cacde7bb074d70b"},
 ]
 
 [package.dependencies]
@@ -4182,4 +4182,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.12,<3.13"
-content-hash = "0a4bfbb93ea603d47d814906fe9f74e96f2c8051e3d5d6263ade38b64a0ab42c"
+content-hash = "70b9f686f4a420a7ff6ef0b184f5ae1fe3892e5fb307149620bb4fb88c1e41f1"
