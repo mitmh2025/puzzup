@@ -193,10 +193,10 @@ def index(request: HttpRequest) -> HttpResponse:
     ).order_by("started")
 
     factchecking = Puzzle.objects.filter(
-        status=status.STATUSES_BY_BLOCKERS[status.FACTCHECKERS], factcheckers=user
+        status__in=status.STATUSES_BY_BLOCKERS[status.FACTCHECKERS], factcheckers=user
     )
     postprodding = Puzzle.objects.filter(
-        status=status.STATUSES_BY_BLOCKERS[status.POSTPRODDERS], postprodders=user
+        status__in=status.STATUSES_BY_BLOCKERS[status.POSTPRODDERS], postprodders=user
     )
     inbox_puzzles = (
         user.spoiled_puzzles.exclude(status=status.DEAD)
