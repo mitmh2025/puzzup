@@ -1203,8 +1203,7 @@ class PuzzlePostprod(models.Model):
 
     def get_url(self, is_solution=False):
         host = self.host_url if self.host_url else settings.POSTPROD_URL
-        subpath = "solutions" if is_solution else "puzzles"
-        return f"{host}/{subpath}/{self.slug}"
+        return f"{host}/puzzles/{self.slug}{'/solution' if is_solution else ''}"
 
 
 class PuzzleFactcheck(models.Model):

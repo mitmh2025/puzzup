@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}
+    {% if spoiled %}{{ puzzle.spoilery_title }}{% else %}{{puzzle.spoiler_free_title}}{%endif%} / Postprodding
+{% endblock %}
+{% block main %}
+    <h1>Postprodding {% if spoiled %}{{ puzzle.spoilery_title }}{% else %}{{puzzle.spoiler_free_title}}{%endif%}</h1>
+    <a href="{% url 'puzzle' puzzle.id %}">🔙 to {{ puzzle }}</a>
+    {% if spoiled %}
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+
+            <table class="classic">
+                <tr><th>Title:</th><td>{{puzzle.name}}</td></tr>
+                <tr><th>Answer:</th><td>{% if puzzle.answer %}{{ puzzle.answer }}{% else %}<span class="empty">(none)</span>{% endif %}</td></tr>
+                {{ form.as_table }}
+            </table>
+
+            <input class="button is-info" type="submit" value="Submit">
+        </form>
+        {% if puzzle.has_postprod %}
+            <h2>Current postprod</h2>
+            Puzzle postprodded at <span class="timestamp" data-timestamp="{{puzzle.postprod.mtime.timestamp}}">{{puzzle.postprod.mtime}}</span>.<br/>
+            Puzzle viewable at <a href="{{ puzzle.postprod_url }}">{{puzzle.postprod_url}}</a>.
+        {% endif %}
+    {% else %}
+        <p>You are not spoiled on this puzzle. I'm not sure you want to be postprodding it.</p>
+        <p>If you really want to, you can click back to it and spoil yourself.</p>
+    {% endif %}
+{% endblock %}

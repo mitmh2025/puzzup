@@ -551,6 +551,22 @@ def guess_google_doc_id(google_doc_url="") -> str:
     return match.group(1) if match else ""
 
 
+class PuzzleManualPostprodForm(forms.ModelForm):
+    slug = forms.CharField(
+        help_text="The part of the URL on the hunt site referring to this puzzle. E.g. for https://puzzle.hunt/puzzle/fifty-fifty, this would be 'fifty-fifty'.",
+        validators=[validators.validate_slug],
+    )
+
+    class Meta:
+        model = PuzzlePostprod
+        exclude = ("host_url",)
+        widgets = MappingProxyType(
+            {
+                "puzzle": forms.HiddenInput(),
+            }
+        )
+
+
 class PuzzlePostprodForm(forms.ModelForm):
     DEFAULT_PUZZLE_WIDTH_PX = 900
 
