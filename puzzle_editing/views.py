@@ -66,6 +66,7 @@ from puzzle_editing.forms import (
     PuzzleFactcheckForm,
     PuzzleHintForm,
     PuzzleInfoForm,
+    PuzzleManualPostprodForm,
     PuzzleOtherCreditsForm,
     PuzzlePeopleForm,
     PuzzlePostprodForm,
@@ -1192,6 +1193,57 @@ def puzzle_tags(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
 
 
 @login_required
+@permission_required("puzzle_editing.change_puzzlepostprod", raise_exception=True)
+def puzzle_manual_postprod(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
+    puzzle = get_object_or_404(Puzzle, id=id)
+    user = request.user
+    spoiled = is_spoiled_on(user, puzzle)
+
+    if request.method == "POST":
+        instance = puzzle.postprod if puzzle.has_postprod() else None
+        form = PuzzleManualPostprodForm(request.POST, instance=instance)
+        if form.is_valid():
+            form.save()
+            add_comment(
+                request=request,
+                puzzle=puzzle,
+                author=user,
+                is_system=True,
+                send_email=False,
+                content="Postprod updated.",
+            )
+
+            return redirect(urls.reverse("puzzle", args=[id]))
+        else:
+            return render(
+                request,
+                "puzzle_manual_postprod.html",
+                {
+                    "puzzle": puzzle,
+                    "form": form,
+                    "spoiled": spoiled,
+                },
+            )
+    elif puzzle.has_postprod():
+        form = PuzzleManualPostprodForm(instance=puzzle.postprod)
+    else:
+        default_slug = slugify(puzzle.name.lower())
+        form = PuzzleManualPostprodForm(
+            initial={"puzzle": puzzle, "slug": default_slug}
+        )
+
+    return render(
+        request,
+        "puzzle_manual_postprod.html",
+        {
+            "puzzle": puzzle,
+            "form": form,
+            "spoiled": spoiled,
+        },
+    )
+
+
+@login_required
 @auto_postprodding_required
 @permission_required("puzzle_editing.change_puzzlepostprod", raise_exception=True)
 def puzzle_postprod(request: AuthenticatedHttpRequest, id: int) -> HttpResponse:
@@ -1998,19 +2050,26 @@ def testsolve_start(request: AuthenticatedHttpRequest) -> HttpResponse:
         puzzle_content_url = request.build_absolute_uri(
             urls.reverse("testsolve_puzzle_content", kwargs={"id": session.id})
         )
+        postprod_url = puzzle.postprod_url if puzzle.has_postprod() else None
         sheet_url = request.build_absolute_uri(
             urls.reverse("testsolve_sheet", kwargs={"id": session.id})
         )
         author_tags = discord.mention_users(puzzle.authors.all(), False)
         editor_tags = discord.mention_users(puzzle.editors.all(), False)
-        message_text = (
-            f"New testsolve session created for {puzzle.name}.\n"
-            "\n"
-            f"A few resources for you to work with:\n"
-            f"* Here is the testsolve page in PuzzUp with the answer checker and feedback form: [PuzzUp]({testsolve_url})\n"
-            f"* Here is a **read-only copy** of the puzzle for you to testsolve: [Google Doc]({puzzle_content_url})\n"
-            f"* Here is a Google Sheet to work in: [Google Sheet]({sheet_url})\n"
-            "* Here is our [How to Testsolve MH2025](https://docs.google.com/document/d/15Q8ikvrjIt_tBo1eMXn2N79aeLOL1vEelkz6lXjVEdM/edit) guide"
+        message_text = "\n".join(
+            [
+                f"New testsolve session created for {puzzle.name}.",
+                "",
+                "A few resources for you to work with:",
+                f"* Here is the testsolve page in PuzzUp with the answer checker and feedback form: [PuzzUp]({testsolve_url})",
+                (
+                    f"* This puzzle has been postprodded, so you can [view it in situ]({postprod_url})"
+                    if postprod_url
+                    else f"* Here is a **read-only copy** of the puzzle for you to testsolve: [Google Doc]({puzzle_content_url})"
+                ),
+                f"* Here is a Google Sheet to work in: [Google Sheet]({sheet_url})",
+                "* Here is our [How to Testsolve MH2025](https://docs.google.com/document/d/15Q8ikvrjIt_tBo1eMXn2N79aeLOL1vEelkz6lXjVEdM/edit) guide",
+            ]
         )
         if late_testsolve:
             message_text += (

@@ -43,7 +43,11 @@ urlpatterns = [
     ),
     path("puzzle/<int:id>/answers", views.puzzle_answers, name="puzzle_answers"),
     path("puzzle/<int:id>/tags", views.puzzle_tags, name="puzzle_tags"),
-    path("puzzle/<int:id>/postprod", views.puzzle_postprod, name="puzzle_postprod"),
+    path("puzzle/<int:id>/postprod", views.puzzle_postprod, name="puzzle_postprod")
+    if settings.HUNT_REPO_URL != ""
+    else path(
+        "puzzle/<int:id>/postprod", views.puzzle_manual_postprod, name="puzzle_postprod"
+    ),
     path(
         "puzzle/<int:id>/metadata.json",
         views.puzzle_postprod_metadata,

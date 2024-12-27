@@ -140,21 +140,23 @@ class GoogleManager:
         )
         self.make_file_public_edit(sheet_id)
 
-        content_id = (
-            self.drive.files()
-            .copy(
-                fileId=session.puzzle.content_google_doc_id,
-                fields="id",
-                supportsAllDrives=True,
-                body={
-                    "name": f"{session.puzzle.name} (Testsolve #{session.id} read-only copy)",
-                    "parents": [folder_id],
-                },
+        content_id = ""
+        if not session.puzzle.has_postprod():
+            content_id = (
+                self.drive.files()
+                .copy(
+                    fileId=session.puzzle.content_google_doc_id,
+                    fields="id",
+                    supportsAllDrives=True,
+                    body={
+                        "name": f"{session.puzzle.name} (Testsolve #{session.id} read-only copy)",
+                        "parents": [folder_id],
+                    },
+                )
+                .execute()
+                .get("id")
             )
-            .execute()
-            .get("id")
-        )
-        self.make_file_public_view(content_id)
+            self.make_file_public_view(content_id)
 
         return content_id, sheet_id
 

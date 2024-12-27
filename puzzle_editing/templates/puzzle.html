@@ -200,7 +200,7 @@
                             <h4>External URLs</h4>
                         </div>
                         <div class="column">
-                            <h4>👉 <a href="{{ puzzle.postprod_url }}">{{ puzzle.name }} on staging</a></h4>
+                            <h4>👉 <a href="{{ puzzle.postprod_url }}">{{ puzzle.name }} in postprod</a></h4>
                         </div>
                     </div>
                 {% endif %}
@@ -487,29 +487,37 @@
                 </details>
             </div>
 
-            {% if AUTO_POSTPRODDING_ENABLED and perms.puzzle_editing.change_puzzlepostprod %}
+            {% if perms.puzzle_editing.change_puzzlepostprod %}
                 <div class="box">
                     <h3>Postprod</h3>
-                    <div class="columns">
-                        {% if puzzle.has_postprod %}
+                    {% if AUTO_POSTPRODDING_ENABLED %}
+                        <div class="columns">
+                            {% if puzzle.has_postprod %}
+                                <div class="column is-half">
+                                    <a href="{% url 'puzzle_postprod' puzzle.id %}">View postprod data (or export again)</a><br>
+                                </div>
+                            {% endif %}
                             <div class="column is-half">
-                                <a href="{% url 'puzzle_postprod' puzzle.id %}">View postprod data (or export again)</a><br>
+                                Download this puzzle's <a href="{% url 'puzzle_yaml' puzzle.id %}">puzzle.yaml</a>
                             </div>
-                        {% endif %}
-                        <div class="column is-half">
-                            Download this puzzle's <a href="{% url 'puzzle_yaml' puzzle.id %}">puzzle.yaml</a>
                         </div>
-                    </div>
-                    {% if puzzle.has_postprod %}
-                        Postprodded at <span class="timestamp" data-timestamp="{{puzzle.postprod.mtime.timestamp}}">{{puzzle.postprod.mtime}}</span>
-                        <form id="postprod-form" method="post">
-                            {% csrf_token %}
-                            Hosted at (leave blank for staging): {{ postprod_form.host_url }}
-                            <input type="submit" class="button is-info" name="edit_postprod" value="Edit">
-                        </form>
+                        {% if puzzle.has_postprod %}
+                            Postprodded at <span class="timestamp" data-timestamp="{{puzzle.postprod.mtime.timestamp}}">{{puzzle.postprod.mtime}}</span>
+                            <form id="postprod-form" method="post">
+                                {% csrf_token %}
+                                Hosted at (leave blank for staging): {{ postprod_form.host_url }}
+                                <input type="submit" class="button is-info" name="edit_postprod" value="Edit">
+                            </form>
+                        {% else %}
+                            <div class="empty">(no postprod yet -
+                                <a href="{% url 'puzzle_postprod' puzzle.id %}">start one now</a>)</div>
+                        {% endif %}
                     {% else %}
-                        <div class="empty">(no postprod yet -
-                            <a href="{% url 'puzzle_postprod' puzzle.id %}">start one now</a>)</div>
+                        <div class="columns">
+                            <div class="column is-half">
+                                <a href="{% url 'puzzle_postprod' puzzle.id %}">Postprod this puzzle</a>
+                            </div>
+                        </div>
                     {% endif %}
                 </div>
             {% endif %}
