@@ -141,7 +141,7 @@ class GoogleManager:
         self.make_file_public_edit(sheet_id)
 
         content_id = ""
-        if not session.puzzle.has_postprod():
+        if not session.late_testsolve or not session.puzzle.has_postprod():
             content_id = (
                 self.drive.files()
                 .copy(
