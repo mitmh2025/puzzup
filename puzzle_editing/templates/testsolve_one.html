@@ -53,10 +53,10 @@
 
                 <div class="box">
                     <h2>Puzzle</h2>
-                    {% if session.puzzle.has_postprod %}
-                        <b>👉 <a href="{{ session.puzzle.postprod_url }}">the postprodded puzzle</a>.</b>
-                    {% elif session.puzzle_copy_google_doc_id %}
+                    {% if session.puzzle_copy_google_doc_id %}
                         <a href="{% url "testsolve_puzzle_content" session.id %}" target="_blank">View content in Google Docs</a>
+                    {% elif session.puzzle.has_postprod %}
+                        <b>👉 <a href="{{ session.puzzle.postprod_url }}">the postprodded puzzle</a>.</b>
                     {% else %}
                         <div class="empty">(no puzzle yet)</div>
                     {% endif %}

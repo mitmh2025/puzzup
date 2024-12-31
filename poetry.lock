@@ -152,13 +152,13 @@ tests = ["mypy (>=0.800)", "pytest", "pytest-asyncio"]
 
 [[package]]
 name = "astroid"
-version = "3.3.5"
+version = "3.3.8"
 description = "An abstract syntax tree for Python with inference support."
 optional = false
 python-versions = ">=3.9.0"
 files = [
-    {file = "astroid-3.3.5-py3-none-any.whl", hash = "sha256:a9d1c946ada25098d790e079ba2a1b112157278f3fb7e718ae6a9252f5835dc8"},
-    {file = "astroid-3.3.5.tar.gz", hash = "sha256:5cfc40ae9f68311075d27ef68a4841bdc5cc7f6cf86671b49f00607d30188e2d"},
+    {file = "astroid-3.3.8-py3-none-any.whl", hash = "sha256:187ccc0c248bfbba564826c26f070494f7bc964fd286b6d9fff4420e55de828c"},
+    {file = "astroid-3.3.8.tar.gz", hash = "sha256:a88c7994f914a4ea8572fac479459f4955eeccc877be3f2d959a33273b0cf40b"},
 ]
 
 [[package]]
@@ -267,17 +267,17 @@ lxml = ["lxml"]
 
 [[package]]
 name = "boto3"
-version = "1.35.81"
+version = "1.35.90"
 description = "The AWS SDK for Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "boto3-1.35.81-py3-none-any.whl", hash = "sha256:742941b2424c0223d2d94a08c3485462fa7c58d816b62ca80f08e555243acee1"},
-    {file = "boto3-1.35.81.tar.gz", hash = "sha256:d2e95fa06f095b8e0c545dd678c6269d253809b2997c30f5ce8a956c410b4e86"},
+    {file = "boto3-1.35.90-py3-none-any.whl", hash = "sha256:b0874233057995a8f0c813f5b45a36c09630e74c43d7a7c64db2feef2915d493"},
+    {file = "boto3-1.35.90.tar.gz", hash = "sha256:dc56caaaab2157a4bfc109c88b50cd032f3ac66c06d17f8ee335b798eaf53e5c"},
 ]
 
 [package.dependencies]
-botocore = ">=1.35.81,<1.36.0"
+botocore = ">=1.35.90,<1.36.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.10.0,<0.11.0"
 
@@ -286,13 +286,13 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.35.81"
+version = "1.35.90"
 description = "Low-level, data-driven core of boto 3."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "botocore-1.35.81-py3-none-any.whl", hash = "sha256:a7b13bbd959bf2d6f38f681676aab408be01974c46802ab997617b51399239f7"},
-    {file = "botocore-1.35.81.tar.gz", hash = "sha256:564c2478e50179e0b766e6a87e5e0cdd35e1bc37eb375c1cf15511f5dd13600d"},
+    {file = "botocore-1.35.90-py3-none-any.whl", hash = "sha256:51dcbe1b32e2ac43dac17091f401a00ce5939f76afe999081802009cce1e92e4"},
+    {file = "botocore-1.35.90.tar.gz", hash = "sha256:f007f58e8e3c1ad0412a6ddfae40ed92a7bca571c068cb959902bcf107f2ae48"},
 ]
 
 [package.dependencies]
@@ -1240,13 +1240,13 @@ grpcio-gcp = ["grpcio-gcp (>=0.2.2,<1.0.dev0)"]
 
 [[package]]
 name = "google-api-python-client"
-version = "2.154.0"
+version = "2.156.0"
 description = "Google API Client Library for Python"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "google_api_python_client-2.154.0-py2.py3-none-any.whl", hash = "sha256:a521bbbb2ec0ba9d6f307cdd64ed6e21eeac372d1bd7493a4ab5022941f784ad"},
-    {file = "google_api_python_client-2.154.0.tar.gz", hash = "sha256:1b420062e03bfcaa1c79e2e00a612d29a6a934151ceb3d272fe150a656dc8f17"},
+    {file = "google_api_python_client-2.156.0-py2.py3-none-any.whl", hash = "sha256:6352185c505e1f311f11b0b96c1b636dcb0fec82cd04b80ac5a671ac4dcab339"},
+    {file = "google_api_python_client-2.156.0.tar.gz", hash = "sha256:b809c111ded61716a9c1c7936e6899053f13bae3defcdfda904bd2ca68065b9c"},
 ]
 
 [package.dependencies]
@@ -2037,35 +2037,35 @@ files = [
 
 [[package]]
 name = "nh3"
-version = "0.2.19"
-description = "Python bindings to the ammonia HTML sanitization library."
+version = "0.2.20"
+description = "Python binding to Ammonia HTML sanitizer Rust crate"
 optional = false
-python-versions = "*"
+python-versions = ">=3.8"
 files = [
-    {file = "nh3-0.2.19-cp313-cp313t-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl", hash = "sha256:ec9c8bf86e397cb88c560361f60fdce478b5edb8b93f04ead419b72fbe937ea6"},
-    {file = "nh3-0.2.19-cp313-cp313t-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:d0adf00e2b2026fa10a42537b60d161e516f206781c7515e4e97e09f72a8c5d0"},
-    {file = "nh3-0.2.19-cp313-cp313t-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:3805161c4e12088bd74752ba69630e915bc30fe666034f47217a2f16b16efc37"},
-    {file = "nh3-0.2.19-cp313-cp313t-musllinux_1_2_aarch64.whl", hash = "sha256:e3dedd7858a21312f7675841529941035a2ac91057db13402c8fe907aa19205a"},
-    {file = "nh3-0.2.19-cp313-cp313t-musllinux_1_2_armv7l.whl", hash = "sha256:0b6820fc64f2ff7ef3e7253a093c946a87865c877b3889149a6d21d322ed8dbd"},
-    {file = "nh3-0.2.19-cp313-cp313t-musllinux_1_2_i686.whl", hash = "sha256:833b3b5f1783ce95834a13030300cea00cbdfd64ea29260d01af9c4821da0aa9"},
-    {file = "nh3-0.2.19-cp313-cp313t-musllinux_1_2_x86_64.whl", hash = "sha256:5d4f5e2189861b352b73acb803b5f4bb409c2f36275d22717e27d4e0c217ae55"},
-    {file = "nh3-0.2.19-cp313-cp313t-win32.whl", hash = "sha256:2b926f179eb4bce72b651bfdf76f8aa05d167b2b72bc2f3657fd319f40232adc"},
-    {file = "nh3-0.2.19-cp313-cp313t-win_amd64.whl", hash = "sha256:ac536a4b5c073fdadd8f5f4889adabe1cbdae55305366fb870723c96ca7f49c3"},
-    {file = "nh3-0.2.19-cp38-abi3-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl", hash = "sha256:c2e3f0d18cc101132fe10ab7ef5c4f41411297e639e23b64b5e888ccaad63f41"},
-    {file = "nh3-0.2.19-cp38-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:11270b16c1b012677e3e2dd166c1aa273388776bf99a3e3677179db5097ee16a"},
-    {file = "nh3-0.2.19-cp38-abi3-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:fc483dd8d20f8f8c010783a25a84db3bebeadced92d24d34b40d687f8043ac69"},
-    {file = "nh3-0.2.19-cp38-abi3-manylinux_2_17_ppc64.manylinux2014_ppc64.whl", hash = "sha256:d53a4577b6123ca1d7e8483fad3e13cb7eda28913d516bd0a648c1a473aa21a9"},
-    {file = "nh3-0.2.19-cp38-abi3-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:fdb20740d24ab9f2a1341458a00a11205294e97e905de060eeab1ceca020c09c"},
-    {file = "nh3-0.2.19-cp38-abi3-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:d8325d51e47cb5b11f649d55e626d56c76041ba508cd59e0cb1cf687cc7612f1"},
-    {file = "nh3-0.2.19-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:b8eb7affc590e542fa7981ef508cd1644f62176bcd10d4429890fc629b47f0bc"},
-    {file = "nh3-0.2.19-cp38-abi3-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:2eb021804e9df1761abeb844bb86648d77aa118a663c82f50ea04110d87ed707"},
-    {file = "nh3-0.2.19-cp38-abi3-musllinux_1_2_aarch64.whl", hash = "sha256:a7b928862daddb29805a1010a0282f77f4b8b238a37b5f76bc6c0d16d930fd22"},
-    {file = "nh3-0.2.19-cp38-abi3-musllinux_1_2_armv7l.whl", hash = "sha256:ed06ed78f6b69d57463b46a04f68f270605301e69d80756a8adf7519002de57d"},
-    {file = "nh3-0.2.19-cp38-abi3-musllinux_1_2_i686.whl", hash = "sha256:df8eac98fec80bd6f5fd0ae27a65de14f1e1a65a76d8e2237eb695f9cd1121d9"},
-    {file = "nh3-0.2.19-cp38-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:00810cd5275f5c3f44b9eb0e521d1a841ee2f8023622de39ffc7d88bd533d8e0"},
-    {file = "nh3-0.2.19-cp38-abi3-win32.whl", hash = "sha256:7e98621856b0a911c21faa5eef8f8ea3e691526c2433f9afc2be713cb6fbdb48"},
-    {file = "nh3-0.2.19-cp38-abi3-win_amd64.whl", hash = "sha256:75c7cafb840f24430b009f7368945cb5ca88b2b54bb384ebfba495f16bc9c121"},
-    {file = "nh3-0.2.19.tar.gz", hash = "sha256:790056b54c068ff8dceb443eaefb696b84beff58cca6c07afd754d17692a4804"},
+    {file = "nh3-0.2.20-cp313-cp313t-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl", hash = "sha256:e1061a4ab6681f6bdf72b110eea0c4e1379d57c9de937db3be4202f7ad6043db"},
+    {file = "nh3-0.2.20-cp313-cp313t-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:eb4254b1dac4a1ee49919a5b3f1caf9803ea8dada1816d9e8289e63d3cd0dd9a"},
+    {file = "nh3-0.2.20-cp313-cp313t-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:0ae9cbd713524cdb81e64663d0d6aae26f678db9f2cd9db0bf162606f1f9f20c"},
+    {file = "nh3-0.2.20-cp313-cp313t-musllinux_1_2_aarch64.whl", hash = "sha256:e1f7370b4e14cc03f5ae141ef30a1caf81fa5787711f80be9081418dd9eb79d2"},
+    {file = "nh3-0.2.20-cp313-cp313t-musllinux_1_2_armv7l.whl", hash = "sha256:ac4d27dc836a476efffc6eb661994426b8b805c951b29c9cf2ff36bc9ad58bc5"},
+    {file = "nh3-0.2.20-cp313-cp313t-musllinux_1_2_i686.whl", hash = "sha256:4fd2e9248725ebcedac3997a8d3da0d90a12a28c9179c6ba51f1658938ac30d0"},
+    {file = "nh3-0.2.20-cp313-cp313t-musllinux_1_2_x86_64.whl", hash = "sha256:f7d564871833ddbe54df3aa59053b1110729d3a800cb7628ae8f42adb3d75208"},
+    {file = "nh3-0.2.20-cp313-cp313t-win32.whl", hash = "sha256:d2a176fd4306b6f0f178a3f67fac91bd97a3a8d8fafb771c9b9ef675ba5c8886"},
+    {file = "nh3-0.2.20-cp313-cp313t-win_amd64.whl", hash = "sha256:6ed834c68452a600f517dd3e1534dbfaff1f67f98899fecf139a055a25d99150"},
+    {file = "nh3-0.2.20-cp38-abi3-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl", hash = "sha256:76e2f603b30c02ff6456b233a83fc377dedab6a50947b04e960a6b905637b776"},
+    {file = "nh3-0.2.20-cp38-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:181063c581defe683bd4bb78188ac9936d208aebbc74c7f7c16b6a32ae2ebb38"},
+    {file = "nh3-0.2.20-cp38-abi3-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:231addb7643c952cd6d71f1c8702d703f8fe34afcb20becb3efb319a501a12d7"},
+    {file = "nh3-0.2.20-cp38-abi3-manylinux_2_17_ppc64.manylinux2014_ppc64.whl", hash = "sha256:1b9a8340a0aab991c68a5ca938d35ef4a8a3f4bf1b455da8855a40bee1fa0ace"},
+    {file = "nh3-0.2.20-cp38-abi3-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:10317cd96fe4bbd4eb6b95f3920b71c902157ad44fed103fdcde43e3b8ee8be6"},
+    {file = "nh3-0.2.20-cp38-abi3-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:8698db4c04b140800d1a1cd3067fda399e36e1e2b8fc1fe04292a907350a3e9b"},
+    {file = "nh3-0.2.20-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:3eb04b9c3deb13c3a375ea39fd4a3c00d1f92e8fb2349f25f1e3e4506751774b"},
+    {file = "nh3-0.2.20-cp38-abi3-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:92f3f1c4f47a2c6f3ca7317b1d5ced05bd29556a75d3a4e2715652ae9d15c05d"},
+    {file = "nh3-0.2.20-cp38-abi3-musllinux_1_2_aarch64.whl", hash = "sha256:ddefa9fd6794a87e37d05827d299d4b53a3ec6f23258101907b96029bfef138a"},
+    {file = "nh3-0.2.20-cp38-abi3-musllinux_1_2_armv7l.whl", hash = "sha256:ce3731c8f217685d33d9268362e5b4f770914e922bba94d368ab244a59a6c397"},
+    {file = "nh3-0.2.20-cp38-abi3-musllinux_1_2_i686.whl", hash = "sha256:09f037c02fc2c43b211ff1523de32801dcfb0918648d8e651c36ef890f1731ec"},
+    {file = "nh3-0.2.20-cp38-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:813f1c8012dd64c990514b795508abb90789334f76a561fa0fd4ca32d2275330"},
+    {file = "nh3-0.2.20-cp38-abi3-win32.whl", hash = "sha256:47b2946c0e13057855209daeffb45dc910bd0c55daf10190bb0b4b60e2999784"},
+    {file = "nh3-0.2.20-cp38-abi3-win_amd64.whl", hash = "sha256:da87573f03084edae8eb87cfe811ec338606288f81d333c07d2a9a0b9b976c0b"},
+    {file = "nh3-0.2.20.tar.gz", hash = "sha256:9705c42d7ff88a0bea546c82d7fe5e59135e3d3f057e485394f491248a1f8ed5"},
 ]
 
 [[package]]
@@ -2659,17 +2659,17 @@ windows-terminal = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "pylint"
-version = "3.3.2"
+version = "3.3.3"
 description = "python code static checker"
 optional = false
 python-versions = ">=3.9.0"
 files = [
-    {file = "pylint-3.3.2-py3-none-any.whl", hash = "sha256:77f068c287d49b8683cd7c6e624243c74f92890f767f106ffa1ddf3c0a54cb7a"},
-    {file = "pylint-3.3.2.tar.gz", hash = "sha256:9ec054ec992cd05ad30a6df1676229739a73f8feeabf3912c995d17601052b01"},
+    {file = "pylint-3.3.3-py3-none-any.whl", hash = "sha256:26e271a2bc8bce0fc23833805a9076dd9b4d5194e2a02164942cb3cdc37b4183"},
+    {file = "pylint-3.3.3.tar.gz", hash = "sha256:07c607523b17e6d16e2ae0d7ef59602e332caa762af64203c24b41c27139f36a"},
 ]
 
 [package.dependencies]
-astroid = ">=3.3.5,<=3.4.0-dev0"
+astroid = ">=3.3.8,<=3.4.0-dev0"
 colorama = {version = ">=0.4.5", markers = "sys_platform == \"win32\""}
 dill = {version = ">=0.3.7", markers = "python_version >= \"3.12\""}
 isort = ">=4.2.5,<5.13.0 || >5.13.0,<6"
@@ -3329,13 +3329,13 @@ types-html5lib = "*"
 
 [[package]]
 name = "types-boto3"
-version = "1.35.87"
-description = "Type annotations for boto3 1.35.87 generated with mypy-boto3-builder 8.7.0"
+version = "1.35.90"
+description = "Type annotations for boto3 1.35.90 generated with mypy-boto3-builder 8.7.0"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "types_boto3-1.35.87-py3-none-any.whl", hash = "sha256:93643e4cb4be82487fc2fe03d88f49022039853826c690955b7f26b76e5dbf7c"},
-    {file = "types_boto3-1.35.87.tar.gz", hash = "sha256:50b0bf0f6d1b8b5b0b0c2a302213492d69e3bdba27d6e3147e160ca5d58f7748"},
+    {file = "types_boto3-1.35.90-py3-none-any.whl", hash = "sha256:2956f52878bffce1f4036bd00e0ac32634b09a40849c2443f28d3e58fff8ed34"},
+    {file = "types_boto3-1.35.90.tar.gz", hash = "sha256:870d217d665caca69efcb372ae610cae9dbbfcc55c1c366685ee612e0237114f"},
 ]
 
 [package.dependencies]
@@ -3390,7 +3390,7 @@ bedrock-data-automation-runtime = ["types-boto3-bedrock-data-automation-runtime 
 bedrock-runtime = ["types-boto3-bedrock-runtime (>=1.35.0,<1.36.0)"]
 billing = ["types-boto3-billing (>=1.35.0,<1.36.0)"]
 billingconductor = ["types-boto3-billingconductor (>=1.35.0,<1.36.0)"]
-boto3 = ["boto3 (==1.35.87)"]
+boto3 = ["boto3 (==1.35.90)"]
 braket = ["types-boto3-braket (>=1.35.0,<1.36.0)"]
 budgets = ["types-boto3-budgets (>=1.35.0,<1.36.0)"]
 ce = ["types-boto3-ce (>=1.35.0,<1.36.0)"]
@@ -4183,4 +4183,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.12,<3.13"
-content-hash = "55fc3f6b780128036bdcac4477ac535c5eefaab172595656236098af6460effa"
+content-hash = "c7765ed7ef841395f28b4cc15fc8f66a5554cec50b347b0d2afe74645318608b"

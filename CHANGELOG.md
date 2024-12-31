@@ -27,3 +27,9 @@ We also made some quality of life improvements and other adjustments:
 * Instead of tracking puzzle and solution content as a Markdown field within the puzzle record, instead automatically create canonical Google Docs for both. This gives us change tracking for free and matches how most puzzles are written. (Additionally, for testsolving purposes, we create a read-only copy of the puzzle document so that we capture the version of the puzzle that was tested against.)
 * Modified the EIC role so that holders are treated as auto-spoiled on every puzzle, rather than needing to manually spoil themselves on each puzzle they look at.
 * Revived a feature from PuzzleTron that allowed uploading a ZIP file containing an HTML version of a puzzle. The ZIP file must have an index.html, and the contents are unpacked and uploaded into S3 where they can be accessed.
+* Swapped out the adjective and noun lists for generating puzzle codenames to a larger set to reduce the likelihood of collisions (and also tried to make the adjective and noun independently unique, so you don't end up with a bunch of "colorless-" puzzles).
+
+And finally there are a handful of changes that you may find yourself wanting to back out:
+
+* The statistics page has some hard-coded logic for the structure of our hunt.
+* We took an axe to PuzzUp's auto-postprodding feature, because we prefer to do postprodding by hand rather than automatically attempt to convert from a Google Doc. A lot of that code is still present but in a heavily neutered state.
