@@ -1058,6 +1058,7 @@ class PuzzleCredit(models.Model):
     class CreditType(models.TextChoices):
         ART = ("ART", "Art")
         TECH = ("TCH", "Tech")
+        FABRICATION = ("FAB", "Fabrication")
         OTHER = ("OTH", "Other")
 
     puzzle = models.ForeignKey(
