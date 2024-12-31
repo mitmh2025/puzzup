@@ -208,7 +208,7 @@ Static files (CSS etc.) live in `puzzle_editing/static`.
 
 Puzzup integrates a fair bit with Discord, allowing for channels to be managed. To use it, there's a little bit of setup. This integration should be stable through version 9 of the Discord API.
 
-**A word of advice**: You probably don't actually want your primary Discord account to be an admin on your team's Discord server! Server admins are implicitly present in every channel, which is confusing for everyone because you aren't going to want to pay attention to every channel, but it's going to look like you are. Instead, you probably want to have an alt account that is the server admin, and join your normal account as a standard user.
+**A word of advice**: You probably don't actually want your primary Discord account to be an admin on your team's Discord server! Server admins are implicitly present in every channel (including private ones), which is confusing for everyone because it looks like you are following everything, when in fact you are likely not (e.g.) following channels for puzzles you're not spoiled on. Instead, you probably want to have an alt account that is the server admin, and join your normal account as a standard user.
 
 ## Setup
 
