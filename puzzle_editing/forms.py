@@ -768,11 +768,7 @@ class PuzzleOtherCreditsForm(forms.ModelForm):
         self.fields["users"] = UserMultipleChoiceField(required=False)
         self.fields["credit_type"] = forms.ChoiceField(
             required=True,
-            choices=[
-                ("ART", "Art"),
-                ("TCH", "Tech"),
-                ("OTH", "Other"),
-            ],
+            choices=PuzzleCredit.CreditType.choices,
         )
 
     class Meta:
