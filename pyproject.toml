@@ -33,7 +33,7 @@ nh3 = "^0.2.20"
 numpy = "^2.2.1"
 Pillow = "^11.0.0"
 psycopg = {extras = ["binary"], version = "^3.2.3"}
-pymdown-extensions = "^10.12"
+pymdown-extensions = "^10.13"
 python-dotenv = "^1.0.1"
 pyyaml = "^6.0.2"
 requests = "^2.32.3"
